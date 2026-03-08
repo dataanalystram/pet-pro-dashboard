@@ -102,7 +102,7 @@ export default function ReviewsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Reviews</h1>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Reviews</h1>
         <p className="text-sm text-muted-foreground">Track and respond to customer feedback across all services</p>
       </div>
 
