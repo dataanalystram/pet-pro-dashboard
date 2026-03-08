@@ -14,7 +14,366 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      booking_requests: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          id: string
+          is_urgent: boolean
+          notes: string | null
+          pet_name: string | null
+          pet_species: string | null
+          preferred_date: string | null
+          service_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          id?: string
+          is_urgent?: boolean
+          notes?: string | null
+          pet_name?: string | null
+          pet_species?: string | null
+          preferred_date?: string | null
+          service_name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          id?: string
+          is_urgent?: boolean
+          notes?: string | null
+          pet_name?: string | null
+          pet_species?: string | null
+          preferred_date?: string | null
+          service_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          booking_date: string
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          id: string
+          pet_breed: string | null
+          pet_name: string
+          pet_species: string | null
+          service_name: string
+          start_time: string
+          status: string
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          booking_date: string
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          id?: string
+          pet_breed?: string | null
+          pet_name: string
+          pet_species?: string | null
+          service_name: string
+          start_time: string
+          status?: string
+          total_price?: number
+          updated_at?: string
+        }
+        Update: {
+          booking_date?: string
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          id?: string
+          pet_breed?: string | null
+          pet_name?: string
+          pet_species?: string | null
+          service_name?: string
+          start_time?: string
+          status?: string
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      campaigns: {
+        Row: {
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          end_date: string | null
+          id: string
+          max_redemptions: number | null
+          name: string
+          promo_code: string | null
+          redemptions: number
+          start_date: string | null
+          status: string
+          target_audience: string
+          type: string
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          end_date?: string | null
+          id?: string
+          max_redemptions?: number | null
+          name: string
+          promo_code?: string | null
+          redemptions?: number
+          start_date?: string | null
+          status?: string
+          target_audience?: string
+          type: string
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          end_date?: string | null
+          id?: string
+          max_redemptions?: number | null
+          name?: string
+          promo_code?: string | null
+          redemptions?: number
+          start_date?: string | null
+          status?: string
+          target_audience?: string
+          type?: string
+          updated_at?: string
+          views?: number
+        }
+        Relationships: []
+      }
+      customers: {
+        Row: {
+          created_at: string
+          customer_email: string
+          customer_name: string
+          first_booking_date: string | null
+          id: string
+          last_booking_date: string | null
+          pets: string[]
+          tier: string
+          total_bookings: number
+          total_spent: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          first_booking_date?: string | null
+          id?: string
+          last_booking_date?: string | null
+          pets?: string[]
+          tier?: string
+          total_bookings?: number
+          total_spent?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          first_booking_date?: string | null
+          id?: string
+          last_booking_date?: string | null
+          pets?: string[]
+          tier?: string
+          total_bookings?: number
+          total_spent?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inventory: {
+        Row: {
+          category: string
+          cost_per_unit: number
+          created_at: string
+          id: string
+          name: string
+          quantity_in_stock: number
+          reorder_point: number
+          retail_price: number | null
+          supplier_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          cost_per_unit?: number
+          created_at?: string
+          id?: string
+          name: string
+          quantity_in_stock?: number
+          reorder_point?: number
+          retail_price?: number | null
+          supplier_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          cost_per_unit?: number
+          created_at?: string
+          id?: string
+          name?: string
+          quantity_in_stock?: number
+          reorder_point?: number
+          retail_price?: number | null
+          supplier_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          customer_email: string
+          customer_name: string
+          id: string
+          sender: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          id?: string
+          sender?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          id?: string
+          sender?: string
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          base_price: number
+          buffer_minutes: number
+          category: string
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          max_bookings_per_day: number
+          name: string
+          pet_types_accepted: string[]
+          price_type: string
+          total_bookings: number
+          updated_at: string
+          vaccination_required: boolean
+        }
+        Insert: {
+          base_price: number
+          buffer_minutes?: number
+          category: string
+          created_at?: string
+          description?: string | null
+          duration_minutes: number
+          id?: string
+          is_active?: boolean
+          max_bookings_per_day?: number
+          name: string
+          pet_types_accepted?: string[]
+          price_type?: string
+          total_bookings?: number
+          updated_at?: string
+          vaccination_required?: boolean
+        }
+        Update: {
+          base_price?: number
+          buffer_minutes?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          max_bookings_per_day?: number
+          name?: string
+          pet_types_accepted?: string[]
+          price_type?: string
+          total_bookings?: number
+          updated_at?: string
+          vaccination_required?: boolean
+        }
+        Relationships: []
+      }
+      staff: {
+        Row: {
+          average_rating: number
+          created_at: string
+          email: string
+          full_name: string
+          hourly_rate: number | null
+          id: string
+          max_daily_bookings: number
+          phone: string | null
+          role: string
+          specializations: string[]
+          title: string | null
+          total_services_completed: number
+          updated_at: string
+        }
+        Insert: {
+          average_rating?: number
+          created_at?: string
+          email: string
+          full_name: string
+          hourly_rate?: number | null
+          id?: string
+          max_daily_bookings?: number
+          phone?: string | null
+          role?: string
+          specializations?: string[]
+          title?: string | null
+          total_services_completed?: number
+          updated_at?: string
+        }
+        Update: {
+          average_rating?: number
+          created_at?: string
+          email?: string
+          full_name?: string
+          hourly_rate?: number | null
+          id?: string
+          max_daily_bookings?: number
+          phone?: string | null
+          role?: string
+          specializations?: string[]
+          title?: string | null
+          total_services_completed?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
