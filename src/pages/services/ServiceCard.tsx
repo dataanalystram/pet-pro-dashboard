@@ -55,7 +55,7 @@ export default function ServiceCard({ service: s, onEdit, onDelete, onPreview, o
         {!s.is_active && <Badge variant="secondary" className="absolute top-2 right-2 text-[10px]">Inactive</Badge>}
       </div>
 
-      <CardContent className="p-4 space-y-2">
+      <CardContent className="p-3 sm:p-4 space-y-2">
         <div>
           <p className="font-semibold text-sm">{s.name}</p>
           {s.short_description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{s.short_description}</p>}
