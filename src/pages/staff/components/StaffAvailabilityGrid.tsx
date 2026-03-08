@@ -85,6 +85,21 @@ export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }:
   return (
     <div className="overflow-x-auto">
       <div className="min-w-[600px]">
+        {/* Week Navigation */}
+        <div className="flex items-center justify-between mb-3">
+          <Button variant="outline" size="sm" onClick={() => setWeekOffset(o => o - 1)}>
+            <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+          </Button>
+          <div className="text-center">
+            <p className="text-sm font-semibold">{weekLabel}</p>
+            {weekOffset !== 0 && (
+              <button className="text-xs text-primary hover:underline" onClick={() => setWeekOffset(0)}>Today</button>
+            )}
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setWeekOffset(o => o + 1)}>
+            Next <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
+        </div>
         {/* Header */}
         <div className="grid gap-1" style={{ gridTemplateColumns: `160px repeat(7, 1fr)` }}>
           <div className="p-2 text-xs font-medium text-muted-foreground">Staff</div>

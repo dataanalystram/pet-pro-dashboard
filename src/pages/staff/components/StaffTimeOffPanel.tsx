@@ -227,18 +227,18 @@ export default function StaffTimeOffPanel({ staff, bookings }: Props) {
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(t)}>
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                      <Button variant="ghost" size="icon" className="h-7 w-7" title={t.status === 'approved' ? 'Reject' : 'Approve'} onClick={() => {
                         const next = t.status === 'approved' ? 'rejected' : 'approved';
                         updateTimeOff.mutate({ id: t.id, status: next }, {
                           onSuccess: () => toast.success(`Status changed to ${next}`),
                         });
                       }}>
-                        {t.status === 'approved' ? <XCircle className="w-3.5 h-3.5 text-destructive" /> : <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />}
+                        {t.status === 'approved' ? <Ban className="w-3.5 h-3.5 text-destructive" /> : <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />}
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => {
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" title="Delete" onClick={() => {
                         if (window.confirm('Remove this time off entry?')) deleteTimeOff.mutate(t.id, { onSuccess: () => toast.success('Removed') });
                       }}>
-                        <XCircle className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </div>
