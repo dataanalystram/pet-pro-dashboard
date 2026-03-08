@@ -1,7 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2, Clock, Eye, Copy, Sparkles, MapPin, Plus, Star } from 'lucide-react';
+import { Pencil, Trash2, Clock, Eye, Copy, Sparkles, MapPin, Plus, Star, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 const categoryGradients: Record<string, string> = {
