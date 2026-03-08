@@ -42,7 +42,8 @@ const bookingSchema = z.object({
 
 type BookingFormData = z.infer<typeof bookingSchema>;
 
-const speciesOptions = ['Dog', 'Cat', 'Bird', 'Rabbit', 'Hamster', 'Fish', 'Reptile', 'Other'];
+const knownSpecies = ['Dog', 'Cat', 'Bird', 'Rabbit', 'Hamster', 'Fish', 'Reptile'];
+const speciesOptions = [...knownSpecies, 'Other'];
 
 interface AppliedPromo {
   campaign_id: string;
