@@ -387,10 +387,10 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-start justify-center overflow-y-auto">
-      <div className="w-full max-w-4xl bg-background rounded-t-2xl sm:rounded-2xl sm:my-8 shadow-2xl border overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end sm:items-start justify-center sm:overflow-y-auto">
+      <div className="w-full sm:max-w-4xl bg-background rounded-t-2xl sm:rounded-2xl sm:my-8 shadow-2xl border overflow-hidden max-h-[95vh] sm:max-h-none overflow-y-auto pb-20 sm:pb-0">
         {/* Hero */}
-        <div className="relative h-56 sm:h-72">
+        <div className="relative h-44 sm:h-72">
           {s.cover_image_url ? (
             <img src={s.cover_image_url} alt={s.name} className="w-full h-full object-cover" />
           ) : (
