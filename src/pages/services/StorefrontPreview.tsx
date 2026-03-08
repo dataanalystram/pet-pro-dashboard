@@ -462,6 +462,75 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
               </div>
             )}
 
+            {/* Customer Reviews */}
+            <div className="space-y-5">
+              <h3 className="font-bold text-sm flex items-center gap-2">
+                <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> Customer Reviews
+              </h3>
+              
+              {/* Rating Summary */}
+              <div className="bg-accent/50 rounded-2xl p-5 flex items-center gap-6">
+                <div className="text-center">
+                  <div className="text-4xl font-extrabold">4.9</div>
+                  <div className="flex items-center gap-0.5 mt-1">
+                    {[1,2,3,4,5].map(i => <Star key={i} className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">128 reviews</p>
+                </div>
+                <div className="flex-1 space-y-1.5">
+                  {[
+                    { stars: 5, pct: 85 },
+                    { stars: 4, pct: 10 },
+                    { stars: 3, pct: 3 },
+                    { stars: 2, pct: 1 },
+                    { stars: 1, pct: 1 },
+                  ].map(({ stars, pct }) => (
+                    <div key={stars} className="flex items-center gap-2 text-xs">
+                      <span className="w-3 text-muted-foreground">{stars}</span>
+                      <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-500 rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="w-8 text-right text-muted-foreground">{pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Individual Reviews */}
+              <div className="space-y-3">
+                {[
+                  { name: 'Sarah M.', rating: 5, date: '2 weeks ago', text: 'Amazing grooming service! My poodle looks absolutely fantastic. The staff was so gentle and caring.', pet: '🐩 Poodle' },
+                  { name: 'James K.', rating: 5, date: '1 month ago', text: 'Very professional and caring staff. They took the time to explain everything. Highly recommend!', pet: '🐕 Golden Retriever' },
+                  { name: 'Emily R.', rating: 4, date: '1 month ago', text: 'Great service overall, my cat was calm the whole time. Will definitely come back for another session.', pet: '🐱 Persian Cat' },
+                  { name: 'Michael T.', rating: 5, date: '2 months ago', text: 'Best pet care in town. Been coming here for 2 years and the quality has always been consistently excellent.', pet: '🐕 Labrador' },
+                ].map((review, i) => (
+                  <div key={i} className="bg-card border rounded-xl p-4 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                          {review.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">{review.name}</p>
+                          <p className="text-[11px] text-muted-foreground">{review.date}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-0.5">
+                        {[1,2,3,4,5].map(j => (
+                          <Star key={j} className={cn('w-3 h-3', j <= review.rating ? 'text-amber-500 fill-amber-500' : 'text-muted')} />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{review.text}</p>
+                    <span className="inline-block text-[10px] bg-secondary text-secondary-foreground rounded-full px-2 py-0.5">{review.pet}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button className="text-sm text-primary font-medium hover:underline">See all 128 reviews →</button>
+            </div>
+
             {/* FAQ */}
             {s.faq && s.faq.length > 0 && (
               <div className="space-y-3">
@@ -570,7 +639,13 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
                   </div>
                   <div className="p-3">
                     <p className="text-sm font-semibold truncate">{r.name}</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1"><Clock className="w-3 h-3" />{r.duration_minutes}min</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" />{r.duration_minutes}min</span>
+                      <div className="flex items-center gap-0.5">
+                        {[1,2,3,4,5].map(i => <Star key={i} className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />)}
+                        <span className="text-[10px] text-muted-foreground ml-0.5">4.9</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
