@@ -224,7 +224,10 @@ export default function AppointmentsPage() {
                     <span>{new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     <span className="font-medium text-foreground">${Number(b.total_price).toFixed(2)}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">{b.customer_name} · {b.pet_name}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {b.customer_name} · {b.pet_name}
+                    {b.assigned_staff_id && <span className="text-primary ml-1">· {staff.find(s => s.id === b.assigned_staff_id)?.full_name}</span>}
+                  </p>
                 </CardContent>
               </Card>
             ))}
