@@ -256,7 +256,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Category</Label>
-                <Select value={form.category} onValueChange={v => set('category', v)}>
+                <Select value={form.category} onValueChange={v => { set('category', v); if (v !== 'other') set('custom_category', ''); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
                 </Select>
@@ -268,6 +268,14 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
                   <SelectContent>{DIFFICULTY_LEVELS.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
+            </div>
+            {form.category === 'other' && (
+              <div className="space-y-1.5">
+                <Label>Custom Category Name *</Label>
+                <Input value={form.custom_category} onChange={e => set('custom_category', e.target.value)} placeholder="e.g. Aquatics, Exotic Care, Hydrotherapy" />
+                <p className="text-xs text-muted-foreground">Specify the category since "Other" was selected</p>
+              </div>
+            )}
             </div>
             <div className="space-y-1.5">
               <Label>Short Description <span className="text-muted-foreground text-xs">(max 120 chars)</span></Label>
