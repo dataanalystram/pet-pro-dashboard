@@ -96,6 +96,7 @@ const emptyForm: ServiceFormData = {
   faq: [],
   group_discount_percent: '0',
   difficulty_level: 'standard',
+  recommended_services: [],
 };
 
 interface Props {
