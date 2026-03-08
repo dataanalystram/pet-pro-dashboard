@@ -550,8 +550,8 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
             )}
           </div>
 
-          {/* Right: Sticky Booking Card */}
-          <div className="sm:w-80 flex-shrink-0">
+          {/* Right: Sticky Booking Card (desktop only) */}
+          <div className="hidden sm:block sm:w-80 flex-shrink-0">
             <div className="sm:sticky sm:top-4 bg-card border rounded-2xl p-5 space-y-4 shadow-lg">
               <div>
                 <div className="flex items-baseline gap-1">
@@ -570,7 +570,6 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
                 )}
               </div>
 
-              {/* Availability */}
               {s.available_days && (
                 <div className="flex flex-wrap gap-1">
                   {s.available_days.map((d: string) => (
@@ -579,7 +578,6 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
                 </div>
               )}
 
-              {/* Interactive Add-ons */}
               {addons.length > 0 && (
                 <div className="space-y-2 border-t pt-3">
                   <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">Add-ons</h4>
@@ -606,7 +604,6 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
 
               <Button className="w-full rounded-xl h-12 font-bold text-base" size="lg">Book Now</Button>
               
-              {/* Social proof */}
               <div className="flex items-center gap-2 justify-center pt-1">
                 <div className="flex -space-x-2">
                   {[1,2,3].map(i => (
