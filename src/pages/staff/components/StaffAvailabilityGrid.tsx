@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { parseISO, isWithinInterval } from 'date-fns';
 
 const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -6,6 +7,7 @@ const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturd
 interface Props {
   staff: any[];
   bookings: any[];
+  timeOff?: any[];
 }
 
 function getWeekDates() {
@@ -19,8 +21,17 @@ function getWeekDates() {
   });
 }
 
-export default function StaffAvailabilityGrid({ staff, bookings }: Props) {
+export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }: Props) {
   const weekDates = getWeekDates();
+
+  const isOnLeave = (staffId: string, dateStr: string) => {
+    return timeOff.some((t: any) => {
+      if (t.staff_id !== staffId || t.status !== 'approved') return false;
+      try {
+        return isWithinInterval(parseISO(dateStr), { start: parseISO(t.start_date), end: parseISO(t.end_date) });
+      } catch { return false; }
+    });
+  };
 
   return (
     <div className="overflow-x-auto">
@@ -50,6 +61,7 @@ export default function StaffAvailabilityGrid({ staff, bookings }: Props) {
               {dayKeys.map((day, i) => {
                 const dayData = wh[day];
                 const isOff = dayData?.off !== false || !dayData;
+                const onLeave = isOnLeave(s.id, weekDates[i]);
                 const dayBookings = bookings.filter(b => b.booking_date === weekDates[i] && b.status !== 'cancelled').length;
                 const load = isOff ? -1 : dayBookings / s.max_daily_bookings;
 
@@ -57,14 +69,15 @@ export default function StaffAvailabilityGrid({ staff, bookings }: Props) {
                   <div
                     key={day}
                     className={cn(
-                      "rounded-lg p-2 text-center text-xs transition-colors",
+                      "rounded-lg p-2 text-center text-xs transition-colors relative",
+                      onLeave ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' :
                       isOff ? 'bg-muted/50 text-muted-foreground' :
                       load >= 0.8 ? 'bg-destructive/15 text-destructive' :
                       load >= 0.5 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
                       'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                     )}
                   >
-                    {isOff ? 'Off' : `${dayBookings}/${s.max_daily_bookings}`}
+                    {onLeave ? '🏖️' : isOff ? 'Off' : `${dayBookings}/${s.max_daily_bookings}`}
                   </div>
                 );
               })}
@@ -73,12 +86,13 @@ export default function StaffAvailabilityGrid({ staff, bookings }: Props) {
         })}
 
         {/* Legend */}
-        <div className="flex gap-4 mt-3 pt-3 border-t">
+        <div className="flex gap-4 mt-3 pt-3 border-t flex-wrap">
           {[
             { label: 'Available', cls: 'bg-emerald-500' },
             { label: 'Moderate', cls: 'bg-amber-500' },
             { label: 'Busy', cls: 'bg-destructive' },
             { label: 'Off', cls: 'bg-muted-foreground' },
+            { label: 'On Leave', cls: 'bg-violet-500' },
           ].map(l => (
             <div key={l.label} className="flex items-center gap-1.5">
               <div className={cn("w-2.5 h-2.5 rounded-sm", l.cls)} />
