@@ -42,7 +42,8 @@ const bookingSchema = z.object({
 
 type BookingFormData = z.infer<typeof bookingSchema>;
 
-const speciesOptions = ['Dog', 'Cat', 'Bird', 'Rabbit', 'Hamster', 'Fish', 'Reptile', 'Other'];
+const knownSpecies = ['Dog', 'Cat', 'Bird', 'Rabbit', 'Hamster', 'Fish', 'Reptile'];
+const speciesOptions = [...knownSpecies, 'Other'];
 
 interface AppliedPromo {
   campaign_id: string;
@@ -301,12 +302,29 @@ export default function PublicBookingPage() {
                     </div>
                     <div>
                       <Label className="text-xs">Species *</Label>
-                      <Select value={form.watch(`pets.${index}.species`)} onValueChange={(v) => form.setValue(`pets.${index}.species`, v)}>
-                        <SelectTrigger className="h-9"><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>
-                          {speciesOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                      {(() => {
+                        const currentSpecies = form.watch(`pets.${index}.species`);
+                        const isKnown = knownSpecies.includes(currentSpecies);
+                        const selectVal = isKnown ? currentSpecies : (currentSpecies ? 'Other' : '');
+                        return (
+                          <>
+                            <Select value={selectVal} onValueChange={(v) => form.setValue(`pets.${index}.species`, v === 'Other' ? '' : v, { shouldValidate: true })}>
+                              <SelectTrigger className="h-9"><SelectValue placeholder="Select" /></SelectTrigger>
+                              <SelectContent>
+                                {speciesOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                            {selectVal === 'Other' && (
+                              <Input
+                                value={currentSpecies}
+                                onChange={(e) => form.setValue(`pets.${index}.species`, e.target.value, { shouldValidate: true })}
+                                placeholder="Enter pet type (e.g. turtle, ferret...)"
+                                className="h-9 mt-2"
+                              />
+                            )}
+                          </>
+                        );
+                      })()}
                       {form.formState.errors.pets?.[index]?.species && <p className="text-xs text-destructive mt-0.5">{form.formState.errors.pets[index]?.species?.message}</p>}
                     </div>
                     <div>
