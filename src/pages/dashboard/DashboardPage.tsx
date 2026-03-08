@@ -531,7 +531,7 @@ export default function DashboardPage() {
                         </div>
                       );
                     }} />
-                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={20} />
+                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={20} className="cursor-pointer" onClick={() => navigate('/services')} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
