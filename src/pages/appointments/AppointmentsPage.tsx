@@ -251,7 +251,7 @@ export default function AppointmentsPage() {
                   </thead>
                   <tbody className="divide-y">
                     {filteredBookings.length === 0 ? (
-                      <tr><td colSpan={6} className="px-4 py-12 text-center text-sm text-muted-foreground">No bookings found</td></tr>
+                      <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-muted-foreground">No bookings found</td></tr>
                     ) : filteredBookings.map((b) => (
                       <tr key={b.id} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}>
                         <td className="px-4 py-3">
