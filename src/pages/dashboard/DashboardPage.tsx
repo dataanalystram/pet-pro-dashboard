@@ -411,7 +411,7 @@ export default function DashboardPage() {
             <div className="h-[160px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={metrics.healthData} dataKey="value" innerRadius={45} outerRadius={70} paddingAngle={3} strokeWidth={0}>
+                  <Pie data={metrics.healthData} dataKey="value" innerRadius={45} outerRadius={70} paddingAngle={3} strokeWidth={0} className="cursor-pointer" onClick={() => navigate('/customers')}>
                     {metrics.healthData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                   </Pie>
                   <Tooltip content={({ active, payload }) => {
