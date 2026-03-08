@@ -639,7 +639,13 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
                   </div>
                   <div className="p-3">
                     <p className="text-sm font-semibold truncate">{r.name}</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1"><Clock className="w-3 h-3" />{r.duration_minutes}min</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" />{r.duration_minutes}min</span>
+                      <div className="flex items-center gap-0.5">
+                        {[1,2,3,4,5].map(i => <Star key={i} className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />)}
+                        <span className="text-[10px] text-muted-foreground ml-0.5">4.9</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}

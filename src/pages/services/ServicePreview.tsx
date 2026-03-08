@@ -102,7 +102,7 @@ export default function ServicePreview({ open, onOpenChange, service: s, allServ
                   <div className="flex items-center gap-0.5 text-amber-400">
                     {[1,2,3,4,5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-current" />)}
                   </div>
-                  <span className="text-white/60 text-xs">4.9 (128 reviews)</span>
+                  <a href="#reviews-section" className="text-white/80 text-xs hover:text-white underline underline-offset-2 transition-colors cursor-pointer">4.9 (128 reviews)</a>
                 </div>
               </div>
             </div>
