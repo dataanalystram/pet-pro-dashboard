@@ -726,9 +726,9 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
           </TabsContent>
         </Tabs>
 
-        <div className="sticky bottom-0 bg-background border-t px-6 py-4 flex justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onSave(form)} disabled={!isValid || saving}>
+        <div className="sticky bottom-0 bg-background border-t px-4 sm:px-6 py-3 sm:py-4 flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button size="sm" onClick={() => onSave(form)} disabled={!isValid || saving}>
             {saving ? 'Saving...' : editing ? 'Save Changes' : 'Create Service'}
           </Button>
         </div>
