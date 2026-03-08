@@ -567,7 +567,7 @@ export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }:
             <span className="text-[10px] text-muted-foreground">{l.label}</span>
           </div>
         ))}
-        <span className="text-[10px] text-muted-foreground ml-auto">Click any cell to edit</span>
+        <span className="text-[10px] text-muted-foreground ml-auto">Click to edit · Drag across days to bulk toggle</span>
       </div>
     </div>
   );
