@@ -2,12 +2,13 @@ import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, LayoutGrid, List } from 'lucide-react';
+import { Plus, Search, Store } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServices, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
 import ServiceCard from './ServiceCard';
 import ServiceFormDialog, { ServiceFormData } from './ServiceFormDialog';
 import ServicePreview from './ServicePreview';
+import StorefrontPreview from './StorefrontPreview';
 
 const CATEGORIES = [
   { value: 'all', label: 'All Categories' },
@@ -34,6 +35,7 @@ export default function ServicesPage() {
   const [editing, setEditing] = useState<any>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewService, setPreviewService] = useState<any>(null);
+  const [storefrontOpen, setStorefrontOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -59,6 +61,7 @@ export default function ServicesPage() {
   const handleSave = (form: ServiceFormData) => {
     const payload: Record<string, any> = {
       name: form.name, category: form.category,
+      custom_category: form.category === 'other' ? (form.custom_category || null) : null,
       short_description: form.short_description || null,
       description: form.short_description || null,
       long_description: form.long_description || null,
@@ -106,6 +109,7 @@ export default function ServicesPage() {
       faq: form.faq,
       group_discount_percent: parseFloat(form.group_discount_percent) || 0,
       difficulty_level: form.difficulty_level,
+      recommended_services: form.recommended_services,
     };
 
     if (editing) {
@@ -131,6 +135,10 @@ export default function ServicesPage() {
     });
   };
 
+  const handleReorder = (id: string, newOrder: number) => {
+    updateService.mutate({ id, display_order: newOrder });
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading services...</div>;
   }
@@ -146,19 +154,19 @@ export default function ServicesPage() {
             {services.length !== filtered.length && ` of ${services.length} total`}
           </p>
         </div>
-        <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> New Service</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setStorefrontOpen(true)}>
+            <Store className="w-4 h-4 mr-2" /> Storefront Preview
+          </Button>
+          <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> New Service</Button>
+        </div>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search services, tags..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9"
-          />
+          <Input placeholder="Search services, tags..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-full sm:w-44"><SelectValue /></SelectTrigger>
@@ -205,6 +213,7 @@ export default function ServicesPage() {
         editing={editing}
         onSave={handleSave}
         saving={insertService.isPending || updateService.isPending}
+        allServices={services}
       />
 
       {/* Preview */}
@@ -212,6 +221,15 @@ export default function ServicesPage() {
         open={previewOpen}
         onOpenChange={setPreviewOpen}
         service={previewService}
+        allServices={services}
+      />
+
+      {/* Storefront Preview */}
+      <StorefrontPreview
+        open={storefrontOpen}
+        onOpenChange={setStorefrontOpen}
+        services={services}
+        onReorder={handleReorder}
       />
     </div>
   );
