@@ -167,8 +167,62 @@ export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }:
     return { isOff, onLeave, dayBookings, load };
   };
 
+  // Drag handlers for weekly view
+  const handleDragStart = (staffId: string, dayIdx: number, isCurrentlyOff: boolean) => {
+    setIsDragging(true);
+    setDragStaffId(staffId);
+    setDragStartIdx(dayIdx);
+    setDragEndIdx(dayIdx);
+    setDragMode(isCurrentlyOff ? 'on' : 'off'); // if currently off, drag will turn on, vice versa
+  };
+
+  const handleDragEnter = (dayIdx: number) => {
+    if (isDragging) setDragEndIdx(dayIdx);
+  };
+
+  const handleDragEnd = () => {
+    if (!isDragging || !dragStaffId) { resetDrag(); return; }
+    const s = staff.find((st: any) => st.id === dragStaffId);
+    if (!s) { resetDrag(); return; }
+
+    const minIdx = Math.min(dragStartIdx, dragEndIdx);
+    const maxIdx = Math.max(dragStartIdx, dragEndIdx);
+    const wh = { ...(s.working_hours || {}) };
+
+    for (let i = minIdx; i <= maxIdx; i++) {
+      const dk = dayKeys[i];
+      if (dragMode === 'off') {
+        wh[dk] = { off: true, start: '', end: '' };
+      } else {
+        wh[dk] = { off: false, start: wh[dk]?.start || '09:00', end: wh[dk]?.end || '17:00' };
+      }
+    }
+
+    updateStaff.mutate({ id: s.id, working_hours: wh }, {
+      onSuccess: () => {
+        const count = maxIdx - minIdx + 1;
+        toast.success(`${dragMode === 'off' ? 'Set off' : 'Set working'}: ${count} day${count > 1 ? 's' : ''} for ${s.full_name}`);
+      },
+    });
+    resetDrag();
+  };
+
+  const resetDrag = () => {
+    setIsDragging(false);
+    setDragStaffId(null);
+    setDragStartIdx(-1);
+    setDragEndIdx(-1);
+  };
+
+  const isDayInDragRange = (staffId: string, dayIdx: number) => {
+    if (!isDragging || dragStaffId !== staffId) return false;
+    const minIdx = Math.min(dragStartIdx, dragEndIdx);
+    const maxIdx = Math.max(dragStartIdx, dragEndIdx);
+    return dayIdx >= minIdx && dayIdx <= maxIdx;
+  };
+
   const renderWeeklyView = () => (
-    <div className="min-w-[600px]">
+    <div className="min-w-[600px]" onMouseUp={handleDragEnd} onMouseLeave={handleDragEnd}>
       {/* Week Navigation */}
       <div className="flex items-center justify-between mb-3">
         <Button variant="outline" size="sm" onClick={() => setWeekOffset(o => o - 1)}>
