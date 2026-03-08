@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useState, useMemo, useRef } from 'react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Smartphone, Monitor, Tablet, Clock, Sparkles, ChevronUp, ChevronDown, MapPin } from 'lucide-react';
+import { Smartphone, Monitor, Tablet, Clock, Sparkles, ChevronUp, ChevronDown, MapPin, Star, ChevronLeft, ChevronRight, X, Shield, Heart, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const currencySymbol = (c: string) => c === 'EUR' ? '€' : c === 'GBP' ? '£' : c === 'USD' ? '$' : c + ' ';
@@ -12,6 +12,11 @@ const categoryGradients: Record<string, string> = {
   medical: 'from-red-400 to-rose-500', walking: 'from-amber-400 to-orange-500',
   boarding: 'from-violet-400 to-purple-500', training: 'from-orange-400 to-red-500',
   sitting: 'from-pink-400 to-rose-500', other: 'from-gray-400 to-slate-500',
+};
+
+const categoryEmojis: Record<string, string> = {
+  grooming: '✂️', dental: '🦷', medical: '🏥', walking: '🐕', boarding: '🏠',
+  training: '🎓', sitting: '🐾', other: '🌟',
 };
 
 const locationLabels: Record<string, string> = {
@@ -27,6 +32,9 @@ interface Props {
 
 export default function StorefrontPreview({ open, onOpenChange, services, onReorder }: Props) {
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  const [selectedService, setSelectedService] = useState<any>(null);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const catScrollRef = useRef<HTMLDivElement>(null);
 
   const activeServices = useMemo(() => {
     return services
@@ -39,149 +47,287 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
   }, [services]);
 
   const featured = activeServices.filter((s: any) => s.featured);
-  const categories = useMemo(() => {
-    const cats: Record<string, any[]> = {};
+
+  const categoryList = useMemo(() => {
+    const cats = new Map<string, number>();
     activeServices.forEach((s: any) => {
-      const catName = s.custom_category || s.category;
-      if (!cats[catName]) cats[catName] = [];
-      cats[catName].push(s);
+      const cat = s.custom_category || s.category;
+      cats.set(cat, (cats.get(cat) || 0) + 1);
     });
-    return cats;
+    return Array.from(cats.entries()).map(([name, count]) => ({ name, count }));
   }, [activeServices]);
 
-  const frameWidth = device === 'mobile' ? 'max-w-[375px]' : device === 'tablet' ? 'max-w-[768px]' : 'max-w-[1200px]';
+  const filteredServices = useMemo(() => {
+    if (activeCategory === 'all') return activeServices;
+    return activeServices.filter((s: any) => (s.custom_category || s.category) === activeCategory);
+  }, [activeServices, activeCategory]);
+
+  const frameWidth = device === 'mobile' ? 'max-w-[390px]' : device === 'tablet' ? 'max-w-[768px]' : 'max-w-[1200px]';
 
   const moveUp = (s: any) => {
     const idx = activeServices.findIndex((srv: any) => srv.id === s.id);
     if (idx <= 0) return;
-    const prevOrder = activeServices[idx - 1].display_order || 0;
-    onReorder(s.id, prevOrder - 1);
+    onReorder(s.id, (activeServices[idx - 1].display_order || 0) - 1);
   };
-
   const moveDown = (s: any) => {
     const idx = activeServices.findIndex((srv: any) => srv.id === s.id);
     if (idx >= activeServices.length - 1) return;
-    const nextOrder = activeServices[idx + 1].display_order || 0;
-    onReorder(s.id, nextOrder + 1);
+    onReorder(s.id, (activeServices[idx + 1].display_order || 0) + 1);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Customer Storefront Preview</span>
-            <div className="flex gap-1">
+      <DialogContent className="max-w-[98vw] max-h-[98vh] overflow-y-auto p-0 gap-0">
+        {/* Toolbar */}
+        <div className="sticky top-0 z-20 bg-card/95 backdrop-blur-sm border-b px-4 py-3 flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-sm">Customer Storefront Preview</h2>
+            <p className="text-[11px] text-muted-foreground">Hover cards to reorder • Click to view detail</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex gap-0.5 bg-muted rounded-lg p-0.5">
               {([['mobile', Smartphone], ['tablet', Tablet], ['desktop', Monitor]] as const).map(([key, Icon]) => (
-                <Button key={key} variant={device === key ? 'default' : 'outline'} size="sm" className="h-8" onClick={() => setDevice(key)}>
+                <button key={key} onClick={() => setDevice(key)} className={cn(
+                  'p-1.5 rounded-md transition-all',
+                  device === key ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+                )}>
                   <Icon className="w-4 h-4" />
-                </Button>
+                </button>
               ))}
             </div>
-          </DialogTitle>
-          <p className="text-sm text-muted-foreground">Use arrows to reorder services. Changes save automatically.</p>
-        </DialogHeader>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onOpenChange(false)}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
 
-        <div className="flex justify-center py-4">
+        <div className="flex justify-center py-6 px-4 bg-muted/30">
           <div className={cn(
-            'w-full border rounded-2xl overflow-hidden bg-background shadow-lg transition-all',
+            'w-full transition-all duration-300 overflow-hidden',
             frameWidth,
-            device === 'mobile' && 'border-[8px] border-foreground/10 rounded-[2rem]'
+            device === 'mobile' ? 'border-[6px] border-foreground/10 rounded-[2.5rem] shadow-2xl' : 'rounded-2xl border shadow-lg',
+            'bg-background'
           )}>
-            {/* Storefront Header */}
-            <div className="bg-primary text-primary-foreground px-6 py-8 text-center">
-              <h1 className="text-2xl font-bold">Our Services</h1>
-              <p className="text-sm mt-1 opacity-80">Professional pet care tailored to your furry, feathered, or scaly friend</p>
+            {/* Hero Banner */}
+            <div className="relative overflow-hidden">
+              <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/70 px-6 py-10 sm:py-14 text-center relative">
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                <h1 className={cn('font-extrabold text-primary-foreground relative', device === 'mobile' ? 'text-2xl' : 'text-4xl')}>
+                  Our Services
+                </h1>
+                <p className={cn('text-primary-foreground/80 mt-2 relative', device === 'mobile' ? 'text-xs' : 'text-sm')}>
+                  Premium pet care tailored to every furry, feathered & scaly friend
+                </p>
+                {/* Trust Badges */}
+                <div className={cn('flex items-center justify-center gap-3 mt-5 relative', device === 'mobile' ? 'gap-2' : 'gap-4')}>
+                  {[
+                    { icon: Star, text: '4.9★ Rated' },
+                    { icon: Heart, text: '500+ Happy Pets' },
+                    { icon: Award, text: 'Certified Pros' },
+                  ].map(({ icon: Icon, text }) => (
+                    <div key={text} className="flex items-center gap-1 bg-primary-foreground/15 backdrop-blur-sm rounded-full px-3 py-1.5">
+                      <Icon className="w-3 h-3 text-primary-foreground" />
+                      <span className="text-[10px] font-semibold text-primary-foreground">{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Featured Banner */}
-            {featured.length > 0 && (
-              <div className="px-4 py-6">
-                <h2 className="text-lg font-bold mb-3 flex items-center gap-1.5">
-                  <Sparkles className="w-5 h-5 text-amber-500" /> Featured Services
-                </h2>
-                <div className={cn('grid gap-3', device === 'mobile' ? 'grid-cols-1' : device === 'tablet' ? 'grid-cols-2' : 'grid-cols-3')}>
-                  {featured.map((s: any) => (
-                    <ServiceStorefrontCard key={s.id} service={s} onMoveUp={() => moveUp(s)} onMoveDown={() => moveDown(s)} featured />
+            {/* Category Navigation */}
+            {categoryList.length > 0 && (
+              <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
+                <div ref={catScrollRef} className="flex gap-1.5 px-4 py-3 overflow-x-auto scrollbar-hide">
+                  <button
+                    onClick={() => setActiveCategory('all')}
+                    className={cn(
+                      'flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all',
+                      activeCategory === 'all'
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'bg-muted text-muted-foreground hover:bg-accent'
+                    )}
+                  >
+                    All Services
+                  </button>
+                  {categoryList.map(({ name, count }) => (
+                    <button
+                      key={name}
+                      onClick={() => setActiveCategory(name)}
+                      className={cn(
+                        'flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap',
+                        activeCategory === name
+                          ? 'bg-primary text-primary-foreground shadow-md'
+                          : 'bg-muted text-muted-foreground hover:bg-accent'
+                      )}
+                    >
+                      {categoryEmojis[name] || '🌟'} {name} ({count})
+                    </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* By Category */}
-            <div className="px-4 pb-8 space-y-6">
-              {Object.entries(categories).map(([cat, svcs]) => (
-                <div key={cat}>
-                  <h2 className="text-lg font-semibold capitalize mb-3 border-b pb-2">{cat}</h2>
-                  <div className={cn('grid gap-3', device === 'mobile' ? 'grid-cols-1' : device === 'tablet' ? 'grid-cols-2' : 'grid-cols-3')}>
-                    {svcs.map((s: any) => (
-                      <ServiceStorefrontCard key={s.id} service={s} onMoveUp={() => moveUp(s)} onMoveDown={() => moveDown(s)} />
-                    ))}
-                  </div>
+            {/* Featured Section */}
+            {featured.length > 0 && activeCategory === 'all' && (
+              <div className="px-4 pt-6 pb-2">
+                <h2 className={cn('font-bold flex items-center gap-1.5 mb-4', device === 'mobile' ? 'text-base' : 'text-lg')}>
+                  <Sparkles className="w-5 h-5 text-amber-500" /> Featured
+                </h2>
+                <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide snap-x snap-mandatory">
+                  {featured.map((s: any) => (
+                    <FeaturedCard key={s.id} service={s} device={device} onClick={() => setSelectedService(s)} onMoveUp={() => moveUp(s)} onMoveDown={() => moveDown(s)} />
+                  ))}
                 </div>
-              ))}
+              </div>
+            )}
+
+            {/* Service Grid */}
+            <div className="px-4 pb-8 pt-4">
+              <div className={cn('grid gap-4',
+                device === 'mobile' ? 'grid-cols-1' : device === 'tablet' ? 'grid-cols-2' : 'grid-cols-3'
+              )}>
+                {filteredServices.map((s: any) => (
+                  <StorefrontCard key={s.id} service={s} onClick={() => setSelectedService(s)} onMoveUp={() => moveUp(s)} onMoveDown={() => moveDown(s)} />
+                ))}
+              </div>
             </div>
 
             {activeServices.length === 0 && (
-              <div className="text-center py-16 text-muted-foreground">
+              <div className="text-center py-20 text-muted-foreground">
                 <p className="text-lg font-medium">No active services</p>
                 <p className="text-sm mt-1">Activate services to see them in your storefront</p>
               </div>
             )}
           </div>
         </div>
+
+        {/* Inline Service Detail Overlay */}
+        {selectedService && (
+          <StorefrontDetailOverlay service={selectedService} allServices={activeServices} onClose={() => setSelectedService(null)} />
+        )}
       </DialogContent>
     </Dialog>
   );
 }
 
-function ServiceStorefrontCard({ service: s, onMoveUp, onMoveDown, featured = false }: { service: any; onMoveUp: () => void; onMoveDown: () => void; featured?: boolean }) {
+/* ─── Featured Card (larger, hero-style) ─── */
+function FeaturedCard({ service: s, device, onClick, onMoveUp, onMoveDown }: { service: any; device: string; onClick: () => void; onMoveUp: () => void; onMoveDown: () => void }) {
+  const curr = currencySymbol(s.currency || 'EUR');
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        'flex-shrink-0 snap-center rounded-2xl overflow-hidden relative group cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl',
+        device === 'mobile' ? 'w-[85%]' : 'w-72'
+      )}
+    >
+      {/* Reorder */}
+      <div className="absolute top-2 right-2 z-10 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button variant="secondary" size="icon" className="h-6 w-6 bg-background/80 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); onMoveUp(); }}><ChevronUp className="w-3 h-3" /></Button>
+        <Button variant="secondary" size="icon" className="h-6 w-6 bg-background/80 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); onMoveDown(); }}><ChevronDown className="w-3 h-3" /></Button>
+      </div>
+
+      <div className={cn('h-48 relative', !s.cover_image_url && `bg-gradient-to-br ${categoryGradients[s.category] || categoryGradients.other}`)}>
+        {s.cover_image_url ? (
+          <img src={s.cover_image_url} alt={s.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-white/40 text-5xl font-bold">{s.name.charAt(0)}</span>
+          </div>
+        )}
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        
+        {/* Featured badge */}
+        <Badge className="absolute top-3 left-3 text-[10px] bg-amber-400/90 text-amber-900 border-0 backdrop-blur-sm">
+          <Sparkles className="w-3 h-3 mr-0.5" />Featured
+        </Badge>
+        
+        {/* Price badge - glassmorphism */}
+        <div className="absolute top-3 right-3 bg-background/20 backdrop-blur-md rounded-full px-3 py-1 border border-white/20 opacity-0 group-hover:opacity-0">
+          <span className="text-sm font-bold text-white">{curr}{Number(s.base_price).toFixed(2)}</span>
+        </div>
+        
+        {/* Bottom content */}
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <p className="text-white font-bold text-base">{s.name}</p>
+          {s.short_description && <p className="text-white/70 text-xs mt-0.5 line-clamp-1">{s.short_description}</p>}
+          <div className="flex items-center gap-3 mt-2">
+            <span className="text-white font-bold text-sm">{curr}{Number(s.base_price).toFixed(2)}</span>
+            <span className="flex items-center gap-1 text-white/70 text-xs">
+              <Clock className="w-3 h-3" />{s.duration_minutes}min
+            </span>
+            <div className="flex items-center gap-0.5 text-amber-400">
+              {[1,2,3,4,5].map(i => <Star key={i} className="w-2.5 h-2.5 fill-current" />)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Standard Storefront Card ─── */
+function StorefrontCard({ service: s, onClick, onMoveUp, onMoveDown }: { service: any; onClick: () => void; onMoveUp: () => void; onMoveDown: () => void }) {
   const curr = currencySymbol(s.currency || 'EUR');
   const allPets = [...(s.pet_types_accepted || []), ...(s.custom_pet_types || [])];
   const addons = s.service_addons || [];
 
   return (
-    <div className={cn(
-      'rounded-xl border overflow-hidden bg-card hover:shadow-md transition-shadow relative group',
-      featured && 'ring-2 ring-amber-400/50'
-    )}>
-      {/* Reorder Controls */}
+    <div
+      onClick={onClick}
+      className="rounded-2xl overflow-hidden bg-card border hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer group relative"
+    >
+      {/* Reorder */}
       <div className="absolute top-2 right-2 z-10 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button variant="secondary" size="icon" className="h-6 w-6" onClick={onMoveUp}><ChevronUp className="w-3 h-3" /></Button>
-        <Button variant="secondary" size="icon" className="h-6 w-6" onClick={onMoveDown}><ChevronDown className="w-3 h-3" /></Button>
+        <Button variant="secondary" size="icon" className="h-6 w-6 bg-background/80 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); onMoveUp(); }}><ChevronUp className="w-3 h-3" /></Button>
+        <Button variant="secondary" size="icon" className="h-6 w-6 bg-background/80 backdrop-blur-sm" onClick={(e) => { e.stopPropagation(); onMoveDown(); }}><ChevronDown className="w-3 h-3" /></Button>
       </div>
 
       {/* Image */}
-      <div className={cn('h-36 relative', !s.cover_image_url && `bg-gradient-to-br ${categoryGradients[s.category] || categoryGradients.other}`)}>
+      <div className={cn('h-44 relative overflow-hidden', !s.cover_image_url && `bg-gradient-to-br ${categoryGradients[s.category] || categoryGradients.other}`)}>
         {s.cover_image_url ? (
-          <img src={s.cover_image_url} alt={s.name} className="w-full h-full object-cover" />
+          <img src={s.cover_image_url} alt={s.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-white/60 text-4xl font-bold">{s.name.charAt(0)}</span>
+            <span className="text-white/40 text-5xl font-bold">{s.name.charAt(0)}</span>
           </div>
         )}
-        {featured && (
-          <Badge className="absolute top-2 left-2 text-[10px] bg-amber-100 text-amber-700 border-0">
-            <Sparkles className="w-3 h-3 mr-0.5" />Featured
-          </Badge>
-        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+
+        {/* Badges on image */}
+        <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
+          {s.featured && (
+            <Badge className="text-[10px] bg-amber-400/90 text-amber-900 border-0 backdrop-blur-sm">
+              <Sparkles className="w-3 h-3 mr-0.5" />Featured
+            </Badge>
+          )}
+        </div>
+
+        {/* Duration pill */}
+        <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-background/20 backdrop-blur-md rounded-full px-2.5 py-1 border border-white/20">
+          <Clock className="w-3 h-3 text-white" />
+          <span className="text-[11px] font-medium text-white">{s.duration_minutes}min</span>
+        </div>
+
+        {/* Price on image */}
+        <div className="absolute bottom-3 right-3 bg-background/20 backdrop-blur-md rounded-full px-3 py-1 border border-white/20">
+          <span className="text-sm font-bold text-white">
+            {s.price_type === 'starting_from' ? 'From ' : ''}{curr}{Number(s.base_price).toFixed(2)}
+          </span>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-2.5">
         <div>
-          <p className="font-semibold text-sm">{s.name}</p>
-          {s.short_description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{s.short_description}</p>}
-        </div>
-
-        <div className="flex items-center gap-3 text-sm">
-          <span className="font-bold text-foreground">
-            {s.price_type === 'starting_from' ? 'From ' : ''}{curr}{Number(s.base_price).toFixed(2)}
-            {s.price_type === 'hourly' ? '/hr' : ''}
-          </span>
-          <span className="flex items-center gap-1 text-muted-foreground text-xs">
-            <Clock className="w-3.5 h-3.5" />{s.duration_minutes}min
-          </span>
+          <div className="flex items-center justify-between">
+            <p className="font-bold text-sm">{s.name}</p>
+            <div className="flex items-center gap-0.5 text-amber-500">
+              {[1,2,3,4,5].map(i => <Star key={i} className="w-3 h-3 fill-current" />)}
+            </div>
+          </div>
+          {s.short_description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{s.short_description}</p>}
         </div>
 
         {s.service_location && s.service_location !== 'in_store' && (
@@ -190,15 +336,17 @@ function ServiceStorefrontCard({ service: s, onMoveUp, onMoveDown, featured = fa
           </div>
         )}
 
+        {/* Highlights */}
         {s.highlights && s.highlights.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {s.highlights.slice(0, 2).map((h: string, i: number) => (
-              <span key={i} className="inline-flex items-center text-[10px] text-primary bg-accent rounded-full px-2 py-0.5">✓ {h}</span>
+              <span key={i} className="inline-flex items-center text-[10px] text-accent-foreground bg-accent rounded-full px-2 py-0.5">✓ {h}</span>
             ))}
-            {s.highlights.length > 2 && <span className="text-[10px] text-muted-foreground">+{s.highlights.length - 2} more</span>}
+            {s.highlights.length > 2 && <span className="text-[10px] text-muted-foreground">+{s.highlights.length - 2}</span>}
           </div>
         )}
 
+        {/* Pet types row */}
         {allPets.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {allPets.slice(0, 4).map((p: string) => (
@@ -212,7 +360,223 @@ function ServiceStorefrontCard({ service: s, onMoveUp, onMoveDown, featured = fa
           <p className="text-[10px] text-muted-foreground">+ {addons.length} optional add-on{addons.length !== 1 ? 's' : ''}</p>
         )}
 
-        <Button className="w-full mt-2" size="sm">Book Now</Button>
+        <Button className="w-full mt-1 rounded-xl font-semibold" size="sm">Book Now</Button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Detail Overlay (shown when clicking a card) ─── */
+function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service: any; allServices: any[]; onClose: () => void }) {
+  const [selectedAddons, setSelectedAddons] = useState<Set<number>>(new Set());
+  const curr = currencySymbol(s.currency || 'EUR');
+  const addons = s.service_addons || [];
+  const allPets = [...(s.pet_types_accepted || []), ...(s.custom_pet_types || [])];
+  
+  const addonTotal = addons.reduce((sum: number, a: any, i: number) => selectedAddons.has(i) ? sum + Number(a.price) : sum, 0);
+  const total = Number(s.base_price) + addonTotal;
+
+  const recs = allServices.filter((srv: any) => s.recommended_services?.includes(srv.id) && srv.id !== s.id);
+
+  const toggleAddon = (i: number) => {
+    setSelectedAddons(prev => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-start justify-center overflow-y-auto">
+      <div className="w-full max-w-4xl bg-background rounded-t-2xl sm:rounded-2xl sm:my-8 shadow-2xl border overflow-hidden">
+        {/* Hero */}
+        <div className="relative h-56 sm:h-72">
+          {s.cover_image_url ? (
+            <img src={s.cover_image_url} alt={s.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className={cn('w-full h-full bg-gradient-to-br', categoryGradients[s.category] || categoryGradients.other)} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <Button variant="ghost" size="icon" className="absolute top-4 right-4 bg-background/20 backdrop-blur-sm text-white hover:bg-background/40 rounded-full" onClick={onClose}>
+            <X className="w-5 h-5" />
+          </Button>
+          <div className="absolute bottom-0 left-0 right-0 p-6">
+            <Badge className="text-[10px] mb-2 capitalize bg-primary/90 text-primary-foreground">{s.custom_category || s.category}</Badge>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">{s.name}</h2>
+            {s.short_description && <p className="text-white/80 text-sm mt-1">{s.short_description}</p>}
+          </div>
+        </div>
+
+        {/* Gallery */}
+        {s.gallery_urls && s.gallery_urls.length > 0 && (
+          <div className="flex gap-2 p-4 overflow-x-auto">
+            {s.gallery_urls.map((url: string, i: number) => (
+              <img key={i} src={url} alt="" className="w-20 h-20 rounded-xl object-cover flex-shrink-0 border-2 border-transparent hover:border-primary transition-all cursor-pointer" />
+            ))}
+          </div>
+        )}
+
+        {/* Two-column layout */}
+        <div className="flex flex-col sm:flex-row gap-6 p-6">
+          {/* Left: Content */}
+          <div className="flex-1 space-y-6 min-w-0">
+            {/* Highlights */}
+            {s.highlights && s.highlights.length > 0 && (
+              <div className="bg-accent/50 rounded-2xl p-5 space-y-3">
+                <h3 className="font-bold text-sm">What's Included</h3>
+                <div className="grid gap-2">
+                  {s.highlights.map((h: string, i: number) => (
+                    <div key={i} className="flex items-start gap-2.5 text-sm">
+                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-primary text-xs">✓</span>
+                      </div>
+                      <span>{h}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Description */}
+            {(s.long_description || s.description) && (
+              <div className="space-y-2">
+                <h3 className="font-bold text-sm">About This Service</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{s.long_description || s.description}</p>
+              </div>
+            )}
+
+            {/* Pet Requirements */}
+            {(s.vaccination_required || allPets.length > 0) && (
+              <div className="space-y-3">
+                <h3 className="font-bold text-sm">Pet Requirements</h3>
+                {s.vaccination_required && (
+                  <div className="flex items-center gap-2 text-sm"><Shield className="w-4 h-4 text-emerald-500" /> Vaccinations required</div>
+                )}
+                {allPets.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {allPets.map((p: string) => (
+                      <Badge key={p} variant="secondary" className="text-xs capitalize">{p}</Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* FAQ */}
+            {s.faq && s.faq.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="font-bold text-sm">Frequently Asked Questions</h3>
+                <div className="space-y-2">
+                  {s.faq.map((f: any, i: number) => (
+                    <details key={i} className="group bg-muted/50 rounded-xl">
+                      <summary className="px-4 py-3 text-sm font-medium cursor-pointer list-none flex items-center justify-between">
+                        {f.question}
+                        <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                      </summary>
+                      <p className="px-4 pb-3 text-sm text-muted-foreground">{f.answer}</p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right: Sticky Booking Card */}
+          <div className="sm:w-80 flex-shrink-0">
+            <div className="sm:sticky sm:top-4 bg-card border rounded-2xl p-5 space-y-4 shadow-lg">
+              <div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-extrabold">{curr}{total.toFixed(2)}</span>
+                  {s.price_type === 'hourly' && <span className="text-muted-foreground text-sm">/hr</span>}
+                </div>
+                {Number(s.tax_rate) > 0 && (
+                  <p className="text-xs text-muted-foreground mt-0.5">{s.tax_inclusive ? 'Incl.' : 'Excl.'} {s.tax_rate}% VAT</p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {s.duration_minutes}min</span>
+                {s.service_location && (
+                  <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {locationLabels[s.service_location] || s.service_location}</span>
+                )}
+              </div>
+
+              {/* Availability */}
+              {s.available_days && (
+                <div className="flex flex-wrap gap-1">
+                  {s.available_days.map((d: string) => (
+                    <span key={d} className="text-[10px] bg-muted rounded px-1.5 py-0.5 capitalize">{d.slice(0, 3)}</span>
+                  ))}
+                </div>
+              )}
+
+              {/* Interactive Add-ons */}
+              {addons.length > 0 && (
+                <div className="space-y-2 border-t pt-3">
+                  <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">Add-ons</h4>
+                  {addons.map((a: any, i: number) => (
+                    <label key={i} className={cn(
+                      'flex items-center justify-between rounded-xl px-3 py-2.5 text-sm cursor-pointer transition-all border',
+                      selectedAddons.has(i) ? 'bg-primary/5 border-primary/30' : 'bg-muted/50 border-transparent hover:bg-muted'
+                    )}>
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" checked={selectedAddons.has(i)} onChange={() => toggleAddon(i)} className="rounded border-primary text-primary focus:ring-primary w-4 h-4" />
+                        <span>{a.name}</span>
+                      </div>
+                      <span className="font-semibold text-xs">+{curr}{Number(a.price).toFixed(2)}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {s.deposit_required && s.deposit_amount && (
+                <p className="text-xs text-muted-foreground">
+                  {s.deposit_type === 'percentage' ? `${s.deposit_amount}%` : `${curr}${Number(s.deposit_amount).toFixed(2)}`} deposit required
+                </p>
+              )}
+
+              <Button className="w-full rounded-xl h-12 font-bold text-base" size="lg">Book Now</Button>
+              
+              {/* Social proof */}
+              <div className="flex items-center gap-2 justify-center pt-1">
+                <div className="flex -space-x-2">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="w-6 h-6 rounded-full bg-muted border-2 border-card" />
+                  ))}
+                </div>
+                <p className="text-[10px] text-muted-foreground">120+ booked this month</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recommendations */}
+        {recs.length > 0 && (
+          <div className="px-6 pb-8">
+            <h3 className="font-bold text-base mb-4">You Might Also Like</h3>
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+              {recs.map((r: any) => (
+                <div key={r.id} className="flex-shrink-0 w-52 rounded-2xl border overflow-hidden bg-card hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer">
+                  <div className={cn('h-28 relative', !r.cover_image_url && `bg-gradient-to-br ${categoryGradients[r.category] || categoryGradients.other}`)}>
+                    {r.cover_image_url ? (
+                      <img src={r.cover_image_url} alt={r.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-white/40 font-bold text-2xl">{r.name.charAt(0)}</div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <div className="absolute bottom-2 right-2 bg-background/20 backdrop-blur-md rounded-full px-2 py-0.5 border border-white/20">
+                      <span className="text-xs font-bold text-white">{currencySymbol(r.currency || 'EUR')}{Number(r.base_price).toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-sm font-semibold truncate">{r.name}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1"><Clock className="w-3 h-3" />{r.duration_minutes}min</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
