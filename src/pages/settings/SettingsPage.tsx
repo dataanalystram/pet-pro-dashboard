@@ -135,7 +135,7 @@ export default function SettingsPage() {
                 <div><p className="text-sm font-medium">Auto-Accept Bookings</p><p className="text-xs text-muted-foreground">Automatically confirm new bookings</p></div>
                 <Switch checked={settings.auto_accept_bookings} onCheckedChange={(v) => update('auto_accept_bookings', v)} />
               </div>
-              <div className="grid sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5"><Label>Max Daily Bookings</Label><Input type="number" value={settings.max_daily_bookings} onChange={(e) => update('max_daily_bookings', parseInt(e.target.value))} /></div>
                 <div className="space-y-1.5"><Label>Lead Time (hours)</Label><Input type="number" value={settings.booking_lead_time_hours} onChange={(e) => update('booking_lead_time_hours', parseInt(e.target.value))} /></div>
                 <div className="space-y-1.5"><Label>Cancel Window (hours)</Label><Input type="number" value={settings.cancellation_window_hours} onChange={(e) => update('cancellation_window_hours', parseInt(e.target.value))} /></div>

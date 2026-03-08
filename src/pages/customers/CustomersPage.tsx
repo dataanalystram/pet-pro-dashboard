@@ -102,7 +102,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="bg-emerald-50/50 border-emerald-200/50">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">

@@ -151,10 +151,10 @@ export default function AppointmentsPage() {
       <AppointmentStatsRow todayBookings={todayBookings} />
 
       <Tabs defaultValue="today">
-        <TabsList className="bg-muted">
+        <TabsList className="bg-muted overflow-x-auto w-full justify-start">
           <TabsTrigger value="today"><Clock className="w-4 h-4 mr-1.5" /> Today</TabsTrigger>
           <TabsTrigger value="calendar"><CalIcon className="w-4 h-4 mr-1.5" /> Calendar</TabsTrigger>
-          <TabsTrigger value="week"><CalIcon className="w-4 h-4 mr-1.5" /> Week</TabsTrigger>
+          <TabsTrigger value="week" className="hidden sm:flex"><CalIcon className="w-4 h-4 mr-1.5" /> Week</TabsTrigger>
           <TabsTrigger value="list"><List className="w-4 h-4 mr-1.5" /> List</TabsTrigger>
         </TabsList>
 
@@ -272,7 +272,7 @@ export default function AppointmentsPage() {
               </div>
             </CardHeader>
             <CardContent className="p-2 md:p-4">
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-2 overflow-x-auto min-w-[700px]">
                 {weekDays.map((day) => {
                   const dateStr = format(day, 'yyyy-MM-dd');
                   const dayBookings = (bookingsByDate[dateStr] || []).sort((a: any, b: any) => a.start_time.localeCompare(b.start_time));

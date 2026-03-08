@@ -174,7 +174,7 @@ export default function StaffPage() {
 
       {/* Search + Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+        <div className="relative flex-1 min-w-0 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Search staff..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
@@ -320,7 +320,7 @@ export default function StaffPage() {
                         </div>
                       )}
 
-                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <Button variant="outline" size="sm" className="flex-1 h-8 text-xs" onClick={(e) => { e.stopPropagation(); openEdit(s); }}>
                           <Pencil className="w-3 h-3 mr-1" /> Edit
                         </Button>
@@ -364,11 +364,11 @@ export default function StaffPage() {
           <DialogHeader><DialogTitle>{editingStaff ? 'Edit Staff' : 'Add Staff Member'}</DialogTitle></DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5"><Label>Full Name *</Label><Input value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} /></div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5"><Label>Email *</Label><Input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label>Phone</Label><Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1.5"><Label>Role</Label>
                 <Select value={form.role} onValueChange={v => setForm(f => ({ ...f, role: v }))}><SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="owner">Owner</SelectItem><SelectItem value="manager">Manager</SelectItem><SelectItem value="staff">Staff</SelectItem><SelectItem value="part_time">Part Time</SelectItem><SelectItem value="contractor">Contractor</SelectItem></SelectContent>
@@ -379,7 +379,7 @@ export default function StaffPage() {
                 </Select></div>
               <div className="space-y-1.5"><Label>Title</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g. Senior Groomer" /></div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1.5"><Label>Hourly Rate ($)</Label><Input type="number" value={form.hourly_rate} onChange={e => setForm(f => ({ ...f, hourly_rate: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label>Max Daily Bookings</Label><Input type="number" value={form.max_daily_bookings} onChange={e => setForm(f => ({ ...f, max_daily_bookings: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label>Hire Date</Label><Input type="date" value={form.hire_date} onChange={e => setForm(f => ({ ...f, hire_date: e.target.value }))} /></div>

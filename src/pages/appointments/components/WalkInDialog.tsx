@@ -100,7 +100,7 @@ export default function WalkInDialog({ open, onOpenChange, services, staff, cust
               </button>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Email</Label>
               <Input value={form.customer_email} onChange={e => setForm(f => ({ ...f, customer_email: e.target.value }))} placeholder="email@example.com" />

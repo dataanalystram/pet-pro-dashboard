@@ -329,7 +329,7 @@ export default function MarketingPage() {
               <Switch checked={form.is_enabled} onCheckedChange={(v) => setForm(f => ({ ...f, is_enabled: v }))} />
             </div>
             <div className="space-y-1.5"><Label>Name *</Label><Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5"><Label>Type</Label>
                 <Select value={form.type} onValueChange={(v) => setForm(f => ({ ...f, type: v }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -355,15 +355,15 @@ export default function MarketingPage() {
               </div>
             </div>
             <div className="space-y-1.5"><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={2} /></div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5"><Label>Discount Value *</Label><Input type="number" value={form.discount_value} onChange={(e) => setForm(f => ({ ...f, discount_value: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label>Promo Code</Label><Input value={form.promo_code} onChange={(e) => setForm(f => ({ ...f, promo_code: e.target.value.toUpperCase() }))} /></div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5"><Label>Start Date</Label><Input type="date" value={form.start_date} onChange={(e) => setForm(f => ({ ...f, start_date: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label>End Date</Label><Input type="date" value={form.end_date} onChange={(e) => setForm(f => ({ ...f, end_date: e.target.value }))} /></div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1.5"><Label>Min Order ($)</Label><Input type="number" value={form.min_order_value} onChange={(e) => setForm(f => ({ ...f, min_order_value: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label>Max Per Customer</Label><Input type="number" placeholder="∞" value={form.max_uses_per_customer} onChange={(e) => setForm(f => ({ ...f, max_uses_per_customer: e.target.value }))} /></div>
               <div className="space-y-1.5"><Label>Max Redemptions</Label><Input type="number" placeholder="∞" value={form.max_redemptions} onChange={(e) => setForm(f => ({ ...f, max_redemptions: e.target.value }))} /></div>
