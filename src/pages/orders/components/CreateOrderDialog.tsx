@@ -75,10 +75,12 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
 
   const removeItem = (id: string) => setItems(prev => prev.filter(i => i.inventory_id !== id));
 
-  const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0);
-  const promoDiscount = appliedPromo?.discount_amount || 0;
-  const tax = (subtotal - promoDiscount) * 0.1;
-  const total = subtotal - promoDiscount + tax;
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const subtotal = round2(items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0));
+  const promoDiscount = round2(appliedPromo?.discount_amount || 0);
+  const taxableAmount = Math.max(0, subtotal - promoDiscount);
+  const tax = round2(taxableAmount * 0.1);
+  const total = round2(taxableAmount + tax);
 
   const validatePromo = () => {
     setPromoError('');
@@ -101,7 +103,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
 
     let discountAmt = 0;
     if (campaign.discount_type === 'percentage') {
-      discountAmt = subtotal * (Number(campaign.discount_value) / 100);
+      discountAmt = Math.min(subtotal, round2(subtotal * (Number(campaign.discount_value) / 100)));
     } else {
       discountAmt = Math.min(Number(campaign.discount_value), subtotal);
     }
@@ -111,7 +113,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
       promo_code: campaign.promo_code,
       discount_type: campaign.discount_type,
       discount_value: Number(campaign.discount_value),
-      discount_amount: Math.round(discountAmt * 100) / 100,
+      discount_amount: round2(discountAmt),
     });
     toast.success('Promo code applied!');
   };
@@ -129,10 +131,10 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
       customer_email: customerEmail || null,
       customer_phone: customerPhone || null,
       items,
-      subtotal,
-      tax,
-      discount: promoDiscount,
-      total,
+      subtotal: round2(subtotal),
+      tax: round2(tax),
+      discount: round2(promoDiscount),
+      total: round2(total),
       notes: notes || null,
       payment_method: paymentMethod,
       payment_status: 'unpaid',

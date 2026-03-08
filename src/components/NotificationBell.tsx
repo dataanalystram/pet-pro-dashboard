@@ -1,4 +1,4 @@
-import { Bell, CheckCheck, AlertTriangle, Star, PackageX } from "lucide-react";
+import { Bell, CheckCheck, AlertTriangle, Star, PackageX, Target } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,6 +16,8 @@ export function NotificationBell() {
     if (referenceId) {
       if (type === 'low_stock') {
         navigate('/inventory');
+      } else if (type === 'campaign_threshold') {
+        navigate('/marketing');
       } else {
         navigate('/reviews');
       }
@@ -70,6 +72,8 @@ export function NotificationBell() {
                       <AlertTriangle className="w-4 h-4 text-destructive" />
                     ) : n.type === 'low_stock' ? (
                       <PackageX className="w-4 h-4 text-amber-500" />
+                    ) : n.type === 'campaign_threshold' ? (
+                      <Target className="w-4 h-4 text-primary" />
                     ) : (
                       <Star className="w-4 h-4 text-muted-foreground" />
                     )}
