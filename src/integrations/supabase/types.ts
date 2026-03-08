@@ -274,55 +274,109 @@ export type Database = {
       }
       services: {
         Row: {
+          aftercare_notes: string | null
+          age_restrictions: string | null
           base_price: number
+          breed_restrictions: string[]
           buffer_minutes: number
+          cancellation_policy: string | null
           category: string
+          cover_image_url: string | null
           created_at: string
+          currency: string
           description: string | null
+          display_order: number
           duration_minutes: number
+          featured: boolean
+          gallery_urls: string[]
+          highlights: string[]
           id: string
           is_active: boolean
+          long_description: string | null
           max_bookings_per_day: number
           name: string
           pet_types_accepted: string[]
+          preparation_notes: string | null
+          price_from: number | null
           price_type: string
+          short_description: string | null
+          tags: string[]
+          tax_inclusive: boolean
+          tax_rate: number
           total_bookings: number
           updated_at: string
           vaccination_required: boolean
+          weight_limit_kg: number | null
         }
         Insert: {
+          aftercare_notes?: string | null
+          age_restrictions?: string | null
           base_price: number
+          breed_restrictions?: string[]
           buffer_minutes?: number
+          cancellation_policy?: string | null
           category: string
+          cover_image_url?: string | null
           created_at?: string
+          currency?: string
           description?: string | null
+          display_order?: number
           duration_minutes: number
+          featured?: boolean
+          gallery_urls?: string[]
+          highlights?: string[]
           id?: string
           is_active?: boolean
+          long_description?: string | null
           max_bookings_per_day?: number
           name: string
           pet_types_accepted?: string[]
+          preparation_notes?: string | null
+          price_from?: number | null
           price_type?: string
+          short_description?: string | null
+          tags?: string[]
+          tax_inclusive?: boolean
+          tax_rate?: number
           total_bookings?: number
           updated_at?: string
           vaccination_required?: boolean
+          weight_limit_kg?: number | null
         }
         Update: {
+          aftercare_notes?: string | null
+          age_restrictions?: string | null
           base_price?: number
+          breed_restrictions?: string[]
           buffer_minutes?: number
+          cancellation_policy?: string | null
           category?: string
+          cover_image_url?: string | null
           created_at?: string
+          currency?: string
           description?: string | null
+          display_order?: number
           duration_minutes?: number
+          featured?: boolean
+          gallery_urls?: string[]
+          highlights?: string[]
           id?: string
           is_active?: boolean
+          long_description?: string | null
           max_bookings_per_day?: number
           name?: string
           pet_types_accepted?: string[]
+          preparation_notes?: string | null
+          price_from?: number | null
           price_type?: string
+          short_description?: string | null
+          tags?: string[]
+          tax_inclusive?: boolean
+          tax_rate?: number
           total_bookings?: number
           updated_at?: string
           vaccination_required?: boolean
+          weight_limit_kg?: number | null
         }
         Relationships: []
       }
