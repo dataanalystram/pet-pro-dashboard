@@ -82,6 +82,13 @@ export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }:
   const [searchQuery, setSearchQuery] = useState('');
   const [editCell, setEditCell] = useState<CellEditState | null>(null);
   const [openPopover, setOpenPopover] = useState<string | null>(null);
+
+  // Drag-to-assign state
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStaffId, setDragStaffId] = useState<string | null>(null);
+  const [dragStartIdx, setDragStartIdx] = useState<number>(-1);
+  const [dragEndIdx, setDragEndIdx] = useState<number>(-1);
+  const [dragMode, setDragMode] = useState<'off' | 'on'>('off'); // toggle direction
   
   const updateStaff = useUpdate('staff');
 
@@ -160,8 +167,62 @@ export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }:
     return { isOff, onLeave, dayBookings, load };
   };
 
+  // Drag handlers for weekly view
+  const handleDragStart = (staffId: string, dayIdx: number, isCurrentlyOff: boolean) => {
+    setIsDragging(true);
+    setDragStaffId(staffId);
+    setDragStartIdx(dayIdx);
+    setDragEndIdx(dayIdx);
+    setDragMode(isCurrentlyOff ? 'on' : 'off'); // if currently off, drag will turn on, vice versa
+  };
+
+  const handleDragEnter = (dayIdx: number) => {
+    if (isDragging) setDragEndIdx(dayIdx);
+  };
+
+  const handleDragEnd = () => {
+    if (!isDragging || !dragStaffId) { resetDrag(); return; }
+    const s = staff.find((st: any) => st.id === dragStaffId);
+    if (!s) { resetDrag(); return; }
+
+    const minIdx = Math.min(dragStartIdx, dragEndIdx);
+    const maxIdx = Math.max(dragStartIdx, dragEndIdx);
+    const wh = { ...(s.working_hours || {}) };
+
+    for (let i = minIdx; i <= maxIdx; i++) {
+      const dk = dayKeys[i];
+      if (dragMode === 'off') {
+        wh[dk] = { off: true, start: '', end: '' };
+      } else {
+        wh[dk] = { off: false, start: wh[dk]?.start || '09:00', end: wh[dk]?.end || '17:00' };
+      }
+    }
+
+    updateStaff.mutate({ id: s.id, working_hours: wh }, {
+      onSuccess: () => {
+        const count = maxIdx - minIdx + 1;
+        toast.success(`${dragMode === 'off' ? 'Set off' : 'Set working'}: ${count} day${count > 1 ? 's' : ''} for ${s.full_name}`);
+      },
+    });
+    resetDrag();
+  };
+
+  const resetDrag = () => {
+    setIsDragging(false);
+    setDragStaffId(null);
+    setDragStartIdx(-1);
+    setDragEndIdx(-1);
+  };
+
+  const isDayInDragRange = (staffId: string, dayIdx: number) => {
+    if (!isDragging || dragStaffId !== staffId) return false;
+    const minIdx = Math.min(dragStartIdx, dragEndIdx);
+    const maxIdx = Math.max(dragStartIdx, dragEndIdx);
+    return dayIdx >= minIdx && dayIdx <= maxIdx;
+  };
+
   const renderWeeklyView = () => (
-    <div className="min-w-[600px]">
+    <div className="min-w-[600px]" onMouseUp={handleDragEnd} onMouseLeave={handleDragEnd}>
       {/* Week Navigation */}
       <div className="flex items-center justify-between mb-3">
         <Button variant="outline" size="sm" onClick={() => setWeekOffset(o => o - 1)}>
@@ -215,14 +276,26 @@ export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }:
                 >
                   <PopoverTrigger asChild>
                     <button
-                      onClick={() => openEditor(s, day)}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleDragStart(s.id, i, isOff);
+                      }}
+                      onMouseEnter={() => handleDragEnter(i)}
+                      onClick={() => {
+                        if (!isDragging) openEditor(s, day);
+                      }}
                       className={cn(
-                        "rounded-lg p-2 text-center text-xs transition-colors relative cursor-pointer hover:ring-2 hover:ring-primary/30",
-                        onLeave ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' :
-                        isOff ? 'bg-muted/50 text-muted-foreground' :
-                        load >= 0.8 ? 'bg-destructive/15 text-destructive' :
-                        load >= 0.5 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        "rounded-lg p-2 text-center text-xs transition-colors relative cursor-pointer select-none",
+                        isDayInDragRange(s.id, i) 
+                          ? 'ring-2 ring-primary bg-primary/20'
+                          : 'hover:ring-2 hover:ring-primary/30',
+                        !isDayInDragRange(s.id, i) && (
+                          onLeave ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' :
+                          isOff ? 'bg-muted/50 text-muted-foreground' :
+                          load >= 0.8 ? 'bg-destructive/15 text-destructive' :
+                          load >= 0.5 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                          'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        )
                       )}
                     >
                       {onLeave ? '🏖️' : isOff ? 'Off' : `${dayBookings}/${s.max_daily_bookings}`}
@@ -494,7 +567,7 @@ export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }:
             <span className="text-[10px] text-muted-foreground">{l.label}</span>
           </div>
         ))}
-        <span className="text-[10px] text-muted-foreground ml-auto">Click any cell to edit</span>
+        <span className="text-[10px] text-muted-foreground ml-auto">Click to edit · Drag across days to bulk toggle</span>
       </div>
     </div>
   );
