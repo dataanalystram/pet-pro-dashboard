@@ -2,10 +2,14 @@ import {
   LayoutDashboard,
   CalendarDays,
   Users,
-  PawPrint,
-  DollarSign,
+  Inbox,
+  Scissors,
+  Megaphone,
+  Boxes,
+  BarChart3,
+  MessageSquare,
+  UserCog,
   Settings,
-  Bell,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -27,13 +31,17 @@ import {
 const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Appointments", url: "/appointments", icon: CalendarDays },
-  { title: "Clients", url: "/clients", icon: Users },
-  { title: "Pets", url: "/pets", icon: PawPrint },
-  { title: "Revenue", url: "/revenue", icon: DollarSign },
+  { title: "Customers", url: "/customers", icon: Users },
+  { title: "Requests", url: "/requests", icon: Inbox },
+  { title: "Services", url: "/services", icon: Scissors },
+  { title: "Marketing", url: "/marketing", icon: Megaphone },
+  { title: "Inventory", url: "/inventory", icon: Boxes },
+  { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Messages", url: "/messages", icon: MessageSquare },
+  { title: "Staff", url: "/staff", icon: UserCog },
 ];
 
 const secondaryItems = [
-  { title: "Notifications", url: "/notifications", icon: Bell },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
@@ -50,7 +58,7 @@ export function AppSidebar() {
           <img src={heroPet} alt="PetDash" className="w-10 h-10 rounded-full object-cover" />
           {!collapsed && (
             <span className="font-heading text-lg font-bold text-foreground">
-              PetDash
+              PetDash Pro
             </span>
           )}
         </div>
@@ -95,7 +103,7 @@ export function AppSidebar() {
       <SidebarFooter>
         {!collapsed && (
           <div className="p-4 text-xs text-muted-foreground">
-            © 2026 PetDash
+            © 2026 PetDash Pro
           </div>
         )}
       </SidebarFooter>

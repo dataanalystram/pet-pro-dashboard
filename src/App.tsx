@@ -3,7 +3,18 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { DashboardLayout } from "@/components/DashboardLayout";
+import DashboardPage from "@/pages/dashboard/DashboardPage";
+import AppointmentsPage from "@/pages/appointments/AppointmentsPage";
+import CustomersPage from "@/pages/customers/CustomersPage";
+import BookingRequestsPage from "@/pages/requests/BookingRequestsPage";
+import ServicesPage from "@/pages/services/ServicesPage";
+import MarketingPage from "@/pages/marketing/MarketingPage";
+import InventoryPage from "@/pages/inventory/InventoryPage";
+import AnalyticsPage from "@/pages/analytics/AnalyticsPage";
+import MessagesPage from "@/pages/messages/MessagesPage";
+import StaffPage from "@/pages/staff/StaffPage";
+import SettingsPage from "@/pages/settings/SettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,8 +26,17 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/" element={<DashboardLayout><DashboardPage /></DashboardLayout>} />
+          <Route path="/appointments" element={<DashboardLayout><AppointmentsPage /></DashboardLayout>} />
+          <Route path="/customers" element={<DashboardLayout><CustomersPage /></DashboardLayout>} />
+          <Route path="/requests" element={<DashboardLayout><BookingRequestsPage /></DashboardLayout>} />
+          <Route path="/services" element={<DashboardLayout><ServicesPage /></DashboardLayout>} />
+          <Route path="/marketing" element={<DashboardLayout><MarketingPage /></DashboardLayout>} />
+          <Route path="/inventory" element={<DashboardLayout><InventoryPage /></DashboardLayout>} />
+          <Route path="/analytics" element={<DashboardLayout><AnalyticsPage /></DashboardLayout>} />
+          <Route path="/messages" element={<DashboardLayout><MessagesPage /></DashboardLayout>} />
+          <Route path="/staff" element={<DashboardLayout><StaffPage /></DashboardLayout>} />
+          <Route path="/settings" element={<DashboardLayout><SettingsPage /></DashboardLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
