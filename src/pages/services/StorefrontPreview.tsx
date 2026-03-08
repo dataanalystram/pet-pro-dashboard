@@ -387,10 +387,10 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-start justify-center overflow-y-auto">
-      <div className="w-full max-w-4xl bg-background rounded-t-2xl sm:rounded-2xl sm:my-8 shadow-2xl border overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end sm:items-start justify-center sm:overflow-y-auto">
+      <div className="w-full sm:max-w-4xl bg-background rounded-t-2xl sm:rounded-2xl sm:my-8 shadow-2xl border overflow-hidden max-h-[95vh] sm:max-h-none overflow-y-auto pb-20 sm:pb-0">
         {/* Hero */}
-        <div className="relative h-56 sm:h-72">
+        <div className="relative h-44 sm:h-72">
           {s.cover_image_url ? (
             <img src={s.cover_image_url} alt={s.name} className="w-full h-full object-cover" />
           ) : (
@@ -550,8 +550,8 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
             )}
           </div>
 
-          {/* Right: Sticky Booking Card */}
-          <div className="sm:w-80 flex-shrink-0">
+          {/* Right: Sticky Booking Card (desktop only) */}
+          <div className="hidden sm:block sm:w-80 flex-shrink-0">
             <div className="sm:sticky sm:top-4 bg-card border rounded-2xl p-5 space-y-4 shadow-lg">
               <div>
                 <div className="flex items-baseline gap-1">
@@ -570,7 +570,6 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
                 )}
               </div>
 
-              {/* Availability */}
               {s.available_days && (
                 <div className="flex flex-wrap gap-1">
                   {s.available_days.map((d: string) => (
@@ -579,7 +578,6 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
                 </div>
               )}
 
-              {/* Interactive Add-ons */}
               {addons.length > 0 && (
                 <div className="space-y-2 border-t pt-3">
                   <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">Add-ons</h4>
@@ -606,7 +604,6 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
 
               <Button className="w-full rounded-xl h-12 font-bold text-base" size="lg">Book Now</Button>
               
-              {/* Social proof */}
               <div className="flex items-center gap-2 justify-center pt-1">
                 <div className="flex -space-x-2">
                   {[1,2,3].map(i => (
@@ -652,6 +649,14 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
             </div>
           </div>
         )}
+        {/* Fixed Bottom Booking Bar (mobile only) */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-2xl p-4 flex items-center justify-between sm:hidden">
+          <div>
+            <span className="text-xl font-extrabold">{curr}{total.toFixed(2)}</span>
+            <p className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" />{s.duration_minutes}min</p>
+          </div>
+          <Button className="rounded-xl h-11 px-8 font-bold" size="lg">Book Now</Button>
+        </div>
       </div>
     </div>
   );
