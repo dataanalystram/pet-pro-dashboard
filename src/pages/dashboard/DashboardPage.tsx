@@ -76,12 +76,12 @@ function Sparkline({ data, color = 'hsl(var(--primary))' }: { data: number[]; co
 }
 
 // ─── KPI Card ───────────────────────────────────────────
-function KpiCard({ label, value, change, changeType, sparkData, icon: Icon, iconBg }: {
+function KpiCard({ label, value, change, changeType, sparkData, icon: Icon, iconBg, onClick }: {
   label: string; value: string; change: string; changeType: 'up' | 'down' | 'neutral';
-  sparkData: number[]; icon: any; iconBg: string;
+  sparkData: number[]; icon: any; iconBg: string; onClick?: () => void;
 }) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={cn('hover:shadow-md transition-shadow', onClick && 'cursor-pointer group/kpi')} onClick={onClick}>
       <CardContent className="p-4 sm:p-5">
         <div className="flex items-start justify-between gap-2">
           <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', iconBg)}>
@@ -91,7 +91,10 @@ function KpiCard({ label, value, change, changeType, sparkData, icon: Icon, icon
         </div>
         <p className="text-2xl font-bold tracking-tight mt-3">{value}</p>
         <div className="flex items-center justify-between mt-1">
-          <p className="text-xs text-muted-foreground">{label}</p>
+          <div className="flex items-center gap-1">
+            <p className="text-xs text-muted-foreground">{label}</p>
+            {onClick && <ArrowRight className="w-3 h-3 text-muted-foreground/0 group-hover/kpi:text-muted-foreground transition-colors" />}
+          </div>
           <span className={cn('flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-md', {
             'text-emerald-600 bg-emerald-50': changeType === 'up',
             'text-red-600 bg-red-50': changeType === 'down',
@@ -323,6 +326,7 @@ export default function DashboardPage() {
           change={`${metrics.revChange >= 0 ? '+' : ''}${metrics.revChange.toFixed(0)}%`}
           changeType={metrics.revChange >= 0 ? 'up' : 'down'}
           sparkData={metrics.revSpark}
+          onClick={() => navigate('/analytics')}
         />
         <KpiCard
           icon={Calendar} iconBg="bg-blue-100 text-blue-600"
@@ -330,6 +334,7 @@ export default function DashboardPage() {
           change={`${metrics.bookChange >= 0 ? '+' : ''}${metrics.bookChange.toFixed(0)}%`}
           changeType={metrics.bookChange >= 0 ? 'up' : 'down'}
           sparkData={metrics.bookSpark}
+          onClick={() => navigate('/appointments')}
         />
         <KpiCard
           icon={Users} iconBg="bg-violet-100 text-violet-600"
@@ -337,6 +342,7 @@ export default function DashboardPage() {
           change={`${metrics.custChange >= 0 ? '+' : ''}${metrics.custChange.toFixed(0)}%`}
           changeType={metrics.custChange >= 0 ? 'up' : 'down'}
           sparkData={metrics.custSpark}
+          onClick={() => navigate('/customers')}
         />
         <KpiCard
           icon={ShoppingCart} iconBg="bg-orange-100 text-orange-600"
@@ -344,6 +350,7 @@ export default function DashboardPage() {
           change={`${metrics.ordChange >= 0 ? '+' : ''}${metrics.ordChange.toFixed(0)}%`}
           changeType={metrics.ordChange >= 0 ? 'up' : 'down'}
           sparkData={metrics.ordSpark}
+          onClick={() => navigate('/orders')}
         />
         <KpiCard
           icon={Star} iconBg="bg-amber-100 text-amber-600"
@@ -351,15 +358,16 @@ export default function DashboardPage() {
           change={`${reviews.length} reviews`}
           changeType="neutral"
           sparkData={metrics.ratSpark}
+          onClick={() => navigate('/reviews')}
         />
       </div>
 
       {/* ─── Revenue Trend + Customer Health ─────────────── */}
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
-          <SectionHeader title="Revenue Trend" count={undefined} action={undefined} />
+          <SectionHeader title="Revenue Trend" action="Analytics" onAction={() => navigate('/analytics')} />
           <CardContent className="p-4 pt-2">
-            <div className="h-[240px]">
+            <div className="h-[240px] cursor-pointer" onClick={() => navigate('/analytics')}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={metrics.revenueTrend} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
                   <defs>
@@ -403,7 +411,7 @@ export default function DashboardPage() {
             <div className="h-[160px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={metrics.healthData} dataKey="value" innerRadius={45} outerRadius={70} paddingAngle={3} strokeWidth={0}>
+                  <Pie data={metrics.healthData} dataKey="value" innerRadius={45} outerRadius={70} paddingAngle={3} strokeWidth={0} className="cursor-pointer" onClick={() => navigate('/customers')}>
                     {metrics.healthData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                   </Pie>
                   <Tooltip content={({ active, payload }) => {
@@ -449,7 +457,7 @@ export default function DashboardPage() {
               {metrics.todayBookings.map(b => {
                 const timeStr = b.start_time ? new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
                 return (
-                  <div key={b.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors">
+                  <div key={b.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors cursor-pointer" onClick={() => navigate('/appointments')}>
                     <span className="text-xs font-mono text-muted-foreground w-12 flex-shrink-0">{timeStr}</span>
                     <div className={cn('w-0.5 self-stretch rounded-full flex-shrink-0', statusBar[b.status] || 'bg-muted')} />
                     <div className="flex-1 min-w-0">
@@ -523,7 +531,7 @@ export default function DashboardPage() {
                         </div>
                       );
                     }} />
-                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={20} />
+                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={20} className="cursor-pointer" onClick={() => navigate('/services')} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -569,7 +577,7 @@ export default function DashboardPage() {
                 </thead>
                 <tbody className="divide-y">
                   {metrics.topCustomers.map(c => (
-                    <tr key={c.id} className="hover:bg-muted/40 transition-colors">
+                    <tr key={c.id} className="hover:bg-muted/40 transition-colors cursor-pointer" onClick={() => navigate('/customers')}>
                       <td className="py-2.5 px-4">
                         <div className="flex items-center gap-2.5">
                           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">
@@ -612,7 +620,7 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-2.5">
               {metrics.activeCampaigns.slice(0, 3).map(c => (
-                <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/marketing')}>
                   <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Zap className="w-4 h-4 text-primary" />
                   </div>
