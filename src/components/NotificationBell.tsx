@@ -16,6 +16,8 @@ export function NotificationBell() {
     if (referenceId) {
       if (type === 'low_stock') {
         navigate('/inventory');
+      } else if (type === 'campaign_threshold') {
+        navigate('/marketing');
       } else {
         navigate('/reviews');
       }
