@@ -237,14 +237,14 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
           </SheetTitle>
         </SheetHeader>
 
-        <Tabs defaultValue="basic" className="px-6">
-          <TabsList className="grid grid-cols-6 w-full h-9 text-xs">
-            <TabsTrigger value="basic" className="text-xs px-1">Basic</TabsTrigger>
-            <TabsTrigger value="pricing" className="text-xs px-1">Pricing</TabsTrigger>
-            <TabsTrigger value="schedule" className="text-xs px-1">Schedule</TabsTrigger>
-            <TabsTrigger value="pets" className="text-xs px-1">Pets</TabsTrigger>
-            <TabsTrigger value="media" className="text-xs px-1">Media</TabsTrigger>
-            <TabsTrigger value="details" className="text-xs px-1">Details</TabsTrigger>
+        <Tabs defaultValue="basic" className="px-4 sm:px-6">
+          <TabsList className="grid grid-cols-3 sm:grid-cols-6 w-full h-auto gap-1 p-1">
+            <TabsTrigger value="basic" className="text-xs px-2 py-1.5">Basic</TabsTrigger>
+            <TabsTrigger value="pricing" className="text-xs px-2 py-1.5">Pricing</TabsTrigger>
+            <TabsTrigger value="schedule" className="text-xs px-2 py-1.5">Schedule</TabsTrigger>
+            <TabsTrigger value="pets" className="text-xs px-2 py-1.5">Pets</TabsTrigger>
+            <TabsTrigger value="media" className="text-xs px-2 py-1.5">Media</TabsTrigger>
+            <TabsTrigger value="details" className="text-xs px-2 py-1.5">Details</TabsTrigger>
           </TabsList>
 
           {/* BASIC INFO */}
