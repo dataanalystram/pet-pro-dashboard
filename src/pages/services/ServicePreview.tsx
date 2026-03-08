@@ -2,8 +2,10 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Shield, Weight, AlertCircle, CheckCircle2, Smartphone, Monitor, Tablet, MapPin, Calendar, HelpCircle, Plus, Percent, Star, ChevronDown, X, Heart } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { useReviews } from '@/hooks/use-supabase-data';
+import { format } from 'date-fns';
 
 const currencySymbol = (c: string) => c === 'EUR' ? '€' : c === 'GBP' ? '£' : c === 'USD' ? '$' : c + ' ';
 
