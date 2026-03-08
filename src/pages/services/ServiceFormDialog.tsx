@@ -674,7 +674,33 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
               <Textarea value={form.terms_conditions} onChange={e => set('terms_conditions', e.target.value)} rows={3} placeholder="Terms customers must accept before booking..." />
             </div>
 
-            {/* FAQ */}
+            {/* Recommendations */}
+            {allServices.length > 0 && (
+              <div className="border-t pt-4 space-y-3">
+                <Label className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> Recommended Services</Label>
+                <p className="text-xs text-muted-foreground">Suggest related services customers might also like ("You Might Also Like")</p>
+                <div className="space-y-2">
+                  {allServices
+                    .filter((srv: any) => srv.id !== editing?.id)
+                    .map((srv: any) => (
+                      <label key={srv.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                        <Checkbox
+                          checked={form.recommended_services.includes(srv.id)}
+                          onCheckedChange={(checked) => {
+                            set('recommended_services', checked
+                              ? [...form.recommended_services, srv.id]
+                              : form.recommended_services.filter((id: string) => id !== srv.id)
+                            );
+                          }}
+                        />
+                        <span>{srv.name}</span>
+                        <Badge variant="secondary" className="text-[10px] capitalize">{srv.custom_category || srv.category}</Badge>
+                      </label>
+                    ))}
+                </div>
+              </div>
+            )}
+
             <div className="border-t pt-4 space-y-3">
               <Label className="flex items-center gap-1.5"><HelpCircle className="w-3.5 h-3.5" /> FAQ</Label>
               <p className="text-xs text-muted-foreground">Common questions customers ask about this service</p>

@@ -86,7 +86,7 @@ export default function ServicePreview({ open, onOpenChange, service: s, allServ
             {/* Content */}
             <div className="p-5 space-y-4">
               <div>
-                <Badge className="text-xs mb-2 capitalize">{s.category}</Badge>
+                <Badge className="text-xs mb-2 capitalize">{s.custom_category || s.category}</Badge>
                 <h2 className="text-xl font-bold">{s.name}</h2>
                 {s.short_description && <p className="text-sm text-muted-foreground mt-1">{s.short_description}</p>}
               </div>
