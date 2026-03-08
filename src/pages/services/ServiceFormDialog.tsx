@@ -77,7 +77,7 @@ export interface ServiceFormData {
 }
 
 const emptyForm: ServiceFormData = {
-  name: '', category: 'grooming', short_description: '', description: '', long_description: '',
+  name: '', category: 'grooming', custom_category: '', short_description: '', description: '', long_description: '',
   base_price: '', price_from: '', price_type: 'fixed', currency: 'EUR', tax_rate: '21',
   tax_inclusive: true, duration_minutes: '', buffer_minutes: '15', max_bookings_per_day: '10',
   pet_types_accepted: ['dog', 'cat'], vaccination_required: false, age_restrictions: '',
