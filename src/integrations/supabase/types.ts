@@ -160,15 +160,74 @@ export type Database = {
           },
         ]
       }
+      campaign_redemptions: {
+        Row: {
+          booking_id: string | null
+          campaign_id: string
+          customer_email: string | null
+          customer_name: string
+          discount_applied: number
+          id: string
+          order_id: string | null
+          redeemed_at: string
+        }
+        Insert: {
+          booking_id?: string | null
+          campaign_id: string
+          customer_email?: string | null
+          customer_name: string
+          discount_applied?: number
+          id?: string
+          order_id?: string | null
+          redeemed_at?: string
+        }
+        Update: {
+          booking_id?: string | null
+          campaign_id?: string
+          customer_email?: string | null
+          customer_name?: string
+          discount_applied?: number
+          id?: string
+          order_id?: string | null
+          redeemed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_redemptions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_redemptions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
+          applicable_service_ids: string[]
           created_at: string
           description: string | null
           discount_type: string
           discount_value: number
           end_date: string | null
           id: string
+          is_enabled: boolean
           max_redemptions: number | null
+          max_uses_per_customer: number | null
+          min_order_value: number
           name: string
           promo_code: string | null
           redemptions: number
@@ -180,13 +239,17 @@ export type Database = {
           views: number
         }
         Insert: {
+          applicable_service_ids?: string[]
           created_at?: string
           description?: string | null
           discount_type: string
           discount_value: number
           end_date?: string | null
           id?: string
+          is_enabled?: boolean
           max_redemptions?: number | null
+          max_uses_per_customer?: number | null
+          min_order_value?: number
           name: string
           promo_code?: string | null
           redemptions?: number
@@ -198,13 +261,17 @@ export type Database = {
           views?: number
         }
         Update: {
+          applicable_service_ids?: string[]
           created_at?: string
           description?: string | null
           discount_type?: string
           discount_value?: number
           end_date?: string | null
           id?: string
+          is_enabled?: boolean
           max_redemptions?: number | null
+          max_uses_per_customer?: number | null
+          min_order_value?: number
           name?: string
           promo_code?: string | null
           redemptions?: number
