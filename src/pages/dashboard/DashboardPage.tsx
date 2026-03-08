@@ -457,7 +457,7 @@ export default function DashboardPage() {
               {metrics.todayBookings.map(b => {
                 const timeStr = b.start_time ? new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
                 return (
-                  <div key={b.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors">
+                  <div key={b.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors cursor-pointer" onClick={() => navigate('/appointments')}>
                     <span className="text-xs font-mono text-muted-foreground w-12 flex-shrink-0">{timeStr}</span>
                     <div className={cn('w-0.5 self-stretch rounded-full flex-shrink-0', statusBar[b.status] || 'bg-muted')} />
                     <div className="flex-1 min-w-0">
