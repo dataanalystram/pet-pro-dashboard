@@ -103,7 +103,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
 
     let discountAmt = 0;
     if (campaign.discount_type === 'percentage') {
-      discountAmt = subtotal * (Number(campaign.discount_value) / 100);
+      discountAmt = Math.min(subtotal, round2(subtotal * (Number(campaign.discount_value) / 100)));
     } else {
       discountAmt = Math.min(Number(campaign.discount_value), subtotal);
     }
@@ -113,7 +113,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
       promo_code: campaign.promo_code,
       discount_type: campaign.discount_type,
       discount_value: Number(campaign.discount_value),
-      discount_amount: Math.round(discountAmt * 100) / 100,
+      discount_amount: round2(discountAmt),
     });
     toast.success('Promo code applied!');
   };
