@@ -85,6 +85,27 @@ export default function ServicesPage() {
       tags: form.tags,
       is_active: form.is_active,
       featured: form.featured,
+      custom_pet_types: form.custom_pet_types,
+      service_addons: form.service_addons,
+      deposit_required: form.deposit_required,
+      deposit_amount: form.deposit_amount ? parseFloat(form.deposit_amount) : null,
+      deposit_type: form.deposit_type,
+      available_days: form.available_days,
+      available_time_start: form.available_time_start,
+      available_time_end: form.available_time_end,
+      min_advance_hours: parseInt(form.min_advance_hours) || 24,
+      service_location: form.service_location,
+      service_area_km: form.service_area_km ? parseFloat(form.service_area_km) : null,
+      pet_size_pricing: form.pet_size_pricing ? {
+        small: form.pet_size_pricing.small ? parseFloat(form.pet_size_pricing.small) : null,
+        medium: form.pet_size_pricing.medium ? parseFloat(form.pet_size_pricing.medium) : null,
+        large: form.pet_size_pricing.large ? parseFloat(form.pet_size_pricing.large) : null,
+        xl: form.pet_size_pricing.xl ? parseFloat(form.pet_size_pricing.xl) : null,
+      } : null,
+      terms_conditions: form.terms_conditions || null,
+      faq: form.faq,
+      group_discount_percent: parseFloat(form.group_discount_percent) || 0,
+      difficulty_level: form.difficulty_level,
     };
 
     if (editing) {

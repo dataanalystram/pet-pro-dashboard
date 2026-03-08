@@ -276,6 +276,9 @@ export type Database = {
         Row: {
           aftercare_notes: string | null
           age_restrictions: string | null
+          available_days: string[]
+          available_time_end: string
+          available_time_start: string
           base_price: number
           breed_restrictions: string[]
           buffer_minutes: number
@@ -284,25 +287,38 @@ export type Database = {
           cover_image_url: string | null
           created_at: string
           currency: string
+          custom_pet_types: string[]
+          deposit_amount: number | null
+          deposit_required: boolean
+          deposit_type: string
           description: string | null
+          difficulty_level: string
           display_order: number
           duration_minutes: number
+          faq: Json
           featured: boolean
           gallery_urls: string[]
+          group_discount_percent: number
           highlights: string[]
           id: string
           is_active: boolean
           long_description: string | null
           max_bookings_per_day: number
+          min_advance_hours: number
           name: string
+          pet_size_pricing: Json | null
           pet_types_accepted: string[]
           preparation_notes: string | null
           price_from: number | null
           price_type: string
+          service_addons: Json
+          service_area_km: number | null
+          service_location: string
           short_description: string | null
           tags: string[]
           tax_inclusive: boolean
           tax_rate: number
+          terms_conditions: string | null
           total_bookings: number
           updated_at: string
           vaccination_required: boolean
@@ -311,6 +327,9 @@ export type Database = {
         Insert: {
           aftercare_notes?: string | null
           age_restrictions?: string | null
+          available_days?: string[]
+          available_time_end?: string
+          available_time_start?: string
           base_price: number
           breed_restrictions?: string[]
           buffer_minutes?: number
@@ -319,25 +338,38 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           currency?: string
+          custom_pet_types?: string[]
+          deposit_amount?: number | null
+          deposit_required?: boolean
+          deposit_type?: string
           description?: string | null
+          difficulty_level?: string
           display_order?: number
           duration_minutes: number
+          faq?: Json
           featured?: boolean
           gallery_urls?: string[]
+          group_discount_percent?: number
           highlights?: string[]
           id?: string
           is_active?: boolean
           long_description?: string | null
           max_bookings_per_day?: number
+          min_advance_hours?: number
           name: string
+          pet_size_pricing?: Json | null
           pet_types_accepted?: string[]
           preparation_notes?: string | null
           price_from?: number | null
           price_type?: string
+          service_addons?: Json
+          service_area_km?: number | null
+          service_location?: string
           short_description?: string | null
           tags?: string[]
           tax_inclusive?: boolean
           tax_rate?: number
+          terms_conditions?: string | null
           total_bookings?: number
           updated_at?: string
           vaccination_required?: boolean
@@ -346,6 +378,9 @@ export type Database = {
         Update: {
           aftercare_notes?: string | null
           age_restrictions?: string | null
+          available_days?: string[]
+          available_time_end?: string
+          available_time_start?: string
           base_price?: number
           breed_restrictions?: string[]
           buffer_minutes?: number
@@ -354,25 +389,38 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           currency?: string
+          custom_pet_types?: string[]
+          deposit_amount?: number | null
+          deposit_required?: boolean
+          deposit_type?: string
           description?: string | null
+          difficulty_level?: string
           display_order?: number
           duration_minutes?: number
+          faq?: Json
           featured?: boolean
           gallery_urls?: string[]
+          group_discount_percent?: number
           highlights?: string[]
           id?: string
           is_active?: boolean
           long_description?: string | null
           max_bookings_per_day?: number
+          min_advance_hours?: number
           name?: string
+          pet_size_pricing?: Json | null
           pet_types_accepted?: string[]
           preparation_notes?: string | null
           price_from?: number | null
           price_type?: string
+          service_addons?: Json
+          service_area_km?: number | null
+          service_location?: string
           short_description?: string | null
           tags?: string[]
           tax_inclusive?: boolean
           tax_rate?: number
+          terms_conditions?: string | null
           total_bookings?: number
           updated_at?: string
           vaccination_required?: boolean
