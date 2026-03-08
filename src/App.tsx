@@ -20,6 +20,7 @@ import ReviewsPage from "@/pages/reviews/ReviewsPage";
 import NotFound from "./pages/NotFound";
 import PublicReviewPage from "./pages/reviews/PublicReviewPage";
 import PublicBookingPage from "./pages/requests/PublicBookingPage";
+import PublicPromoPage from "./pages/marketing/PublicPromoPage";
 
 const queryClient = new QueryClient();
 
