@@ -374,7 +374,16 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
   const curr = currencySymbol(s.currency || 'EUR');
   const addons = s.service_addons || [];
   const allPets = [...(s.pet_types_accepted || []), ...(s.custom_pet_types || [])];
+  const { data: allReviews = [] } = useReviews();
   
+  const serviceReviews = allReviews.filter((r: any) => r.service_id === s.id && r.status === 'published');
+  const avgRating = serviceReviews.length ? (serviceReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / serviceReviews.length).toFixed(1) : '0';
+  const reviewCount = serviceReviews.length;
+  const ratingDist = [5,4,3,2,1].map(star => {
+    const count = serviceReviews.filter((r: any) => r.rating === star).length;
+    return { stars: star, pct: reviewCount ? Math.round((count / reviewCount) * 100) : 0 };
+  });
+
   const addonTotal = addons.reduce((sum: number, a: any, i: number) => selectedAddons.has(i) ? sum + Number(a.price) : sum, 0);
   const total = Number(s.base_price) + addonTotal;
 
