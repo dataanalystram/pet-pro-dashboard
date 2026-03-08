@@ -9,7 +9,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import {
   User, PawPrint, Calendar as CalIcon, Clock, DollarSign,
-  Users, LogIn, LogOut, FileText, CreditCard, CalendarIcon,
+  Users, LogIn, LogOut, FileText, CreditCard, CalendarIcon, CheckCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
