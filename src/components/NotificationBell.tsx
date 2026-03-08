@@ -72,6 +72,8 @@ export function NotificationBell() {
                       <AlertTriangle className="w-4 h-4 text-destructive" />
                     ) : n.type === 'low_stock' ? (
                       <PackageX className="w-4 h-4 text-amber-500" />
+                    ) : n.type === 'campaign_threshold' ? (
+                      <Target className="w-4 h-4 text-primary" />
                     ) : (
                       <Star className="w-4 h-4 text-muted-foreground" />
                     )}
