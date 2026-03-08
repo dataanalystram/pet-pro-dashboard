@@ -244,6 +244,7 @@ export default function AppointmentsPage() {
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Service</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Customer</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Pet</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Staff</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Price</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
                     </tr>
