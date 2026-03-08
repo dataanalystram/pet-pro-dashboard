@@ -111,9 +111,9 @@ export default function ServicePreview({ open, onOpenChange, service: s, allServ
                 {s.short_description && <p className="text-white/80 text-sm mt-1">{s.short_description}</p>}
                 <div className="flex items-center gap-3 mt-3">
                   <div className="flex items-center gap-0.5 text-amber-400">
-                    {[1,2,3,4,5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-current" />)}
+                    {[1,2,3,4,5].map(i => <Star key={i} className={cn('w-3.5 h-3.5', i <= Math.round(Number(avgRating)) ? 'fill-current' : 'opacity-30')} />)}
                   </div>
-                  <a href="#reviews-section" className="text-white/80 text-xs hover:text-white underline underline-offset-2 transition-colors cursor-pointer">4.9 (128 reviews)</a>
+                  <a href="#reviews-section" className="text-white/80 text-xs hover:text-white underline underline-offset-2 transition-colors cursor-pointer">{avgRating} ({reviewCount} review{reviewCount !== 1 ? 's' : ''})</a>
                 </div>
               </div>
             </div>
