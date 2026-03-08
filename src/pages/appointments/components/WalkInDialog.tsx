@@ -173,6 +173,7 @@ export default function WalkInDialog({ open, onOpenChange, services, staff, cust
                     </>
                   );
                 })()}
+              </div>
             ))}
           </div>
 
