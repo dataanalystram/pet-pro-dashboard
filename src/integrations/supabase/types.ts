@@ -261,40 +261,76 @@ export type Database = {
       }
       inventory: {
         Row: {
+          brand: string | null
           category: string
           cost_per_unit: number
           created_at: string
+          description: string | null
+          featured: boolean
           id: string
+          images: string[]
           name: string
           quantity_in_stock: number
           reorder_point: number
           retail_price: number | null
+          short_description: string | null
+          sku: string | null
+          status: string
           supplier_name: string | null
+          tags: string[]
+          total_sold: number
           updated_at: string
+          variants: Json
+          video_url: string | null
+          weight_grams: number | null
         }
         Insert: {
+          brand?: string | null
           category: string
           cost_per_unit?: number
           created_at?: string
+          description?: string | null
+          featured?: boolean
           id?: string
+          images?: string[]
           name: string
           quantity_in_stock?: number
           reorder_point?: number
           retail_price?: number | null
+          short_description?: string | null
+          sku?: string | null
+          status?: string
           supplier_name?: string | null
+          tags?: string[]
+          total_sold?: number
           updated_at?: string
+          variants?: Json
+          video_url?: string | null
+          weight_grams?: number | null
         }
         Update: {
+          brand?: string | null
           category?: string
           cost_per_unit?: number
           created_at?: string
+          description?: string | null
+          featured?: boolean
           id?: string
+          images?: string[]
           name?: string
           quantity_in_stock?: number
           reorder_point?: number
           retail_price?: number | null
+          short_description?: string | null
+          sku?: string | null
+          status?: string
           supplier_name?: string | null
+          tags?: string[]
+          total_sold?: number
           updated_at?: string
+          variants?: Json
+          video_url?: string | null
+          weight_grams?: number | null
         }
         Relationships: []
       }
@@ -352,6 +388,69 @@ export type Database = {
           reference_id?: string | null
           title?: string
           type?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string | null
+          discount: number
+          id: string
+          items: Json
+          notes: string | null
+          order_number: string
+          payment_method: string | null
+          payment_status: string | null
+          shipping_address: Json | null
+          status: string
+          subtotal: number
+          tax: number
+          total: number
+          tracking_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          discount?: number
+          id?: string
+          items?: Json
+          notes?: string | null
+          order_number?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          shipping_address?: Json | null
+          status?: string
+          subtotal?: number
+          tax?: number
+          total?: number
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          discount?: number
+          id?: string
+          items?: Json
+          notes?: string | null
+          order_number?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          shipping_address?: Json | null
+          status?: string
+          subtotal?: number
+          tax?: number
+          total?: number
+          tracking_number?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

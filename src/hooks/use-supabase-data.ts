@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
-type TableName = 'services' | 'customers' | 'staff' | 'bookings' | 'booking_requests' | 'inventory' | 'campaigns' | 'messages' | 'reviews' | 'service_staff' | 'staff_time_off' | 'notifications';
+type TableName = 'services' | 'customers' | 'staff' | 'bookings' | 'booking_requests' | 'inventory' | 'campaigns' | 'messages' | 'reviews' | 'service_staff' | 'staff_time_off' | 'notifications' | 'orders';
 
 function useSupabaseQuery<T>(table: TableName, options?: { orderBy?: string; ascending?: boolean }) {
   return useQuery({
@@ -31,6 +31,7 @@ export function useMessages() { return useSupabaseQuery<Tables<'messages'>>('mes
 export function useReviews() { return useSupabaseQuery<Tables<'reviews'>>('reviews', { orderBy: 'created_at', ascending: false }); }
 export function useServiceStaff() { return useSupabaseQuery<Tables<'service_staff'>>('service_staff', { orderBy: 'created_at' }); }
 export function useStaffTimeOff() { return useSupabaseQuery<Tables<'staff_time_off'>>('staff_time_off', { orderBy: 'start_date', ascending: false }); }
+export function useOrders() { return useSupabaseQuery<Tables<'orders'>>('orders', { orderBy: 'created_at', ascending: false }); }
 
 export function useInsert(table: TableName) {
   const qc = useQueryClient();

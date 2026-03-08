@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, CalendarDays, Users, Inbox, Scissors,
-  Megaphone, Boxes, BarChart3, MessageSquare, UserCog, Settings, LogOut, Star,
+  Megaphone, Boxes, BarChart3, MessageSquare, UserCog, Settings, LogOut, Star, ShoppingCart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -25,6 +25,7 @@ const mainItems = [
 const managementItems = [
   { title: "Marketing", url: "/marketing", icon: Megaphone },
   { title: "Inventory", url: "/inventory", icon: Boxes },
+  { title: "Orders", url: "/orders", icon: ShoppingCart },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Staff", url: "/staff", icon: UserCog },
 ];
