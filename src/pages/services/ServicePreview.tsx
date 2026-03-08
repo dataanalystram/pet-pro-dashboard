@@ -117,7 +117,7 @@ export default function ServicePreview({ open, onOpenChange, service: s, allServ
             )}
 
             {/* Two-column layout */}
-            <div className={cn('flex gap-6 p-6', device === 'mobile' ? 'flex-col' : 'flex-row')}>
+            <div className={cn('flex gap-6 p-6', device === 'mobile' ? 'flex-col pb-24' : 'flex-row')}>
               {/* Left: Content */}
               <div className="flex-1 space-y-6 min-w-0">
                 {/* Highlights */}
