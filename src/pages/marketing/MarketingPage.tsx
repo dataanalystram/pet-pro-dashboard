@@ -48,6 +48,8 @@ export default function MarketingPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [detailCampaign, setDetailCampaign] = useState<any>(null);
+  const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const [form, setForm] = useState({
     name: '', type: 'discount', description: '', discount_type: 'percentage',
     discount_value: '', promo_code: '', start_date: '', end_date: '',
