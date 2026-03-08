@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, Minus, Trash2, Package } from 'lucide-react';
-import { useInventory, useInsert, useUpdate } from '@/hooks/use-supabase-data';
+import { Search, Plus, Minus, Trash2, Package, Tag, CheckCircle2, XCircle } from 'lucide-react';
+import { useInventory, useInsert, useUpdate, useCampaigns } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
 
 interface CreateOrderDialogProps {
@@ -23,10 +23,21 @@ interface OrderItem {
   image_url: string;
 }
 
+interface AppliedPromo {
+  campaign_id: string;
+  promo_code: string;
+  discount_type: string;
+  discount_value: number;
+  discount_amount: number;
+}
+
 export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDialogProps) {
   const { data: products = [] } = useInventory();
+  const { data: campaigns = [] } = useCampaigns();
   const insertOrder = useInsert('orders');
+  const insertRedemption = useInsert('campaign_redemptions');
   const updateInventory = useUpdate('inventory');
+  const updateCampaign = useUpdate('campaigns');
 
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
@@ -35,6 +46,9 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [productSearch, setProductSearch] = useState('');
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+  const [promoError, setPromoError] = useState('');
 
   const filteredProducts = products.filter(p =>
     (p.status === 'active' || !(p as any).status) &&
@@ -62,8 +76,47 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
   const removeItem = (id: string) => setItems(prev => prev.filter(i => i.inventory_id !== id));
 
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0);
-  const tax = subtotal * 0.1; // 10% tax
-  const total = subtotal + tax;
+  const promoDiscount = appliedPromo?.discount_amount || 0;
+  const tax = (subtotal - promoDiscount) * 0.1;
+  const total = subtotal - promoDiscount + tax;
+
+  const validatePromo = () => {
+    setPromoError('');
+    setAppliedPromo(null);
+    if (!promoCode.trim()) return;
+
+    const campaign = campaigns.find((c: any) =>
+      c.promo_code?.toUpperCase() === promoCode.toUpperCase() && (c.is_enabled ?? true)
+    ) as any;
+
+    if (!campaign) { setPromoError('Invalid promo code'); return; }
+
+    const now = new Date().toISOString().split('T')[0];
+    if (campaign.start_date && campaign.start_date > now) { setPromoError('Campaign not yet active'); return; }
+    if (campaign.end_date && campaign.end_date < now) { setPromoError('Campaign has expired'); return; }
+    if (campaign.max_redemptions && campaign.redemptions >= campaign.max_redemptions) { setPromoError('Campaign fully redeemed'); return; }
+    if (campaign.min_order_value && subtotal < Number(campaign.min_order_value)) {
+      setPromoError(`Minimum order $${Number(campaign.min_order_value).toFixed(2)} required`); return;
+    }
+
+    let discountAmt = 0;
+    if (campaign.discount_type === 'percentage') {
+      discountAmt = subtotal * (Number(campaign.discount_value) / 100);
+    } else {
+      discountAmt = Math.min(Number(campaign.discount_value), subtotal);
+    }
+
+    setAppliedPromo({
+      campaign_id: campaign.id,
+      promo_code: campaign.promo_code,
+      discount_type: campaign.discount_type,
+      discount_value: Number(campaign.discount_value),
+      discount_amount: Math.round(discountAmt * 100) / 100,
+    });
+    toast.success('Promo code applied!');
+  };
+
+  const removePromo = () => { setAppliedPromo(null); setPromoCode(''); setPromoError(''); };
 
   const handleCreate = async () => {
     if (!customerName || items.length === 0) {
@@ -78,14 +131,14 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
       items,
       subtotal,
       tax,
-      discount: 0,
+      discount: promoDiscount,
       total,
       notes: notes || null,
       payment_method: paymentMethod,
       payment_status: 'unpaid',
       status: 'pending',
     }, {
-      onSuccess: () => {
+      onSuccess: (order: any) => {
         // Deduct stock
         items.forEach(item => {
           const product = products.find(p => p.id === item.inventory_id);
@@ -97,10 +150,30 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
             });
           }
         });
+
+        // Record promo redemption
+        if (appliedPromo) {
+          insertRedemption.mutate({
+            campaign_id: appliedPromo.campaign_id,
+            customer_name: customerName,
+            customer_email: customerEmail || null,
+            order_id: order?.id || null,
+            discount_applied: appliedPromo.discount_amount,
+          });
+          // Increment campaign redemptions
+          const campaign = campaigns.find(c => c.id === appliedPromo.campaign_id);
+          if (campaign) {
+            updateCampaign.mutate({
+              id: campaign.id,
+              redemptions: campaign.redemptions + 1,
+            });
+          }
+        }
+
         toast.success('Order created successfully');
-        // Reset
         setCustomerName(''); setCustomerEmail(''); setCustomerPhone('');
         setItems([]); setNotes(''); setPaymentMethod('cash');
+        setPromoCode(''); setAppliedPromo(null); setPromoError('');
         onOpenChange(false);
       },
     });
@@ -147,17 +220,9 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
             {productSearch && filteredProducts.length > 0 && (
               <div className="border rounded-lg max-h-40 overflow-y-auto divide-y">
                 {filteredProducts.slice(0, 5).map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => addProduct(p)}
-                    className="w-full flex items-center gap-3 p-2.5 hover:bg-muted transition-colors text-left"
-                  >
+                  <button key={p.id} onClick={() => addProduct(p)} className="w-full flex items-center gap-3 p-2.5 hover:bg-muted transition-colors text-left">
                     <div className="w-8 h-8 rounded bg-muted border flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {(p as any).images?.[0] ? (
-                        <img src={(p as any).images[0]} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <Package className="w-3.5 h-3.5 text-muted-foreground" />
-                      )}
+                      {(p as any).images?.[0] ? <img src={(p as any).images[0]} alt="" className="w-full h-full object-cover" /> : <Package className="w-3.5 h-3.5 text-muted-foreground" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{p.name}</p>
@@ -178,31 +243,47 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
               {items.map(item => (
                 <div key={item.inventory_id} className="flex items-center gap-3 p-2.5 rounded-lg border bg-card">
                   <div className="w-10 h-10 rounded bg-muted border flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {item.image_url ? (
-                      <img src={item.image_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <Package className="w-4 h-4 text-muted-foreground" />
-                    )}
+                    {item.image_url ? <img src={item.image_url} alt="" className="w-full h-full object-cover" /> : <Package className="w-4 h-4 text-muted-foreground" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{item.name}</p>
                     <p className="text-xs text-muted-foreground">${item.unit_price.toFixed(2)} each</p>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQty(item.inventory_id, -1)}>
-                      <Minus className="w-3 h-3" />
-                    </Button>
+                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQty(item.inventory_id, -1)}><Minus className="w-3 h-3" /></Button>
                     <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQty(item.inventory_id, 1)}>
-                      <Plus className="w-3 h-3" />
-                    </Button>
+                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQty(item.inventory_id, 1)}><Plus className="w-3 h-3" /></Button>
                   </div>
                   <span className="text-sm font-bold w-16 text-right">${(item.quantity * item.unit_price).toFixed(2)}</span>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeItem(item.inventory_id)}>
-                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeItem(item.inventory_id)}><Trash2 className="w-3.5 h-3.5 text-destructive" /></Button>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Promo Code */}
+          {items.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wide">Promo Code</Label>
+              {appliedPromo ? (
+                <div className="flex items-center gap-2 p-2.5 rounded-lg border border-emerald-200 bg-emerald-50">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-emerald-700">{appliedPromo.promo_code} applied</p>
+                    <p className="text-xs text-emerald-600">-${appliedPromo.discount_amount.toFixed(2)} ({appliedPromo.discount_value}{appliedPromo.discount_type === 'percentage' ? '%' : '$'} off)</p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={removePromo}><XCircle className="w-4 h-4 text-muted-foreground" /></Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                    <Input value={promoCode} onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); }} placeholder="Enter code" className="pl-9" />
+                  </div>
+                  <Button variant="outline" onClick={validatePromo} disabled={!promoCode.trim()}>Apply</Button>
+                </div>
+              )}
+              {promoError && <p className="text-xs text-destructive">{promoError}</p>}
             </div>
           )}
 
@@ -210,6 +291,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
           {items.length > 0 && (
             <div className="p-3 rounded-lg bg-muted space-y-1 text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+              {promoDiscount > 0 && <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-${promoDiscount.toFixed(2)}</span></div>}
               <div className="flex justify-between"><span className="text-muted-foreground">Tax (10%)</span><span>${tax.toFixed(2)}</span></div>
               <div className="flex justify-between font-bold text-base pt-1 border-t"><span>Total</span><span>${total.toFixed(2)}</span></div>
             </div>
