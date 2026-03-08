@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Search, Store } from 'lucide-react';
 import { toast } from 'sonner';
-import { useServices, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
+import { useServices, useStaff, useBookings, useServiceStaff, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
+import { supabase } from '@/integrations/supabase/client';
 import ServiceCard from './ServiceCard';
 import ServiceFormDialog, { ServiceFormData } from './ServiceFormDialog';
 import ServicePreview from './ServicePreview';
@@ -27,6 +28,9 @@ const STATUS_OPTIONS = [
 
 export default function ServicesPage() {
   const { data: services = [], isLoading } = useServices();
+  const { data: staff = [] } = useStaff();
+  const { data: bookings = [] } = useBookings();
+  const { data: serviceStaff = [] } = useServiceStaff();
   const insertService = useInsert('services');
   const updateService = useUpdate('services');
   const deleteService = useDelete('services');
@@ -58,7 +62,32 @@ export default function ServicesPage() {
   const openEdit = (s: any) => { setEditing(s); setDialogOpen(true); };
   const openPreview = (s: any) => { setPreviewService(s); setPreviewOpen(true); };
 
-  const handleSave = (form: ServiceFormData) => {
+  const getExistingAssignments = (serviceId: string) => {
+    return serviceStaff
+      .filter((ss: any) => ss.service_id === serviceId)
+      .map((ss: any) => ({
+        staff_id: ss.staff_id,
+        is_primary: ss.is_primary || false,
+        price_override: ss.price_override?.toString() || '',
+      }));
+  };
+
+  const saveStaffAssignments = async (serviceId: string, assignments: { staff_id: string; is_primary: boolean; price_override: string }[]) => {
+    // Delete existing assignments
+    await (supabase.from('service_staff') as any).delete().eq('service_id', serviceId);
+    // Insert new ones
+    if (assignments.length > 0) {
+      const rows = assignments.map(a => ({
+        service_id: serviceId,
+        staff_id: a.staff_id,
+        is_primary: a.is_primary,
+        price_override: a.price_override ? parseFloat(a.price_override) : null,
+      }));
+      await (supabase.from('service_staff') as any).insert(rows);
+    }
+  };
+
+  const handleSave = (form: ServiceFormData, staffAssignments: { staff_id: string; is_primary: boolean; price_override: string }[]) => {
     const payload: Record<string, any> = {
       name: form.name, category: form.category,
       custom_category: form.category === 'other' ? (form.custom_category || null) : null,
@@ -67,35 +96,23 @@ export default function ServicesPage() {
       long_description: form.long_description || null,
       base_price: parseFloat(form.base_price),
       price_from: form.price_from ? parseFloat(form.price_from) : null,
-      price_type: form.price_type,
-      currency: form.currency,
-      tax_rate: parseFloat(form.tax_rate) || 0,
-      tax_inclusive: form.tax_inclusive,
+      price_type: form.price_type, currency: form.currency,
+      tax_rate: parseFloat(form.tax_rate) || 0, tax_inclusive: form.tax_inclusive,
       duration_minutes: parseInt(form.duration_minutes),
       buffer_minutes: parseInt(form.buffer_minutes) || 0,
       max_bookings_per_day: parseInt(form.max_bookings_per_day) || 10,
-      pet_types_accepted: form.pet_types_accepted,
-      vaccination_required: form.vaccination_required,
-      age_restrictions: form.age_restrictions || null,
-      breed_restrictions: form.breed_restrictions,
+      pet_types_accepted: form.pet_types_accepted, vaccination_required: form.vaccination_required,
+      age_restrictions: form.age_restrictions || null, breed_restrictions: form.breed_restrictions,
       weight_limit_kg: form.weight_limit_kg ? parseFloat(form.weight_limit_kg) : null,
-      cover_image_url: form.cover_image_url || null,
-      gallery_urls: form.gallery_urls,
-      preparation_notes: form.preparation_notes || null,
-      aftercare_notes: form.aftercare_notes || null,
-      cancellation_policy: form.cancellation_policy || null,
-      highlights: form.highlights,
-      tags: form.tags,
-      is_active: form.is_active,
-      featured: form.featured,
-      custom_pet_types: form.custom_pet_types,
-      service_addons: form.service_addons,
+      cover_image_url: form.cover_image_url || null, gallery_urls: form.gallery_urls,
+      preparation_notes: form.preparation_notes || null, aftercare_notes: form.aftercare_notes || null,
+      cancellation_policy: form.cancellation_policy || null, highlights: form.highlights,
+      tags: form.tags, is_active: form.is_active, featured: form.featured,
+      custom_pet_types: form.custom_pet_types, service_addons: form.service_addons,
       deposit_required: form.deposit_required,
       deposit_amount: form.deposit_amount ? parseFloat(form.deposit_amount) : null,
-      deposit_type: form.deposit_type,
-      available_days: form.available_days,
-      available_time_start: form.available_time_start,
-      available_time_end: form.available_time_end,
+      deposit_type: form.deposit_type, available_days: form.available_days,
+      available_time_start: form.available_time_start, available_time_end: form.available_time_end,
       min_advance_hours: parseInt(form.min_advance_hours) || 24,
       service_location: form.service_location,
       service_area_km: form.service_area_km ? parseFloat(form.service_area_km) : null,
@@ -105,20 +122,24 @@ export default function ServicesPage() {
         large: form.pet_size_pricing.large ? parseFloat(form.pet_size_pricing.large) : null,
         xl: form.pet_size_pricing.xl ? parseFloat(form.pet_size_pricing.xl) : null,
       } : null,
-      terms_conditions: form.terms_conditions || null,
-      faq: form.faq,
+      terms_conditions: form.terms_conditions || null, faq: form.faq,
       group_discount_percent: parseFloat(form.group_discount_percent) || 0,
-      difficulty_level: form.difficulty_level,
-      recommended_services: form.recommended_services,
+      difficulty_level: form.difficulty_level, recommended_services: form.recommended_services,
     };
 
     if (editing) {
       updateService.mutate({ id: editing.id, ...payload }, {
-        onSuccess: () => { toast.success('Service updated'); setDialogOpen(false); },
+        onSuccess: async () => {
+          await saveStaffAssignments(editing.id, staffAssignments);
+          toast.success('Service updated'); setDialogOpen(false);
+        },
       });
     } else {
       insertService.mutate(payload, {
-        onSuccess: () => { toast.success('Service created'); setDialogOpen(false); },
+        onSuccess: async (data: any) => {
+          if (data?.id) await saveStaffAssignments(data.id, staffAssignments);
+          toast.success('Service created'); setDialogOpen(false);
+        },
       });
     }
   };
@@ -139,13 +160,19 @@ export default function ServicesPage() {
     updateService.mutate({ id, display_order: newOrder });
   };
 
+  // Count staff per service
+  const staffCountByService = useMemo(() => {
+    const map: Record<string, number> = {};
+    serviceStaff.forEach((ss: any) => { map[ss.service_id] = (map[ss.service_id] || 0) + 1; });
+    return map;
+  }, [serviceStaff]);
+
   if (isLoading) {
     return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading services...</div>;
   }
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-semibold">Services</h1>
@@ -162,7 +189,6 @@ export default function ServicesPage() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -178,7 +204,6 @@ export default function ServicesPage() {
         </Select>
       </div>
 
-      {/* Grid */}
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <p className="text-lg font-medium">No services found</p>
@@ -197,6 +222,7 @@ export default function ServicesPage() {
             <ServiceCard
               key={s.id}
               service={s}
+              staffCount={staffCountByService[s.id] || 0}
               onEdit={() => openEdit(s)}
               onDelete={() => handleDelete(s.id)}
               onPreview={() => openPreview(s)}
@@ -206,7 +232,6 @@ export default function ServicesPage() {
         </div>
       )}
 
-      {/* Form Dialog */}
       <ServiceFormDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
@@ -214,23 +239,13 @@ export default function ServicesPage() {
         onSave={handleSave}
         saving={insertService.isPending || updateService.isPending}
         allServices={services}
+        allStaff={staff}
+        allBookings={bookings}
+        existingAssignments={editing ? getExistingAssignments(editing.id) : []}
       />
 
-      {/* Preview */}
-      <ServicePreview
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        service={previewService}
-        allServices={services}
-      />
-
-      {/* Storefront Preview */}
-      <StorefrontPreview
-        open={storefrontOpen}
-        onOpenChange={setStorefrontOpen}
-        services={services}
-        onReorder={handleReorder}
-      />
+      <ServicePreview open={previewOpen} onOpenChange={setPreviewOpen} service={previewService} allServices={services} />
+      <StorefrontPreview open={storefrontOpen} onOpenChange={setStorefrontOpen} services={services} onReorder={handleReorder} />
     </div>
   );
 }

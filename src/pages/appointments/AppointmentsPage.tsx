@@ -8,14 +8,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Calendar as CalIcon, List, ChevronLeft, ChevronRight,
-  User, PawPrint, Clock, DollarSign, Filter, Search,
+  User, PawPrint, Clock, DollarSign, Filter, Search, Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
   addMonths, subMonths, isSameDay, isToday, startOfWeek, endOfWeek,
 } from 'date-fns';
-import { useBookings, useUpdate } from '@/hooks/use-supabase-data';
+import { useBookings, useStaff, useServiceStaff, useUpdate } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
 
 const statusColors: Record<string, string> = {
@@ -47,6 +47,8 @@ function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value
 
 export default function AppointmentsPage() {
   const { data: bookings = [], isLoading } = useBookings();
+  const { data: staff = [] } = useStaff();
+  const { data: serviceStaff = [] } = useServiceStaff();
   const updateBooking = useUpdate('bookings');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -171,6 +173,11 @@ export default function AppointmentsPage() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{b.service_name}</p>
                           <p className="text-xs text-muted-foreground">{b.customer_name} · {b.pet_name}</p>
+                          {b.assigned_staff_id && (
+                            <p className="text-[10px] text-primary flex items-center gap-0.5 mt-0.5">
+                              <Users className="w-2.5 h-2.5" />{staff.find(s => s.id === b.assigned_staff_id)?.full_name || 'Staff'}
+                            </p>
+                          )}
                         </div>
                         <Badge className={cn("text-[10px] hidden sm:inline-flex", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
                       </button>
@@ -217,7 +224,10 @@ export default function AppointmentsPage() {
                     <span>{new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     <span className="font-medium text-foreground">${Number(b.total_price).toFixed(2)}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">{b.customer_name} · {b.pet_name}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {b.customer_name} · {b.pet_name}
+                    {b.assigned_staff_id && <span className="text-primary ml-1">· {staff.find(s => s.id === b.assigned_staff_id)?.full_name}</span>}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -234,13 +244,14 @@ export default function AppointmentsPage() {
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Service</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Customer</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Pet</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Staff</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Price</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {filteredBookings.length === 0 ? (
-                      <tr><td colSpan={6} className="px-4 py-12 text-center text-sm text-muted-foreground">No bookings found</td></tr>
+                      <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-muted-foreground">No bookings found</td></tr>
                     ) : filteredBookings.map((b) => (
                       <tr key={b.id} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}>
                         <td className="px-4 py-3">
@@ -253,6 +264,9 @@ export default function AppointmentsPage() {
                           <p className="text-xs text-muted-foreground">{b.customer_email}</p>
                         </td>
                         <td className="px-4 py-3 text-sm">{b.pet_name} ({b.pet_species})</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
+                          {b.assigned_staff_id ? staff.find(s => s.id === b.assigned_staff_id)?.full_name || '—' : '—'}
+                        </td>
                         <td className="px-4 py-3 text-sm font-medium">${Number(b.total_price).toFixed(2)}</td>
                         <td className="px-4 py-3">
                           <Badge className={cn("text-xs", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
@@ -283,6 +297,28 @@ export default function AppointmentsPage() {
                 <InfoRow icon={CalIcon} label="Date" value={selectedBooking.booking_date} />
                 <InfoRow icon={Clock} label="Time" value={new Date(selectedBooking.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} />
                 <InfoRow icon={DollarSign} label="Total" value={`$${Number(selectedBooking.total_price).toFixed(2)}`} />
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Assigned Staff</p>
+                  <Select
+                    value={selectedBooking.assigned_staff_id || 'unassigned'}
+                    onValueChange={(v) => {
+                      const val = v === 'unassigned' ? null : v;
+                      updateBooking.mutate({ id: selectedBooking.id, assigned_staff_id: val }, {
+                        onSuccess: () => toast.success('Staff reassigned'),
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Assign staff" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {staff.map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <DialogFooter className="flex-col sm:flex-row gap-2">
                 {selectedBooking.status === 'confirmed' && (

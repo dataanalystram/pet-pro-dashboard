@@ -8,13 +8,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, Star, Calendar, Briefcase, Trash2, Pencil, Search } from 'lucide-react';
+import { UserPlus, Star, Calendar, Briefcase, Trash2, Pencil, Search, CalendarOff, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { useStaff, useBookings, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
+import { useStaff, useBookings, useServiceStaff, useStaffTimeOff, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
 import StaffStatsRow from './components/StaffStatsRow';
 import StaffDetailPanel from './components/StaffDetailPanel';
 import StaffAvailabilityGrid from './components/StaffAvailabilityGrid';
+import StaffTimeOffPanel from './components/StaffTimeOffPanel';
 
 const roleColors: Record<string, string> = {
   owner: 'bg-amber-100 text-amber-700', manager: 'bg-violet-100 text-violet-700',
@@ -29,6 +30,8 @@ const statusColors: Record<string, string> = {
 export default function StaffPage() {
   const { data: staff = [], isLoading } = useStaff();
   const { data: bookings = [] } = useBookings();
+  const { data: serviceStaff = [] } = useServiceStaff();
+  const { data: timeOff = [] } = useStaffTimeOff();
   const insertStaff = useInsert('staff');
   const updateStaff = useUpdate('staff');
   const deleteStaff = useDelete('staff');
@@ -81,7 +84,19 @@ export default function StaffPage() {
     deleteStaff.mutate(id, { onSuccess: () => toast.success('Staff removed') });
   };
 
+  // Staff service counts
+  const serviceCountByStaff: Record<string, number> = {};
+  serviceStaff.forEach((ss: any) => { serviceCountByStaff[ss.staff_id] = (serviceCountByStaff[ss.staff_id] || 0) + 1; });
+
+  // Upcoming time off by staff
   const today = new Date().toISOString().split('T')[0];
+  const upcomingTimeOffByStaff: Record<string, any> = {};
+  timeOff.forEach((t: any) => {
+    if (t.status === 'approved' && t.end_date >= today && !upcomingTimeOffByStaff[t.staff_id]) {
+      upcomingTimeOffByStaff[t.staff_id] = t;
+    }
+  });
+
   const filtered = staff.filter(s =>
     s.full_name.toLowerCase().includes(search.toLowerCase()) ||
     (s.email || '').toLowerCase().includes(search.toLowerCase())
@@ -101,7 +116,6 @@ export default function StaffPage() {
 
       <StaffStatsRow staff={staff} bookings={bookings} />
 
-      {/* Search */}
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input placeholder="Search staff..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
@@ -109,8 +123,9 @@ export default function StaffPage() {
 
       <Tabs defaultValue="team">
         <TabsList>
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="availability">Availability</TabsTrigger>
+          <TabsTrigger value="team"><Users className="w-4 h-4 mr-1" />Team</TabsTrigger>
+          <TabsTrigger value="availability"><Calendar className="w-4 h-4 mr-1" />Availability</TabsTrigger>
+          <TabsTrigger value="timeoff"><CalendarOff className="w-4 h-4 mr-1" />Time Off</TabsTrigger>
         </TabsList>
 
         <TabsContent value="team" className="mt-4">
@@ -125,13 +140,11 @@ export default function StaffPage() {
               {filtered.map((s) => {
                 const todayBookingCount = bookings.filter(b => b.booking_date === today && b.status !== 'cancelled').length;
                 const loadPct = Math.round((todayBookingCount / s.max_daily_bookings) * 100);
+                const svcCount = serviceCountByStaff[s.id] || 0;
+                const upcomingLeave = upcomingTimeOffByStaff[s.id];
 
                 return (
-                  <Card
-                    key={s.id}
-                    className="hover:shadow-md transition-all cursor-pointer group"
-                    onClick={() => setSelectedStaff(s)}
-                  >
+                  <Card key={s.id} className="hover:shadow-md transition-all cursor-pointer group" onClick={() => setSelectedStaff(s)}>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -152,7 +165,6 @@ export default function StaffPage() {
                         <Badge className={cn("text-[10px]", roleColors[s.role] || roleColors.staff)}>{s.role?.replace('_', ' ')}</Badge>
                       </div>
 
-                      {/* Stats grid */}
                       <div className="grid grid-cols-3 gap-2 mb-3">
                         <div className="text-center bg-muted rounded-lg p-2">
                           <Star className="w-3.5 h-3.5 text-amber-500 mx-auto mb-0.5" />
@@ -166,12 +178,11 @@ export default function StaffPage() {
                         </div>
                         <div className="text-center bg-muted rounded-lg p-2">
                           <Briefcase className="w-3.5 h-3.5 text-emerald-500 mx-auto mb-0.5" />
-                          <p className="text-sm font-bold">{s.hourly_rate ? `$${Number(s.hourly_rate)}` : '-'}</p>
-                          <p className="text-[10px] text-muted-foreground">/hr</p>
+                          <p className="text-sm font-bold">{svcCount}</p>
+                          <p className="text-[10px] text-muted-foreground">Assigned</p>
                         </div>
                       </div>
 
-                      {/* Today's capacity bar */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between text-xs mb-1">
                           <span className="text-muted-foreground">Today's load</span>
@@ -187,7 +198,14 @@ export default function StaffPage() {
                         </div>
                       </div>
 
-                      {/* Specializations */}
+                      {/* Upcoming time off indicator */}
+                      {upcomingLeave && (
+                        <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 rounded-md px-2 py-1 mb-2">
+                          <CalendarOff className="w-3 h-3" />
+                          {upcomingLeave.start_date <= today ? 'On leave' : `Leave from ${upcomingLeave.start_date}`}
+                        </div>
+                      )}
+
                       {s.specializations?.length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-3">
                           {s.specializations.slice(0, 3).map((sp: string) => (
@@ -216,22 +234,26 @@ export default function StaffPage() {
         <TabsContent value="availability" className="mt-4">
           <Card>
             <CardContent className="p-4">
-              <StaffAvailabilityGrid staff={staff} bookings={bookings} />
+              <StaffAvailabilityGrid staff={staff} bookings={bookings} timeOff={timeOff} />
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="timeoff" className="mt-4">
+          <StaffTimeOffPanel staff={staff} bookings={bookings} />
+        </TabsContent>
       </Tabs>
 
-      {/* Detail Panel */}
       <StaffDetailPanel
         staff={selectedStaff}
         open={!!selectedStaff}
         onClose={() => setSelectedStaff(null)}
         onEdit={() => { if (selectedStaff) { openEdit(selectedStaff); setSelectedStaff(null); } }}
         bookings={bookings}
+        serviceStaff={serviceStaff}
+        timeOff={timeOff}
       />
 
-      {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editingStaff ? 'Edit Staff' : 'Add Staff Member'}</DialogTitle></DialogHeader>

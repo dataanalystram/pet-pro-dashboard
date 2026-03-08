@@ -1,10 +1,12 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, Calendar, Briefcase, Clock, Pencil, UserX, UserCheck } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Star, Calendar, Briefcase, Clock, Pencil, UserX, UserCheck, CalendarOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUpdate } from '@/hooks/use-supabase-data';
+import { useUpdate, useServices } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
+import { format, parseISO } from 'date-fns';
 
 const statusColors: Record<string, string> = {
   active: 'bg-emerald-500', on_leave: 'bg-amber-500', inactive: 'bg-muted-foreground',
@@ -19,16 +21,27 @@ interface Props {
   onClose: () => void;
   onEdit: () => void;
   bookings: any[];
+  serviceStaff?: any[];
+  timeOff?: any[];
 }
 
-export default function StaffDetailPanel({ staff: s, open, onClose, onEdit, bookings }: Props) {
+export default function StaffDetailPanel({ staff: s, open, onClose, onEdit, bookings, serviceStaff = [], timeOff = [] }: Props) {
   const updateStaff = useUpdate('staff');
+  const { data: services = [] } = useServices();
 
   if (!s) return null;
 
   const today = new Date().toISOString().split('T')[0];
   const todayBookings = bookings.filter(b => b.booking_date === today && b.status !== 'cancelled');
+  const assignedBookings = bookings.filter(b => b.assigned_staff_id === s.id && b.booking_date >= today && b.status !== 'cancelled');
   const workingHours = s.working_hours || {};
+
+  // Assigned services
+  const assignedServiceIds = serviceStaff.filter((ss: any) => ss.staff_id === s.id).map((ss: any) => ss.service_id);
+  const assignedServices = services.filter((svc: any) => assignedServiceIds.includes(svc.id));
+
+  // Upcoming time off
+  const staffTimeOff = timeOff.filter((t: any) => t.staff_id === s.id && t.end_date >= today);
 
   const toggleStatus = () => {
     const newStatus = s.status === 'active' ? 'on_leave' : 'active';
@@ -79,12 +92,12 @@ export default function StaffDetailPanel({ staff: s, open, onClose, onEdit, book
               <div className="text-center bg-muted rounded-xl p-3">
                 <Calendar className="w-4 h-4 text-primary mx-auto mb-1" />
                 <p className="text-lg font-bold">{s.total_services_completed}</p>
-                <p className="text-[10px] text-muted-foreground">Services</p>
+                <p className="text-[10px] text-muted-foreground">Completed</p>
               </div>
               <div className="text-center bg-muted rounded-xl p-3">
                 <Briefcase className="w-4 h-4 text-emerald-500 mx-auto mb-1" />
-                <p className="text-lg font-bold">{s.hourly_rate ? `$${Number(s.hourly_rate)}` : '-'}</p>
-                <p className="text-[10px] text-muted-foreground">/hour</p>
+                <p className="text-lg font-bold">{assignedServices.length}</p>
+                <p className="text-[10px] text-muted-foreground">Services</p>
               </div>
             </div>
           </div>
@@ -111,6 +124,73 @@ export default function StaffDetailPanel({ staff: s, open, onClose, onEdit, book
               </div>
             </div>
           </div>
+
+          <Separator />
+
+          {/* Assigned Services */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Assigned Services ({assignedServices.length})</p>
+            {assignedServices.length > 0 ? (
+              <div className="space-y-1.5">
+                {assignedServices.map((svc: any) => (
+                  <div key={svc.id} className="flex items-center justify-between bg-muted rounded-lg px-3 py-2">
+                    <span className="text-sm font-medium">{svc.name}</span>
+                    <Badge variant="secondary" className="text-[10px] capitalize">{svc.category}</Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Not assigned to any services yet</p>
+            )}
+          </div>
+
+          {/* Upcoming Bookings */}
+          {assignedBookings.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Upcoming Bookings ({assignedBookings.length})</p>
+              <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                {assignedBookings.slice(0, 5).map((b: any) => (
+                  <div key={b.id} className="flex items-center justify-between bg-muted rounded-lg px-3 py-2 text-sm">
+                    <div>
+                      <p className="font-medium">{b.service_name}</p>
+                      <p className="text-xs text-muted-foreground">{b.customer_name}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{b.booking_date}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <Separator />
+
+          {/* Time Off */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">
+              <CalendarOff className="w-3 h-3 inline mr-1" />Time Off
+            </p>
+            {staffTimeOff.length > 0 ? (
+              <div className="space-y-1.5">
+                {staffTimeOff.map((t: any) => (
+                  <div key={t.id} className="flex items-center justify-between bg-muted rounded-lg px-3 py-2">
+                    <div>
+                      <p className="text-sm font-medium capitalize">{t.type}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(parseISO(t.start_date), 'MMM d')} — {format(parseISO(t.end_date), 'MMM d, yyyy')}
+                      </p>
+                    </div>
+                    <Badge variant="secondary" className={cn("text-[10px]",
+                      t.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : t.status === 'pending' ? 'bg-amber-100 text-amber-700' : ''
+                    )}>{t.status}</Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No upcoming time off</p>
+            )}
+          </div>
+
+          <Separator />
 
           {/* Bio */}
           {s.bio && (

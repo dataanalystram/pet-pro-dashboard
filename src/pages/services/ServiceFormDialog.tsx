@@ -10,8 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import MediaUploader from '@/components/MediaUploader';
-import { Plus, X, Sparkles, MapPin, Clock, HelpCircle, DollarSign } from 'lucide-react';
+import { Plus, X, Sparkles, MapPin, Clock, HelpCircle, DollarSign, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ServiceStaffTab from './ServiceStaffTab';
 
 const CATEGORIES = [
   { value: 'grooming', label: 'Grooming' }, { value: 'dental', label: 'Dental' },
@@ -99,17 +100,27 @@ const emptyForm: ServiceFormData = {
   recommended_services: [],
 };
 
+interface StaffAssignment {
+  staff_id: string;
+  is_primary: boolean;
+  price_override: string;
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editing: any | null;
-  onSave: (data: ServiceFormData) => void;
+  onSave: (data: ServiceFormData, staffAssignments: StaffAssignment[]) => void;
   saving?: boolean;
   allServices?: any[];
+  allStaff?: any[];
+  allBookings?: any[];
+  existingAssignments?: StaffAssignment[];
 }
 
-export default function ServiceFormDialog({ open, onOpenChange, editing, onSave, saving, allServices = [] }: Props) {
+export default function ServiceFormDialog({ open, onOpenChange, editing, onSave, saving, allServices = [], allStaff = [], allBookings = [], existingAssignments = [] }: Props) {
   const [form, setForm] = useState<ServiceFormData>(emptyForm);
+  const [staffAssignments, setStaffAssignments] = useState<StaffAssignment[]>([]);
   const [newHighlight, setNewHighlight] = useState('');
   const [newTag, setNewTag] = useState('');
   const [newBreed, setNewBreed] = useState('');
@@ -122,6 +133,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
 
   useEffect(() => {
     if (editing) {
+      setStaffAssignments(existingAssignments);
       const psp = editing.pet_size_pricing;
       setSizePricingEnabled(!!psp);
       setForm({
@@ -163,6 +175,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
     } else {
       setForm(emptyForm);
       setSizePricingEnabled(false);
+      setStaffAssignments([]);
     }
   }, [editing, open]);
 
@@ -238,11 +251,12 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
         </SheetHeader>
 
         <Tabs defaultValue="basic" className="px-4 sm:px-6">
-          <TabsList className="grid grid-cols-3 sm:grid-cols-6 w-full h-auto gap-1 p-1">
+          <TabsList className="grid grid-cols-4 sm:grid-cols-7 w-full h-auto gap-1 p-1">
             <TabsTrigger value="basic" className="text-xs px-2 py-1.5">Basic</TabsTrigger>
             <TabsTrigger value="pricing" className="text-xs px-2 py-1.5">Pricing</TabsTrigger>
             <TabsTrigger value="schedule" className="text-xs px-2 py-1.5">Schedule</TabsTrigger>
             <TabsTrigger value="pets" className="text-xs px-2 py-1.5">Pets</TabsTrigger>
+            <TabsTrigger value="staff" className="text-xs px-2 py-1.5"><Users className="w-3 h-3 mr-1" />Staff</TabsTrigger>
             <TabsTrigger value="media" className="text-xs px-2 py-1.5">Media</TabsTrigger>
             <TabsTrigger value="details" className="text-xs px-2 py-1.5">Details</TabsTrigger>
           </TabsList>
@@ -605,6 +619,17 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
             </div>
           </TabsContent>
 
+          {/* STAFF */}
+          <TabsContent value="staff" className="space-y-4 mt-4">
+            <ServiceStaffTab
+              staff={allStaff}
+              bookings={allBookings}
+              assignments={staffAssignments}
+              serviceDays={form.available_days}
+              onAssignmentsChange={setStaffAssignments}
+            />
+          </TabsContent>
+
           {/* MEDIA */}
           <TabsContent value="media" className="space-y-4 mt-4">
             <div className="space-y-2">
@@ -728,7 +753,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
 
         <div className="sticky bottom-0 bg-background border-t px-4 sm:px-6 py-3 sm:py-4 flex justify-end gap-2">
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button size="sm" onClick={() => onSave(form)} disabled={!isValid || saving}>
+          <Button size="sm" onClick={() => onSave(form, staffAssignments)} disabled={!isValid || saving}>
             {saving ? 'Saving...' : editing ? 'Save Changes' : 'Create Service'}
           </Button>
         </div>

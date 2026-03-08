@@ -12,7 +12,7 @@ import { CheckCircle, XCircle, CalendarIcon, MessageSquare, PawPrint, User, Mail
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { useStaff, useBookings, useInsert, useUpdate } from '@/hooks/use-supabase-data';
+import { useStaff, useBookings, useServiceStaff, useInsert, useUpdate } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
 
 interface Pet {
@@ -34,6 +34,7 @@ export default function RequestDetailPanel({ request, open, onClose }: Props) {
   const navigate = useNavigate();
   const { data: staff = [] } = useStaff();
   const { data: bookings = [] } = useBookings();
+  const { data: serviceStaff = [] } = useServiceStaff();
   const updateRequest = useUpdate('booking_requests');
   const insertBooking = useInsert('bookings');
 
@@ -50,8 +51,17 @@ export default function RequestDetailPanel({ request, open, onClose }: Props) {
   const pets: Pet[] = Array.isArray(request.pets) ? request.pets : [];
   const requestDate = request.preferred_date;
 
+  // Filter staff to those assigned to this service (if any assignments exist)
+  const assignedStaffIds = serviceStaff
+    .filter((ss: any) => ss.service_id === request.service_id)
+    .map((ss: any) => ss.staff_id);
+
+  const qualifiedStaff = assignedStaffIds.length > 0
+    ? staff.filter(s => assignedStaffIds.includes(s.id))
+    : staff;
+
   // Staff availability for the requested date
-  const staffWithAvailability = staff.map(s => {
+  const staffWithAvailability = qualifiedStaff.map(s => {
     const dayBookings = bookings.filter(b =>
       b.booking_date === requestDate && b.status !== 'cancelled'
     ).length;
@@ -81,6 +91,7 @@ export default function RequestDetailPanel({ request, open, onClose }: Props) {
             start_time: request.preferred_time ? `${request.preferred_date}T${request.preferred_time}` : new Date().toISOString(),
             total_price: finalPrice,
             status: 'confirmed',
+            assigned_staff_id: staffId || null,
           });
           toast.success('Request accepted & booking created');
           onClose();

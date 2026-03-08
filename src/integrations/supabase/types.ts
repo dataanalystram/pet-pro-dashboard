@@ -103,6 +103,7 @@ export type Database = {
       }
       bookings: {
         Row: {
+          assigned_staff_id: string | null
           booking_date: string
           created_at: string
           customer_email: string | null
@@ -118,6 +119,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_staff_id?: string | null
           booking_date: string
           created_at?: string
           customer_email?: string | null
@@ -133,6 +135,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_staff_id?: string | null
           booking_date?: string
           created_at?: string
           customer_email?: string | null
@@ -147,7 +150,15 @@ export type Database = {
           total_price?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bookings_assigned_staff_id_fkey"
+            columns: ["assigned_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       campaigns: {
         Row: {
@@ -400,6 +411,48 @@ export type Database = {
           },
         ]
       }
+      service_staff: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean
+          price_override: number | null
+          service_id: string
+          staff_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          price_override?: number | null
+          service_id: string
+          staff_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          price_override?: number | null
+          service_id?: string
+          staff_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_staff_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_staff_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           aftercare_notes: string | null
@@ -624,6 +677,47 @@ export type Database = {
           working_hours?: Json
         }
         Relationships: []
+      }
+      staff_time_off: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          reason: string | null
+          staff_id: string
+          start_date: string
+          status: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          reason?: string | null
+          staff_id: string
+          start_date: string
+          status?: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          reason?: string | null
+          staff_id?: string
+          start_date?: string
+          status?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_time_off_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

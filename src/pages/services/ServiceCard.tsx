@@ -27,13 +27,14 @@ const locationLabels: Record<string, string> = {
 
 interface Props {
   service: any;
+  staffCount?: number;
   onEdit: () => void;
   onDelete: () => void;
   onPreview: () => void;
   onDuplicate: () => void;
 }
 
-export default function ServiceCard({ service: s, onEdit, onDelete, onPreview, onDuplicate }: Props) {
+export default function ServiceCard({ service: s, staffCount = 0, onEdit, onDelete, onPreview, onDuplicate }: Props) {
   const allPets = [...(s.pet_types_accepted || []), ...(s.custom_pet_types || [])];
 
   return (
@@ -95,12 +96,20 @@ export default function ServiceCard({ service: s, onEdit, onDelete, onPreview, o
           </div>
         )}
 
-        {/* Add-ons count */}
-        {s.service_addons && s.service_addons.length > 0 && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Plus className="w-3 h-3" /> {s.service_addons.length} add-on{s.service_addons.length !== 1 ? 's' : ''} available
-          </div>
-        )}
+        {/* Add-ons & Staff count */}
+        <div className="flex flex-wrap gap-3">
+          {s.service_addons && s.service_addons.length > 0 && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Plus className="w-3 h-3" /> {s.service_addons.length} add-on{s.service_addons.length !== 1 ? 's' : ''}
+            </div>
+          )}
+          {staffCount > 0 && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="w-3 h-3 rounded-full bg-primary/20 flex items-center justify-center text-[8px] font-bold text-primary">{staffCount}</span>
+              staff assigned
+            </div>
+          )}
+        </div>
 
         {/* Highlights */}
         {s.highlights && s.highlights.length > 0 && (
