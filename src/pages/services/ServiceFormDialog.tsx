@@ -105,6 +105,7 @@ interface Props {
   editing: any | null;
   onSave: (data: ServiceFormData) => void;
   saving?: boolean;
+  allServices?: any[];
 }
 
 export default function ServiceFormDialog({ open, onOpenChange, editing, onSave, saving }: Props) {
