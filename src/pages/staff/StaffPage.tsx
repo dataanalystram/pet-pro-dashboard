@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,29 +8,48 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, Star, Calendar, Briefcase, Trash2, Pencil, Search, CalendarOff, Users } from 'lucide-react';
+import { UserPlus, Star, Calendar, Briefcase, Trash2, Pencil, Search, CalendarOff, Users, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { useStaff, useBookings, useServiceStaff, useStaffTimeOff, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
+import { useStaff, useBookings, useServiceStaff, useServices, useStaffTimeOff, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
 import StaffStatsRow from './components/StaffStatsRow';
 import StaffDetailPanel from './components/StaffDetailPanel';
 import StaffAvailabilityGrid from './components/StaffAvailabilityGrid';
 import StaffTimeOffPanel from './components/StaffTimeOffPanel';
 
 const roleColors: Record<string, string> = {
-  owner: 'bg-amber-100 text-amber-700', manager: 'bg-violet-100 text-violet-700',
-  staff: 'bg-blue-100 text-blue-700', part_time: 'bg-secondary text-secondary-foreground',
-  contractor: 'bg-orange-100 text-orange-700',
+  owner: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', 
+  manager: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+  staff: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', 
+  part_time: 'bg-secondary text-secondary-foreground',
+  contractor: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
 };
 
 const statusColors: Record<string, string> = {
   active: 'bg-emerald-500', on_leave: 'bg-amber-500', inactive: 'bg-muted-foreground',
 };
 
+const roleFilterOptions = [
+  { value: 'all', label: 'All Roles' },
+  { value: 'owner', label: 'Owner' },
+  { value: 'manager', label: 'Manager' },
+  { value: 'staff', label: 'Staff' },
+  { value: 'part_time', label: 'Part Time' },
+  { value: 'contractor', label: 'Contractor' },
+];
+
+const statusFilterOptions = [
+  { value: 'all', label: 'All Status' },
+  { value: 'active', label: 'Active' },
+  { value: 'on_leave', label: 'On Leave' },
+  { value: 'inactive', label: 'Inactive' },
+];
+
 export default function StaffPage() {
   const { data: staff = [], isLoading } = useStaff();
   const { data: bookings = [] } = useBookings();
   const { data: serviceStaff = [] } = useServiceStaff();
+  const { data: services = [] } = useServices();
   const { data: timeOff = [] } = useStaffTimeOff();
   const insertStaff = useInsert('staff');
   const updateStaff = useUpdate('staff');
@@ -39,6 +58,8 @@ export default function StaffPage() {
   const [editingStaff, setEditingStaff] = useState<any>(null);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [form, setForm] = useState({
     full_name: '', email: '', phone: '', role: 'staff', title: '',
     hourly_rate: '', max_daily_bookings: '8', status: 'active',
@@ -84,12 +105,40 @@ export default function StaffPage() {
     deleteStaff.mutate(id, { onSuccess: () => toast.success('Staff removed') });
   };
 
-  // Staff service counts
-  const serviceCountByStaff: Record<string, number> = {};
-  serviceStaff.forEach((ss: any) => { serviceCountByStaff[ss.staff_id] = (serviceCountByStaff[ss.staff_id] || 0) + 1; });
+  // Build service ID -> name lookup
+  const serviceNameById = useMemo(() => {
+    const map: Record<string, string> = {};
+    services.forEach((svc: any) => { map[svc.id] = svc.name; });
+    return map;
+  }, [services]);
+
+  // Staff service info: count and names
+  const staffServiceInfo = useMemo(() => {
+    const info: Record<string, { count: number; names: string[] }> = {};
+    serviceStaff.forEach((ss: any) => {
+      if (!info[ss.staff_id]) info[ss.staff_id] = { count: 0, names: [] };
+      info[ss.staff_id].count++;
+      const name = serviceNameById[ss.service_id];
+      if (name && !info[ss.staff_id].names.includes(name)) {
+        info[ss.staff_id].names.push(name);
+      }
+    });
+    return info;
+  }, [serviceStaff, serviceNameById]);
+
+  // Today's booking count per staff
+  const today = new Date().toISOString().split('T')[0];
+  const todayBookingsByStaff = useMemo(() => {
+    const counts: Record<string, number> = {};
+    bookings.forEach((b: any) => {
+      if (b.booking_date === today && b.status !== 'cancelled' && b.assigned_staff_id) {
+        counts[b.assigned_staff_id] = (counts[b.assigned_staff_id] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [bookings, today]);
 
   // Upcoming time off by staff
-  const today = new Date().toISOString().split('T')[0];
   const upcomingTimeOffByStaff: Record<string, any> = {};
   timeOff.forEach((t: any) => {
     if (t.status === 'approved' && t.end_date >= today && !upcomingTimeOffByStaff[t.staff_id]) {
@@ -97,10 +146,17 @@ export default function StaffPage() {
     }
   });
 
-  const filtered = staff.filter(s =>
-    s.full_name.toLowerCase().includes(search.toLowerCase()) ||
-    (s.email || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    return staff.filter(s => {
+      const matchesSearch = s.full_name.toLowerCase().includes(search.toLowerCase()) ||
+        (s.email || '').toLowerCase().includes(search.toLowerCase());
+      const matchesRole = roleFilter === 'all' || s.role === roleFilter;
+      const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
+      return matchesSearch && matchesRole && matchesStatus;
+    });
+  }, [staff, search, roleFilter, statusFilter]);
+
+  const activeFilterCount = (roleFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0);
 
   if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading staff...</div>;
 
@@ -116,9 +172,40 @@ export default function StaffPage() {
 
       <StaffStatsRow staff={staff} bookings={bookings} />
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Search staff..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+      {/* Search + Filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search staff..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+        </div>
+        
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger className="w-[130px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {roleFilterOptions.map(opt => (
+              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {statusFilterOptions.map(opt => (
+              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {activeFilterCount > 0 && (
+          <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setRoleFilter('all'); setStatusFilter('all'); }}>
+            Clear filters ({activeFilterCount})
+          </Button>
+        )}
       </div>
 
       <Tabs defaultValue="team">
@@ -133,14 +220,20 @@ export default function StaffPage() {
             <Card><CardContent className="py-16 text-center">
               <UserPlus className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-sm text-muted-foreground">No staff members found</p>
-              <Button onClick={openAdd} className="mt-4" size="sm">Add Your First Staff</Button>
+              {activeFilterCount > 0 ? (
+                <Button variant="link" size="sm" onClick={() => { setRoleFilter('all'); setStatusFilter('all'); setSearch(''); }}>
+                  Clear filters
+                </Button>
+              ) : (
+                <Button onClick={openAdd} className="mt-4" size="sm">Add Your First Staff</Button>
+              )}
             </CardContent></Card>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filtered.map((s) => {
-                const todayBookingCount = bookings.filter(b => b.booking_date === today && b.status !== 'cancelled').length;
+                const todayBookingCount = todayBookingsByStaff[s.id] || 0;
                 const loadPct = Math.round((todayBookingCount / s.max_daily_bookings) * 100);
-                const svcCount = serviceCountByStaff[s.id] || 0;
+                const svcInfo = staffServiceInfo[s.id] || { count: 0, names: [] };
                 const upcomingLeave = upcomingTimeOffByStaff[s.id];
 
                 return (
@@ -178,10 +271,22 @@ export default function StaffPage() {
                         </div>
                         <div className="text-center bg-muted rounded-lg p-2">
                           <Briefcase className="w-3.5 h-3.5 text-emerald-500 mx-auto mb-0.5" />
-                          <p className="text-sm font-bold">{svcCount}</p>
+                          <p className="text-sm font-bold">{svcInfo.count}</p>
                           <p className="text-[10px] text-muted-foreground">Assigned</p>
                         </div>
                       </div>
+
+                      {/* Assigned service badges */}
+                      {svcInfo.names.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {svcInfo.names.slice(0, 2).map(name => (
+                            <Badge key={name} variant="outline" className="text-[9px] font-normal">{name}</Badge>
+                          ))}
+                          {svcInfo.names.length > 2 && (
+                            <span className="text-[9px] text-muted-foreground">+{svcInfo.names.length - 2}</span>
+                          )}
+                        </div>
+                      )}
 
                       <div className="mb-3">
                         <div className="flex items-center justify-between text-xs mb-1">
