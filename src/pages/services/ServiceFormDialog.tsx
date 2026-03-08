@@ -118,8 +118,9 @@ interface Props {
   existingAssignments?: StaffAssignment[];
 }
 
-export default function ServiceFormDialog({ open, onOpenChange, editing, onSave, saving, allServices = [] }: Props) {
+export default function ServiceFormDialog({ open, onOpenChange, editing, onSave, saving, allServices = [], allStaff = [], allBookings = [], existingAssignments = [] }: Props) {
   const [form, setForm] = useState<ServiceFormData>(emptyForm);
+  const [staffAssignments, setStaffAssignments] = useState<StaffAssignment[]>([]);
   const [newHighlight, setNewHighlight] = useState('');
   const [newTag, setNewTag] = useState('');
   const [newBreed, setNewBreed] = useState('');
@@ -132,6 +133,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
 
   useEffect(() => {
     if (editing) {
+      setStaffAssignments(existingAssignments);
       const psp = editing.pet_size_pricing;
       setSizePricingEnabled(!!psp);
       setForm({
