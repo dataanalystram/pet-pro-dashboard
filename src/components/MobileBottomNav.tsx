@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
-  Inbox, Scissors, Megaphone, Boxes, UserCog, Settings, Star,
+  Inbox, Scissors, Megaphone, Boxes, UserCog, Settings, Star, ShoppingCart,
 } from "lucide-react";
 
 const primaryTabs = [
