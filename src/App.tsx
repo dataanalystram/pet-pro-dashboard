@@ -17,6 +17,7 @@ import StaffPage from "@/pages/staff/StaffPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
 import ReviewsPage from "@/pages/reviews/ReviewsPage";
 import NotFound from "./pages/NotFound";
+import PublicReviewPage from "./pages/reviews/PublicReviewPage";
 
 const queryClient = new QueryClient();
 
