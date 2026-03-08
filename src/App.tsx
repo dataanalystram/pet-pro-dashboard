@@ -42,6 +42,7 @@ const App = () => (
           <Route path="/settings" element={<DashboardLayout><SettingsPage /></DashboardLayout>} />
           <Route path="/reviews" element={<DashboardLayout><ReviewsPage /></DashboardLayout>} />
           <Route path="/review/:serviceId" element={<PublicReviewPage />} />
+          <Route path="/book/:serviceId" element={<PublicBookingPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
