@@ -577,7 +577,7 @@ export default function DashboardPage() {
                 </thead>
                 <tbody className="divide-y">
                   {metrics.topCustomers.map(c => (
-                    <tr key={c.id} className="hover:bg-muted/40 transition-colors">
+                    <tr key={c.id} className="hover:bg-muted/40 transition-colors cursor-pointer" onClick={() => navigate('/customers')}>
                       <td className="py-2.5 px-4">
                         <div className="flex items-center gap-2.5">
                           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">
