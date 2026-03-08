@@ -75,10 +75,12 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
 
   const removeItem = (id: string) => setItems(prev => prev.filter(i => i.inventory_id !== id));
 
-  const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0);
-  const promoDiscount = appliedPromo?.discount_amount || 0;
-  const tax = (subtotal - promoDiscount) * 0.1;
-  const total = subtotal - promoDiscount + tax;
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const subtotal = round2(items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0));
+  const promoDiscount = round2(appliedPromo?.discount_amount || 0);
+  const taxableAmount = Math.max(0, subtotal - promoDiscount);
+  const tax = round2(taxableAmount * 0.1);
+  const total = round2(taxableAmount + tax);
 
   const validatePromo = () => {
     setPromoError('');
