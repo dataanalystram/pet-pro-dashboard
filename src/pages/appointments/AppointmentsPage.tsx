@@ -4,19 +4,23 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Calendar as CalIcon, List, ChevronLeft, ChevronRight,
-  User, PawPrint, Clock, DollarSign, Filter, Search, Users,
+  User, PawPrint, Clock, DollarSign, Filter, Search, Users, Plus, Footprints,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
   addMonths, subMonths, isSameDay, isToday, startOfWeek, endOfWeek,
+  addDays,
 } from 'date-fns';
-import { useBookings, useStaff, useServiceStaff, useUpdate } from '@/hooks/use-supabase-data';
+import { useBookings, useStaff, useServiceStaff, useServices, useCustomers, useUpdate, useInsert } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
+import AppointmentStatsRow from './components/AppointmentStatsRow';
+import TodayQueue from './components/TodayQueue';
+import WalkInDialog from './components/WalkInDialog';
+import BookingDetailPanel from './components/BookingDetailPanel';
 
 const statusColors: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -31,38 +35,50 @@ const statusDots: Record<string, string> = {
   completed: 'bg-emerald-500', cancelled: 'bg-red-500',
 };
 
-function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-        <Icon className="w-4 h-4 text-muted-foreground" />
-      </div>
-      <div>
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-sm font-medium">{value}</p>
-      </div>
-    </div>
-  );
-}
-
 export default function AppointmentsPage() {
   const { data: bookings = [], isLoading } = useBookings();
   const { data: staff = [] } = useStaff();
-  const { data: serviceStaff = [] } = useServiceStaff();
+  const { data: services = [] } = useServices();
+  const { data: customers = [] } = useCustomers();
   const updateBooking = useUpdate('bookings');
+  const insertBooking = useInsert('bookings');
+
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [walkInOpen, setWalkInOpen] = useState(false);
+  const [weekStart, setWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
-  const updateStatus = (bookingId: string, newStatus: string) => {
-    updateBooking.mutate({ id: bookingId, status: newStatus }, {
-      onSuccess: () => { toast.success(`Status updated to ${newStatus}`); setDetailOpen(false); },
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+
+  const handleUpdateStatus = (id: string, status: string, extras?: Record<string, any>) => {
+    updateBooking.mutate({ id, status, ...extras }, {
+      onSuccess: () => { toast.success(`Updated`); setDetailOpen(false); },
     });
   };
 
+  const handleUpdate = (id: string, data: Record<string, any>) => {
+    updateBooking.mutate({ id, ...data }, {
+      onSuccess: () => toast.success('Updated'),
+    });
+  };
+
+  const handleWalkIn = (data: any) => {
+    insertBooking.mutate(data, {
+      onSuccess: () => { toast.success('Walk-in created'); setWalkInOpen(false); },
+    });
+  };
+
+  // Today's bookings
+  const todayBookings = useMemo(() =>
+    bookings.filter(b => b.booking_date === todayStr).sort((a, b) => a.start_time.localeCompare(b.start_time)),
+    [bookings, todayStr]
+  );
+
+  // Calendar data
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -75,6 +91,10 @@ export default function AppointmentsPage() {
     return map;
   }, [bookings]);
 
+  // Week view
+  const weekDays = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+
+  // Filtered list
   const filteredBookings = useMemo(() => {
     let list = [...bookings];
     if (statusFilter !== 'all') list = list.filter((b) => b.status === statusFilter);
@@ -94,17 +114,39 @@ export default function AppointmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-semibold">Appointments</h1>
-        <p className="text-sm text-muted-foreground">Manage all your bookings</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-semibold">Appointments</h1>
+          <p className="text-sm text-muted-foreground">Manage bookings, walk-ins, and today's queue</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setWalkInOpen(true)}>
+            <Footprints className="w-4 h-4 mr-1.5" /> Walk-in
+          </Button>
+        </div>
       </div>
 
-      <Tabs defaultValue="calendar">
+      <AppointmentStatsRow todayBookings={todayBookings} />
+
+      <Tabs defaultValue="today">
         <TabsList className="bg-muted">
+          <TabsTrigger value="today"><Clock className="w-4 h-4 mr-1.5" /> Today</TabsTrigger>
           <TabsTrigger value="calendar"><CalIcon className="w-4 h-4 mr-1.5" /> Calendar</TabsTrigger>
+          <TabsTrigger value="week"><CalIcon className="w-4 h-4 mr-1.5" /> Week</TabsTrigger>
           <TabsTrigger value="list"><List className="w-4 h-4 mr-1.5" /> List</TabsTrigger>
         </TabsList>
 
+        {/* TODAY TAB */}
+        <TabsContent value="today" className="mt-4">
+          <TodayQueue
+            bookings={todayBookings}
+            staff={staff}
+            onSelect={(b) => { setSelectedBooking(b); setDetailOpen(true); }}
+            onUpdateStatus={handleUpdateStatus}
+          />
+        </TabsContent>
+
+        {/* CALENDAR TAB */}
         <TabsContent value="calendar" className="mt-4">
           <div className="grid lg:grid-cols-5 gap-4">
             <Card className="lg:col-span-3">
@@ -167,7 +209,7 @@ export default function AppointmentsPage() {
                       <button key={b.id} onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left">
                         <div className="text-xs font-mono text-muted-foreground w-10 flex-shrink-0">
-                          {new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {(() => { try { return format(new Date(b.start_time), 'HH:mm'); } catch { return '--:--'; } })()}
                         </div>
                         <div className={cn("w-1 h-10 rounded-full flex-shrink-0", statusDots[b.status] || 'bg-muted')} />
                         <div className="flex-1 min-w-0">
@@ -189,6 +231,53 @@ export default function AppointmentsPage() {
           </div>
         </TabsContent>
 
+        {/* WEEK TAB */}
+        <TabsContent value="week" className="mt-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-sm font-semibold">
+                {format(weekStart, 'MMM d')} — {format(addDays(weekStart, 6), 'MMM d, yyyy')}
+              </CardTitle>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setWeekStart(addDays(weekStart, -7))}><ChevronLeft className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="sm" className="h-8" onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}>This Week</Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setWeekStart(addDays(weekStart, 7))}><ChevronRight className="w-4 h-4" /></Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-2 md:p-4">
+              <div className="grid grid-cols-7 gap-2">
+                {weekDays.map((day) => {
+                  const dateStr = format(day, 'yyyy-MM-dd');
+                  const dayBookings = (bookingsByDate[dateStr] || []).sort((a: any, b: any) => a.start_time.localeCompare(b.start_time));
+                  return (
+                    <div key={dateStr} className={cn("min-h-[200px] rounded-lg border p-2", isToday(day) && "border-primary bg-accent/30")}>
+                      <p className={cn("text-xs font-semibold mb-2", isToday(day) ? "text-primary" : "text-muted-foreground")}>
+                        {format(day, 'EEE d')}
+                      </p>
+                      <div className="space-y-1">
+                        {dayBookings.map((b: any) => (
+                          <button key={b.id} onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}
+                            className={cn("w-full text-left rounded p-1.5 text-[10px] leading-tight hover:opacity-80 transition-opacity border-l-2",
+                              b.status === 'completed' ? 'bg-emerald-50 border-l-emerald-500' :
+                              b.status === 'in_progress' ? 'bg-violet-50 border-l-violet-500' :
+                              b.status === 'confirmed' ? 'bg-blue-50 border-l-blue-500' :
+                              b.status === 'cancelled' ? 'bg-red-50 border-l-red-500' :
+                              'bg-amber-50 border-l-amber-500'
+                            )}>
+                            <p className="font-medium truncate">{(() => { try { return format(new Date(b.start_time), 'HH:mm'); } catch { return ''; } })()} {b.service_name}</p>
+                            <p className="text-muted-foreground truncate">{b.customer_name}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* LIST TAB */}
         <TabsContent value="list" className="mt-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
             <div className="relative flex-1 min-w-0 max-w-sm">
@@ -208,7 +297,7 @@ export default function AppointmentsPage() {
             </Select>
           </div>
 
-          {/* Mobile: card list */}
+          {/* Mobile card list */}
           <div className="space-y-3 md:hidden">
             {filteredBookings.length === 0 ? (
               <Card><CardContent className="py-12 text-center text-sm text-muted-foreground">No bookings found</CardContent></Card>
@@ -221,7 +310,7 @@ export default function AppointmentsPage() {
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span>{b.booking_date}</span>
-                    <span>{new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span>{(() => { try { return format(new Date(b.start_time), 'HH:mm'); } catch { return ''; } })()}</span>
                     <span className="font-medium text-foreground">${Number(b.total_price).toFixed(2)}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -233,7 +322,7 @@ export default function AppointmentsPage() {
             ))}
           </div>
 
-          {/* Desktop: table */}
+          {/* Desktop table */}
           <Card className="hidden md:block">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -246,28 +335,32 @@ export default function AppointmentsPage() {
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Pet</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Staff</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Price</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Source</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {filteredBookings.length === 0 ? (
-                      <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-muted-foreground">No bookings found</td></tr>
+                      <tr><td colSpan={8} className="px-4 py-12 text-center text-sm text-muted-foreground">No bookings found</td></tr>
                     ) : filteredBookings.map((b) => (
                       <tr key={b.id} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}>
                         <td className="px-4 py-3">
                           <p className="text-sm font-medium">{b.booking_date}</p>
-                          <p className="text-xs text-muted-foreground">{new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                          <p className="text-xs text-muted-foreground">{(() => { try { return format(new Date(b.start_time), 'HH:mm'); } catch { return ''; } })()}</p>
                         </td>
                         <td className="px-4 py-3 text-sm">{b.service_name}</td>
                         <td className="px-4 py-3">
                           <p className="text-sm">{b.customer_name}</p>
                           <p className="text-xs text-muted-foreground">{b.customer_email}</p>
                         </td>
-                        <td className="px-4 py-3 text-sm">{b.pet_name} ({b.pet_species})</td>
+                        <td className="px-4 py-3 text-sm">{b.pet_name}{b.pet_species ? ` (${b.pet_species})` : ''}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">
                           {b.assigned_staff_id ? staff.find(s => s.id === b.assigned_staff_id)?.full_name || '—' : '—'}
                         </td>
                         <td className="px-4 py-3 text-sm font-medium">${Number(b.total_price).toFixed(2)}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant="outline" className="text-[10px]">{(b as any).source || 'online'}</Badge>
+                        </td>
                         <td className="px-4 py-3">
                           <Badge className={cn("text-xs", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
                         </td>
@@ -281,63 +374,26 @@ export default function AppointmentsPage() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-md">
-          {selectedBooking && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center justify-between">
-                  <DialogTitle className="text-lg">{selectedBooking.service_name}</DialogTitle>
-                  <Badge className={cn("text-xs", statusColors[selectedBooking.status])}>{selectedBooking.status?.replace('_', ' ')}</Badge>
-                </div>
-              </DialogHeader>
-              <div className="space-y-4 py-2">
-                <InfoRow icon={User} label="Customer" value={selectedBooking.customer_name} />
-                <InfoRow icon={PawPrint} label="Pet" value={`${selectedBooking.pet_name} (${selectedBooking.pet_species})`} />
-                <InfoRow icon={CalIcon} label="Date" value={selectedBooking.booking_date} />
-                <InfoRow icon={Clock} label="Time" value={new Date(selectedBooking.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} />
-                <InfoRow icon={DollarSign} label="Total" value={`$${Number(selectedBooking.total_price).toFixed(2)}`} />
-                <div className="space-y-1.5">
-                  <p className="text-xs text-muted-foreground">Assigned Staff</p>
-                  <Select
-                    value={selectedBooking.assigned_staff_id || 'unassigned'}
-                    onValueChange={(v) => {
-                      const val = v === 'unassigned' ? null : v;
-                      updateBooking.mutate({ id: selectedBooking.id, assigned_staff_id: val }, {
-                        onSuccess: () => toast.success('Staff reassigned'),
-                      });
-                    }}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Assign staff" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unassigned">Unassigned</SelectItem>
-                      {staff.map(s => (
-                        <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter className="flex-col sm:flex-row gap-2">
-                {selectedBooking.status === 'confirmed' && (
-                  <Button onClick={() => updateStatus(selectedBooking.id, 'in_progress')} className="flex-1">Start Service</Button>
-                )}
-                {selectedBooking.status === 'in_progress' && (
-                  <Button onClick={() => updateStatus(selectedBooking.id, 'completed')} className="flex-1">Complete</Button>
-                )}
-                {selectedBooking.status === 'pending' && (
-                  <Button onClick={() => updateStatus(selectedBooking.id, 'confirmed')} className="flex-1">Confirm</Button>
-                )}
-                {['pending', 'confirmed'].includes(selectedBooking.status) && (
-                  <Button onClick={() => updateStatus(selectedBooking.id, 'cancelled')} variant="destructive" className="flex-1">Cancel</Button>
-                )}
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Walk-in Dialog */}
+      <WalkInDialog
+        open={walkInOpen}
+        onOpenChange={setWalkInOpen}
+        services={services}
+        staff={staff}
+        customers={customers}
+        onSubmit={handleWalkIn}
+        isLoading={insertBooking.isPending}
+      />
+
+      {/* Booking Detail Sheet */}
+      <BookingDetailPanel
+        booking={selectedBooking}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        staff={staff}
+        onUpdate={handleUpdate}
+        onUpdateStatus={handleUpdateStatus}
+      />
     </div>
   );
 }
