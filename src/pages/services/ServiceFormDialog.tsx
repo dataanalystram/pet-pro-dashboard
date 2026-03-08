@@ -10,8 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import MediaUploader from '@/components/MediaUploader';
-import { Plus, X, Sparkles, MapPin, Clock, HelpCircle, DollarSign } from 'lucide-react';
+import { Plus, X, Sparkles, MapPin, Clock, HelpCircle, DollarSign, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ServiceStaffTab from './ServiceStaffTab';
 
 const CATEGORIES = [
   { value: 'grooming', label: 'Grooming' }, { value: 'dental', label: 'Dental' },
