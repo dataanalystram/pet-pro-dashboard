@@ -173,6 +173,11 @@ export default function AppointmentsPage() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{b.service_name}</p>
                           <p className="text-xs text-muted-foreground">{b.customer_name} · {b.pet_name}</p>
+                          {b.assigned_staff_id && (
+                            <p className="text-[10px] text-primary flex items-center gap-0.5 mt-0.5">
+                              <Users className="w-2.5 h-2.5" />{staff.find(s => s.id === b.assigned_staff_id)?.full_name || 'Staff'}
+                            </p>
+                          )}
                         </div>
                         <Badge className={cn("text-[10px] hidden sm:inline-flex", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
                       </button>
