@@ -27,13 +27,14 @@ const locationLabels: Record<string, string> = {
 
 interface Props {
   service: any;
+  staffCount?: number;
   onEdit: () => void;
   onDelete: () => void;
   onPreview: () => void;
   onDuplicate: () => void;
 }
 
-export default function ServiceCard({ service: s, onEdit, onDelete, onPreview, onDuplicate }: Props) {
+export default function ServiceCard({ service: s, staffCount = 0, onEdit, onDelete, onPreview, onDuplicate }: Props) {
   const allPets = [...(s.pet_types_accepted || []), ...(s.custom_pet_types || [])];
 
   return (
