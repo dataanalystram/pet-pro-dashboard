@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Smartphone, Monitor, Tablet, Clock, Sparkles, ChevronUp, ChevronDown, MapPin, Star, ChevronLeft, ChevronRight, X, Shield, Heart, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useReviews } from '@/hooks/use-supabase-data';
+import { format } from 'date-fns';
 
 const currencySymbol = (c: string) => c === 'EUR' ? '€' : c === 'GBP' ? '£' : c === 'USD' ? '$' : c + ' ';
 
