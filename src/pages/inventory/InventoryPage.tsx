@@ -3,155 +3,257 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Package, Plus, Search, AlertTriangle, Pencil, Trash2 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Package, Plus, Search, AlertTriangle, LayoutGrid, List, Star,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { useInventory, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
+import { useInventory, useUpdate, useDelete } from '@/hooks/use-supabase-data';
+import ProductCard from './components/ProductCard';
+import ProductFormDialog from './components/ProductFormDialog';
+import ProductDetailPanel from './components/ProductDetailPanel';
 
 const categoryLabels: Record<string, string> = {
   grooming_supplies: 'Grooming Supplies', equipment: 'Equipment', retail: 'Retail',
-  cleaning: 'Cleaning', medical: 'Medical', other: 'Other',
+  cleaning: 'Cleaning', medical: 'Medical', food: 'Food & Treats', toys: 'Toys', accessories: 'Accessories', other: 'Other',
 };
-const categoryColors: Record<string, string> = {
-  grooming_supplies: 'bg-blue-100 text-blue-700', equipment: 'bg-secondary text-secondary-foreground',
-  retail: 'bg-emerald-100 text-emerald-700', cleaning: 'bg-amber-100 text-amber-700',
-  medical: 'bg-red-100 text-red-700', other: 'bg-secondary text-secondary-foreground',
-};
+
+const sortOptions = [
+  { value: 'name', label: 'Name' },
+  { value: 'price_high', label: 'Price: High to Low' },
+  { value: 'price_low', label: 'Price: Low to High' },
+  { value: 'stock', label: 'Stock' },
+  { value: 'newest', label: 'Newest' },
+];
 
 export default function InventoryPage() {
   const { data: items = [], isLoading } = useInventory();
-  const insertItem = useInsert('inventory');
   const updateItem = useUpdate('inventory');
   const deleteItem = useDelete('inventory');
+
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('all');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState({ name: '', category: 'grooming_supplies', quantity_in_stock: '0', reorder_point: '5', cost_per_unit: '', retail_price: '', supplier_name: '' });
+  const [brandFilter, setBrandFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
+  const [tab, setTab] = useState('all');
+  const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [detailProduct, setDetailProduct] = useState<any>(null);
 
-  const openAdd = () => { setEditing(null); setForm({ name: '', category: 'grooming_supplies', quantity_in_stock: '0', reorder_point: '5', cost_per_unit: '', retail_price: '', supplier_name: '' }); setDialogOpen(true); };
-  const openEdit = (item: any) => { setEditing(item); setForm({ name: item.name, category: item.category, quantity_in_stock: item.quantity_in_stock.toString(), reorder_point: item.reorder_point.toString(), cost_per_unit: item.cost_per_unit?.toString() || '', retail_price: item.retail_price?.toString() || '', supplier_name: item.supplier_name || '' }); setDialogOpen(true); };
+  // Unique brands
+  const brands = Array.from(new Set(items.map((i: any) => i.brand).filter(Boolean)));
 
-  const handleSave = () => {
-    const payload = { name: form.name, category: form.category, quantity_in_stock: parseInt(form.quantity_in_stock), reorder_point: parseInt(form.reorder_point), cost_per_unit: form.cost_per_unit ? parseFloat(form.cost_per_unit) : 0, retail_price: form.retail_price ? parseFloat(form.retail_price) : null, supplier_name: form.supplier_name || null };
-    if (editing) {
-      updateItem.mutate({ id: editing.id, ...payload }, { onSuccess: () => { toast.success('Item updated'); setDialogOpen(false); } });
-    } else {
-      insertItem.mutate(payload, { onSuccess: () => { toast.success('Item added'); setDialogOpen(false); } });
+  // Filter
+  const filtered = items.filter((i: any) => {
+    const status = i.status || 'active';
+    if (tab === 'active' && status !== 'active') return false;
+    if (tab === 'draft' && status !== 'draft') return false;
+    if (tab === 'archived' && status !== 'archived') return false;
+    if (tab === 'low_stock' && i.quantity_in_stock > i.reorder_point) return false;
+    if (catFilter !== 'all' && i.category !== catFilter) return false;
+    if (brandFilter !== 'all' && i.brand !== brandFilter) return false;
+    if (search && !i.name.toLowerCase().includes(search.toLowerCase()) && !(i.sku || '').toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  }).sort((a: any, b: any) => {
+    switch (sortBy) {
+      case 'price_high': return Number(b.retail_price || b.cost_per_unit || 0) - Number(a.retail_price || a.cost_per_unit || 0);
+      case 'price_low': return Number(a.retail_price || a.cost_per_unit || 0) - Number(b.retail_price || b.cost_per_unit || 0);
+      case 'stock': return a.quantity_in_stock - b.quantity_in_stock;
+      case 'newest': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      default: return a.name.localeCompare(b.name);
     }
+  });
+
+  const lowStockCount = items.filter((i: any) => i.quantity_in_stock <= i.reorder_point).length;
+  const tabCounts = {
+    all: items.length,
+    active: items.filter((i: any) => (i.status || 'active') === 'active').length,
+    draft: items.filter((i: any) => i.status === 'draft').length,
+    archived: items.filter((i: any) => i.status === 'archived').length,
+    low_stock: lowStockCount,
   };
 
-  const handleDelete = (id: string) => { if (!window.confirm('Delete this item?')) return; deleteItem.mutate(id, { onSuccess: () => toast.success('Item deleted') }); };
+  const handleEdit = (product: any) => { setEditingProduct(product); setFormOpen(true); };
+  const handleAdd = () => { setEditingProduct(null); setFormOpen(true); };
+  const handleDuplicate = (product: any) => {
+    const { id, created_at, updated_at, sku, ...rest } = product;
+    setEditingProduct(null);
+    // Pre-fill by opening form with the product data but no id
+    setEditingProduct({ ...rest, name: `${product.name} (Copy)`, sku: '' });
+    setFormOpen(true);
+  };
+  const handleArchive = (product: any) => {
+    updateItem.mutate({ id: product.id, status: product.status === 'archived' ? 'active' : 'archived' }, {
+      onSuccess: () => toast.success(product.status === 'archived' ? 'Product restored' : 'Product archived'),
+    });
+  };
 
-  const filtered = items.filter(i => {
-    if (catFilter !== 'all' && i.category !== catFilter) return false;
-    if (search && !i.name.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
-  const lowStock = items.filter(i => i.quantity_in_stock <= i.reorder_point);
-
-  if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading inventory...</div>;
+  if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading products...</div>;
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div><h1 className="text-xl sm:text-2xl font-semibold">Inventory</h1><p className="text-sm text-muted-foreground">{items.length} items tracked</p></div>
-        <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> Add Item</Button>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-semibold">Product Catalog</h1>
+          <p className="text-sm text-muted-foreground">{items.length} products · {lowStockCount} low stock</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="hidden sm:flex border rounded-lg overflow-hidden">
+            <Button variant={view === 'grid' ? 'default' : 'ghost'} size="icon" className="h-9 w-9 rounded-none" onClick={() => setView('grid')}>
+              <LayoutGrid className="w-4 h-4" />
+            </Button>
+            <Button variant={view === 'list' ? 'default' : 'ghost'} size="icon" className="h-9 w-9 rounded-none" onClick={() => setView('list')}>
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
+          <Button onClick={handleAdd}><Plus className="w-4 h-4 mr-2" /> Add Product</Button>
+        </div>
       </div>
 
-      {lowStock.length > 0 && (
-        <Card className="border-warning/40 bg-warning/5">
+      {/* Low stock alert */}
+      {lowStockCount > 0 && (
+        <Card className="border-amber-300/40 bg-amber-50/50 dark:bg-amber-950/20">
           <CardContent className="p-4 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0" />
-            <div><p className="text-sm font-medium">Low Stock Alert</p><p className="text-xs text-muted-foreground">{lowStock.map(i => i.name).join(', ')} need restocking</p></div>
+            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium">{lowStockCount} product{lowStockCount > 1 ? 's' : ''} low on stock</p>
+              <p className="text-xs text-muted-foreground">Review and reorder to avoid stockouts</p>
+            </div>
+            <Button variant="outline" size="sm" className="ml-auto" onClick={() => setTab('low_stock')}>View</Button>
           </CardContent>
         </Card>
       )}
 
+      {/* Tabs */}
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList className="w-full sm:w-auto overflow-x-auto">
+          {Object.entries(tabCounts).map(([key, count]) => (
+            <TabsTrigger key={key} value={key} className="capitalize text-xs px-3">
+              {key === 'low_stock' ? 'Low Stock' : key === 'all' ? 'All Products' : key}
+              <span className="ml-1.5 text-[10px] text-muted-foreground">{count}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
+      {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <div className="relative flex-1 min-w-0 max-w-sm"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Search items..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
-        <Select value={catFilter} onValueChange={setCatFilter}><SelectTrigger className="w-full sm:w-44"><SelectValue placeholder="All categories" /></SelectTrigger>
-          <SelectContent><SelectItem value="all">All Categories</SelectItem>{Object.entries(categoryLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+        <div className="relative flex-1 min-w-0 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search products or SKU..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+        <Select value={catFilter} onValueChange={setCatFilter}>
+          <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {Object.entries(categoryLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        {brands.length > 0 && (
+          <Select value={brandFilter} onValueChange={setBrandFilter}>
+            <SelectTrigger className="w-full sm:w-36"><SelectValue placeholder="Brand" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Brands</SelectItem>
+              {brands.map((b: any) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        )}
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Sort by" /></SelectTrigger>
+          <SelectContent>
+            {sortOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+          </SelectContent>
         </Select>
       </div>
 
-      {/* Mobile: card list */}
-      <div className="space-y-3 md:hidden">
-        {filtered.map((item) => (
-          <Card key={item.id}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2"><Package className="w-4 h-4 text-muted-foreground" /><span className="text-sm font-medium">{item.name}</span></div>
-                <Badge className={cn("text-[10px]", categoryColors[item.category])}>{categoryLabels[item.category]}</Badge>
-              </div>
-              <div className="flex items-center gap-4 text-sm">
-                <span className={cn("font-semibold", item.quantity_in_stock <= item.reorder_point ? "text-destructive" : "")}>{item.quantity_in_stock} in stock</span>
-                <span className="text-muted-foreground">{item.cost_per_unit ? `$${Number(item.cost_per_unit)}` : '-'}</span>
-              </div>
-              <div className="flex gap-2 mt-3">
-                <Button variant="outline" size="sm" className="flex-1 h-9" onClick={() => openEdit(item)}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
-                <Button variant="outline" size="sm" className="h-9" onClick={() => handleDelete(item.id)}><Trash2 className="w-3 h-3 text-destructive" /></Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Grid View */}
+      {view === 'grid' && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {filtered.map((product: any) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onEdit={handleEdit}
+              onDuplicate={handleDuplicate}
+              onArchive={handleArchive}
+              onClick={setDetailProduct}
+            />
+          ))}
+        </div>
+      )}
 
-      {/* Desktop: table */}
-      <Card className="hidden md:block">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead><tr className="border-b bg-muted/50">
-                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Item</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Category</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Stock</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Cost</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Supplier</th>
-                <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Actions</th>
-              </tr></thead>
-              <tbody className="divide-y">
-                {filtered.map((item) => (
-                  <tr key={item.id} className="hover:bg-muted/50">
-                    <td className="px-4 py-3"><div className="flex items-center gap-2"><Package className="w-4 h-4 text-muted-foreground" /><span className="text-sm font-medium">{item.name}</span></div></td>
-                    <td className="px-4 py-3"><Badge className={cn("text-[10px]", categoryColors[item.category])}>{categoryLabels[item.category]}</Badge></td>
-                    <td className="px-4 py-3"><span className={cn("text-sm font-semibold", item.quantity_in_stock <= item.reorder_point ? "text-destructive" : "")}>{item.quantity_in_stock}</span>{item.quantity_in_stock <= item.reorder_point && <AlertTriangle className="w-3 h-3 text-warning inline ml-1" />}</td>
-                    <td className="px-4 py-3 text-sm">{item.cost_per_unit ? `$${Number(item.cost_per_unit)}` : '-'}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{item.supplier_name || '-'}</td>
-                    <td className="px-4 py-3 text-right"><div className="flex gap-1 justify-end">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(item)}><Pencil className="w-3 h-3" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(item.id)}><Trash2 className="w-3 h-3" /></Button>
-                    </div></td>
+      {/* List View */}
+      {view === 'list' && (
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Product</th>
+                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">SKU</th>
+                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Category</th>
+                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Stock</th>
+                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Price</th>
+                    <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                </thead>
+                <tbody className="divide-y">
+                  {filtered.map((item: any) => (
+                    <tr key={item.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => setDetailProduct(item)}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded bg-muted border flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {item.images?.[0] ? (
+                              <img src={item.images[0]} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <Package className="w-4 h-4 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              {item.featured && <Star className="w-3 h-3 text-amber-500 fill-amber-500" />}
+                              <span className="text-sm font-medium">{item.name}</span>
+                            </div>
+                            {item.brand && <p className="text-xs text-muted-foreground">{item.brand}</p>}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-xs font-mono text-muted-foreground">{item.sku || '-'}</td>
+                      <td className="px-4 py-3"><Badge variant="secondary" className="text-[10px]">{categoryLabels[item.category] || item.category}</Badge></td>
+                      <td className="px-4 py-3">
+                        <span className={cn('text-sm font-semibold', item.quantity_in_stock <= item.reorder_point ? 'text-destructive' : '')}>
+                          {item.quantity_in_stock}
+                        </span>
+                        {item.quantity_in_stock <= item.reorder_point && <AlertTriangle className="w-3 h-3 text-amber-500 inline ml-1" />}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-semibold">${Number(item.retail_price || item.cost_per_unit || 0).toFixed(2)}</td>
+                      <td className="px-4 py-3">
+                        <Badge variant={item.status === 'active' ? 'default' : 'secondary'} className="text-[10px] capitalize">{item.status || 'active'}</Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{editing ? 'Edit Item' : 'Add Item'}</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
-            <div className="space-y-1.5"><Label>Name *</Label><Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-            <div className="space-y-1.5"><Label>Category</Label><Select value={form.category} onValueChange={(v) => setForm(f => ({ ...f, category: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(categoryLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5"><Label>Quantity</Label><Input type="number" value={form.quantity_in_stock} onChange={(e) => setForm(f => ({ ...f, quantity_in_stock: e.target.value }))} /></div>
-              <div className="space-y-1.5"><Label>Reorder Point</Label><Input type="number" value={form.reorder_point} onChange={(e) => setForm(f => ({ ...f, reorder_point: e.target.value }))} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5"><Label>Cost Per Unit ($)</Label><Input type="number" value={form.cost_per_unit} onChange={(e) => setForm(f => ({ ...f, cost_per_unit: e.target.value }))} /></div>
-              <div className="space-y-1.5"><Label>Retail Price ($)</Label><Input type="number" value={form.retail_price} onChange={(e) => setForm(f => ({ ...f, retail_price: e.target.value }))} /></div>
-            </div>
-            <div className="space-y-1.5"><Label>Supplier</Label><Input value={form.supplier_name} onChange={(e) => setForm(f => ({ ...f, supplier_name: e.target.value }))} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={handleSave} disabled={!form.name}>{editing ? 'Save Changes' : 'Add Item'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {filtered.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">
+          <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p className="font-medium">No products found</p>
+          <p className="text-sm mt-1">Try adjusting your filters or add a new product</p>
+        </div>
+      )}
+
+      <ProductFormDialog open={formOpen} onOpenChange={setFormOpen} product={editingProduct} />
+      <ProductDetailPanel product={detailProduct} open={!!detailProduct} onOpenChange={open => !open && setDetailProduct(null)} onEdit={handleEdit} />
     </div>
   );
 }
