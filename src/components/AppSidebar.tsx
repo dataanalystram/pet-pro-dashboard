@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, CalendarDays, Users, Inbox, Scissors,
-  Megaphone, Boxes, BarChart3, MessageSquare, UserCog, Settings, LogOut, Star,
+  Megaphone, Boxes, BarChart3, MessageSquare, UserCog, Settings, LogOut, Star, ShoppingCart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
