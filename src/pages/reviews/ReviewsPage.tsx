@@ -1,19 +1,16 @@
-
 import { useState, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, MessageSquare, TrendingUp, AlertTriangle, Search, Send, Eye, EyeOff, Flag, Trash2, Clock } from 'lucide-react';
-import { StatCard } from '@/components/StatCard';
-import { useReviews } from '@/hooks/use-supabase-data';
-import { useServices } from '@/hooks/use-supabase-data';
-import { useUpdate, useDelete } from '@/hooks/use-supabase-data';
-import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Search } from 'lucide-react';
+import { useReviews, useServices, useUpdate, useDelete } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { ReviewStatsRow } from './components/ReviewStatsRow';
+import { QuickActionBar, QuickFilter } from './components/QuickActionBar';
+import { ServicePerformanceCards } from './components/ServicePerformanceCards';
+import { ReviewCard } from './components/ReviewCard';
+import { RatingDistribution } from './components/RatingDistribution';
+import { startOfWeek } from 'date-fns';
 
 export default function ReviewsPage() {
   const { data: reviews = [], isLoading } = useReviews();
@@ -24,9 +21,8 @@ export default function ReviewsPage() {
   const [search, setSearch] = useState('');
   const [ratingFilter, setRatingFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [serviceFilter, setServiceFilter] = useState('all');
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState('');
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
 
   const serviceMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -34,37 +30,60 @@ export default function ReviewsPage() {
     return map;
   }, [services]);
 
+  // Quick filter counts
+  const needsReplyCount = reviews.filter((r: any) => !r.admin_response).length;
+  const negativeCount = reviews.filter((r: any) => r.rating <= 2).length;
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const thisWeekCount = reviews.filter((r: any) => new Date(r.created_at) >= weekStart).length;
+
+  // Priority scoring
+  const priorityScore = (r: any) => {
+    let score = 0;
+    if (r.status === 'flagged') score += 1000;
+    if (r.rating <= 2 && !r.admin_response) score += 500;
+    if (r.status === 'pending') score += 100;
+    if (!r.admin_response) score += 50;
+    score += (5 - r.rating) * 10;
+    return score;
+  };
+
   const filtered = useMemo(() => {
-    return reviews.filter((r: any) => {
-      if (search) {
-        const q = search.toLowerCase();
-        const serviceName = serviceMap.get(r.service_id) || '';
-        if (!r.customer_name.toLowerCase().includes(q) && !serviceName.toLowerCase().includes(q) && !(r.review_text || '').toLowerCase().includes(q)) return false;
-      }
-      if (ratingFilter !== 'all' && r.rating !== Number(ratingFilter)) return false;
-      if (statusFilter !== 'all' && r.status !== statusFilter) return false;
-      if (serviceFilter !== 'all' && r.service_id !== serviceFilter) return false;
-      return true;
-    });
-  }, [reviews, search, ratingFilter, statusFilter, serviceFilter, serviceMap]);
+    let result = [...reviews] as any[];
 
-  // Stats
-  const totalReviews = reviews.length;
-  const avgRating = totalReviews ? (reviews.reduce((s: number, r: any) => s + r.rating, 0) / totalReviews).toFixed(1) : '0';
-  const pendingCount = reviews.filter((r: any) => r.status === 'pending').length;
-  const respondedCount = reviews.filter((r: any) => r.admin_response).length;
-  const responseRate = totalReviews ? Math.round((respondedCount / totalReviews) * 100) : 0;
+    // Quick filters
+    if (quickFilter === 'needs_reply') result = result.filter(r => !r.admin_response);
+    if (quickFilter === 'negative') result = result.filter(r => r.rating <= 2);
+    if (quickFilter === 'this_week') result = result.filter(r => new Date(r.created_at) >= weekStart);
 
-  // Rating distribution
-  const ratingDist = [5, 4, 3, 2, 1].map(star => {
-    const count = reviews.filter((r: any) => r.rating === star).length;
-    return { star, count, pct: totalReviews ? Math.round((count / totalReviews) * 100) : 0 };
-  });
+    // Service filter (from By Service tab click or dropdown)
+    if (selectedServiceId) result = result.filter(r => r.service_id === selectedServiceId);
 
-  const handleReply = (id: string) => {
-    if (!replyText.trim()) return;
-    updateReview.mutate({ id, admin_response: replyText, responded_at: new Date().toISOString() }, {
-      onSuccess: () => { toast.success('Reply sent'); setReplyingTo(null); setReplyText(''); }
+    // Search
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(r => {
+        const sn = serviceMap.get(r.service_id) || '';
+        return r.customer_name.toLowerCase().includes(q) || sn.toLowerCase().includes(q) || (r.review_text || '').toLowerCase().includes(q);
+      });
+    }
+
+    // Rating filter
+    if (ratingFilter !== 'all') result = result.filter(r => r.rating === Number(ratingFilter));
+
+    // Status filter
+    if (statusFilter !== 'all') result = result.filter(r => r.status === statusFilter);
+
+    // Sort
+    if (quickFilter === 'priority') {
+      result.sort((a, b) => priorityScore(b) - priorityScore(a));
+    }
+
+    return result;
+  }, [reviews, quickFilter, selectedServiceId, search, ratingFilter, statusFilter, serviceMap, weekStart]);
+
+  const handleReply = (id: string, text: string) => {
+    updateReview.mutate({ id, admin_response: text, responded_at: new Date().toISOString() }, {
+      onSuccess: () => toast.success('Reply sent'),
     });
   };
 
@@ -76,187 +95,118 @@ export default function ReviewsPage() {
     deleteReview.mutate(id, { onSuccess: () => toast.success('Review deleted') });
   };
 
-  const statusBadge = (status: string) => {
-    const variants: Record<string, string> = {
-      published: 'bg-success/10 text-success border-success/20',
-      pending: 'bg-warning/10 text-warning border-warning/20',
-      flagged: 'bg-destructive/10 text-destructive border-destructive/20',
-      hidden: 'bg-muted text-muted-foreground',
-    };
-    return <Badge className={cn('capitalize text-[10px] border', variants[status] || '')}>{status}</Badge>;
-  };
-
   if (isLoading) {
     return <div className="p-6 text-center text-muted-foreground">Loading reviews...</div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Reviews</h1>
-        <p className="text-sm text-muted-foreground">Track and respond to customer feedback</p>
+        <p className="text-sm text-muted-foreground">Track and respond to customer feedback across all services</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Average Rating" value={String(avgRating)} change={`${totalReviews} total`} changeType="neutral" icon={Star} iconBg="bg-amber-500" />
-        <StatCard title="Total Reviews" value={String(totalReviews)} change="All time" changeType="neutral" icon={MessageSquare} iconBg="bg-primary" />
-        <StatCard title="Pending" value={String(pendingCount)} change="Needs attention" changeType={pendingCount > 0 ? 'negative' : 'positive'} icon={AlertTriangle} iconBg="bg-warning" />
-        <StatCard title="Response Rate" value={`${responseRate}%`} change={`${respondedCount} responded`} changeType={responseRate >= 80 ? 'positive' : 'negative'} icon={TrendingUp} iconBg="bg-success" />
-      </div>
+      <ReviewStatsRow reviews={reviews} />
 
-      {/* Rating Distribution */}
-      <Card>
-        <CardContent className="p-5">
-          <h3 className="font-semibold text-sm mb-3">Rating Distribution</h3>
-          <div className="space-y-2">
-            {ratingDist.map(({ star, count, pct }) => (
-              <div key={star} className="flex items-center gap-3 text-sm">
-                <span className="w-4 text-muted-foreground font-medium">{star}</span>
-                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                <div className="flex-1 h-3 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
-                </div>
-                <span className="w-12 text-right text-muted-foreground text-xs">{count} ({pct}%)</span>
-              </div>
+      <Tabs defaultValue="all" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="all">All Reviews</TabsTrigger>
+          <TabsTrigger value="by_service">By Service</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="space-y-4">
+          <QuickActionBar
+            activeFilter={quickFilter}
+            onFilterChange={f => { setQuickFilter(f); setSelectedServiceId(null); }}
+            needsReplyCount={needsReplyCount}
+            negativeCount={negativeCount}
+            thisWeekCount={thisWeekCount}
+          />
+
+          {/* Filters row */}
+          <div className="flex flex-wrap gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input placeholder="Search reviews..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+            </div>
+            <Select value={ratingFilter} onValueChange={setRatingFilter}>
+              <SelectTrigger className="w-[130px]"><SelectValue placeholder="Rating" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Ratings</SelectItem>
+                {[5, 4, 3, 2, 1].map(r => <SelectItem key={r} value={String(r)}>{r} Star{r !== 1 ? 's' : ''}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[130px]"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="flagged">Flagged</SelectItem>
+                <SelectItem value="hidden">Hidden</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <RatingDistribution reviews={reviews} />
+
+          {/* Reviews list */}
+          <div className="space-y-3">
+            {filtered.length === 0 && (
+              <div className="py-12 text-center text-muted-foreground text-sm">No reviews match your filters</div>
+            )}
+            {filtered.map((review: any) => (
+              <ReviewCard
+                key={review.id}
+                review={review}
+                serviceName={serviceMap.get(review.service_id) || 'Unknown Service'}
+                onReply={handleReply}
+                onStatusChange={handleStatusChange}
+                onDelete={handleDelete}
+                isUpdating={updateReview.isPending}
+              />
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search reviews..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-        </div>
-        <Select value={ratingFilter} onValueChange={setRatingFilter}>
-          <SelectTrigger className="w-[130px]"><SelectValue placeholder="Rating" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Ratings</SelectItem>
-            {[5,4,3,2,1].map(r => <SelectItem key={r} value={String(r)}>{r} Star{r !== 1 ? 's' : ''}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[130px]"><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="flagged">Flagged</SelectItem>
-            <SelectItem value="hidden">Hidden</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={serviceFilter} onValueChange={setServiceFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Service" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Services</SelectItem>
-            {services.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
+        <TabsContent value="by_service" className="space-y-4">
+          <ServicePerformanceCards
+            services={services}
+            reviews={reviews}
+            selectedServiceId={selectedServiceId}
+            onSelectService={setSelectedServiceId}
+          />
 
-      {/* Reviews List */}
-      <div className="space-y-3">
-        {filtered.length === 0 && (
-          <Card><CardContent className="p-8 text-center text-muted-foreground">No reviews found</CardContent></Card>
-        )}
-        {filtered.map((review: any) => (
-          <Card key={review.id} className="overflow-hidden">
-            <CardContent className="p-5 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
-                    {review.customer_name.charAt(0)}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-sm">{review.customer_name}</p>
-                      {statusBadge(review.status)}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {serviceMap.get(review.service_id) || 'Unknown Service'} • {format(new Date(review.created_at), 'MMM d, yyyy')}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-0.5 flex-shrink-0">
-                  {[1,2,3,4,5].map(i => (
-                    <Star key={i} className={cn('w-4 h-4', i <= review.rating ? 'text-amber-500 fill-amber-500' : 'text-muted')} />
-                  ))}
-                </div>
+          {selectedServiceId && (
+            <>
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-sm">
+                  Reviews for {serviceMap.get(selectedServiceId) || 'Service'}
+                </h3>
+                <button className="text-xs text-primary hover:underline" onClick={() => setSelectedServiceId(null)}>
+                  Clear filter
+                </button>
               </div>
-
-              {review.review_text && (
-                <p className="text-sm text-muted-foreground leading-relaxed">{review.review_text}</p>
-              )}
-
-              {(review.pet_name || review.pet_species) && (
-                <span className="inline-block text-[11px] bg-secondary text-secondary-foreground rounded-full px-2.5 py-0.5">
-                  {review.pet_species === 'dog' ? '🐕' : review.pet_species === 'cat' ? '🐱' : '🐾'} {review.pet_name} {review.pet_species ? `(${review.pet_species})` : ''}
-                </span>
-              )}
-
-              {/* Admin Response */}
-              {review.admin_response && (
-                <div className="bg-accent/50 rounded-xl p-3 ml-6 border-l-2 border-primary">
-                  <p className="text-xs font-semibold text-primary mb-1">Your Reply</p>
-                  <p className="text-sm text-muted-foreground">{review.admin_response}</p>
-                  {review.responded_at && (
-                    <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {format(new Date(review.responded_at), 'MMM d, yyyy')}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Reply Form */}
-              {replyingTo === review.id && (
-                <div className="ml-6 space-y-2">
-                  <Textarea
-                    placeholder="Write your reply..."
-                    value={replyText}
-                    onChange={e => setReplyText(e.target.value)}
-                    className="min-h-[60px]"
+              <div className="space-y-3">
+                {filtered.map((review: any) => (
+                  <ReviewCard
+                    key={review.id}
+                    review={review}
+                    serviceName={serviceMap.get(review.service_id) || 'Unknown Service'}
+                    onReply={handleReply}
+                    onStatusChange={handleStatusChange}
+                    onDelete={handleDelete}
+                    isUpdating={updateReview.isPending}
                   />
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => handleReply(review.id)} disabled={updateReview.isPending}>
-                      <Send className="w-3 h-3 mr-1" /> Send Reply
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => { setReplyingTo(null); setReplyText(''); }}>Cancel</Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex items-center gap-1.5 pt-1">
-                {!review.admin_response && replyingTo !== review.id && (
-                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setReplyingTo(review.id); setReplyText(''); }}>
-                    <MessageSquare className="w-3 h-3 mr-1" /> Reply
-                  </Button>
+                ))}
+                {filtered.length === 0 && (
+                  <div className="py-8 text-center text-muted-foreground text-sm">No reviews for this service</div>
                 )}
-                {review.status !== 'published' && (
-                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleStatusChange(review.id, 'published')}>
-                    <Eye className="w-3 h-3 mr-1" /> Publish
-                  </Button>
-                )}
-                {review.status === 'published' && (
-                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleStatusChange(review.id, 'hidden')}>
-                    <EyeOff className="w-3 h-3 mr-1" /> Hide
-                  </Button>
-                )}
-                {review.status !== 'flagged' && (
-                  <Button size="sm" variant="outline" className="h-7 text-xs text-warning" onClick={() => handleStatusChange(review.id, 'flagged')}>
-                    <Flag className="w-3 h-3 mr-1" /> Flag
-                  </Button>
-                )}
-                <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => handleDelete(review.id)}>
-                  <Trash2 className="w-3 h-3 mr-1" /> Delete
-                </Button>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
