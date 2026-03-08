@@ -175,6 +175,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
     } else {
       setForm(emptyForm);
       setSizePricingEnabled(false);
+      setStaffAssignments([]);
     }
   }, [editing, open]);
 
