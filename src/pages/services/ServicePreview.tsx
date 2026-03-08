@@ -2,8 +2,10 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Shield, Weight, AlertCircle, CheckCircle2, Smartphone, Monitor, Tablet, MapPin, Calendar, HelpCircle, Plus, Percent, Star, ChevronDown, X, Heart } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { useReviews } from '@/hooks/use-supabase-data';
+import { format } from 'date-fns';
 
 const currencySymbol = (c: string) => c === 'EUR' ? '€' : c === 'GBP' ? '£' : c === 'USD' ? '$' : c + ' ';
 
@@ -28,8 +30,17 @@ interface Props { open: boolean; onOpenChange: (open: boolean) => void; service:
 export default function ServicePreview({ open, onOpenChange, service: s, allServices = [] }: Props) {
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [selectedAddons, setSelectedAddons] = useState<Set<number>>(new Set());
+  const { data: allReviews = [] } = useReviews();
 
   if (!s) return null;
+
+  const serviceReviews = allReviews.filter((r: any) => r.service_id === s.id && r.status === 'published');
+  const avgRating = serviceReviews.length ? (serviceReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / serviceReviews.length).toFixed(1) : '0';
+  const reviewCount = serviceReviews.length;
+  const ratingDist = [5,4,3,2,1].map(star => {
+    const count = serviceReviews.filter((r: any) => r.rating === star).length;
+    return { stars: star, pct: reviewCount ? Math.round((count / reviewCount) * 100) : 0 };
+  });
 
   const frameWidth = device === 'mobile' ? 'max-w-[390px]' : device === 'tablet' ? 'max-w-[768px]' : 'max-w-[1024px]';
   const allPets = [...(s.pet_types_accepted || []), ...(s.custom_pet_types || [])];
@@ -100,9 +111,9 @@ export default function ServicePreview({ open, onOpenChange, service: s, allServ
                 {s.short_description && <p className="text-white/80 text-sm mt-1">{s.short_description}</p>}
                 <div className="flex items-center gap-3 mt-3">
                   <div className="flex items-center gap-0.5 text-amber-400">
-                    {[1,2,3,4,5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-current" />)}
+                    {[1,2,3,4,5].map(i => <Star key={i} className={cn('w-3.5 h-3.5', i <= Math.round(Number(avgRating)) ? 'fill-current' : 'opacity-30')} />)}
                   </div>
-                  <a href="#reviews-section" className="text-white/80 text-xs hover:text-white underline underline-offset-2 transition-colors cursor-pointer">4.9 (128 reviews)</a>
+                  <a href="#reviews-section" className="text-white/80 text-xs hover:text-white underline underline-offset-2 transition-colors cursor-pointer">{avgRating} ({reviewCount} review{reviewCount !== 1 ? 's' : ''})</a>
                 </div>
               </div>
             </div>
@@ -243,67 +254,67 @@ export default function ServicePreview({ open, onOpenChange, service: s, allServ
                     <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> Customer Reviews
                   </h3>
                   
-                  {/* Rating Summary */}
-                  <div className="bg-accent/50 rounded-2xl p-5 flex items-center gap-6">
-                    <div className="text-center">
-                      <div className="text-4xl font-extrabold">4.9</div>
-                      <div className="flex items-center gap-0.5 mt-1">
-                        {[1,2,3,4,5].map(i => <Star key={i} className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />)}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">128 reviews</p>
-                    </div>
-                    <div className="flex-1 space-y-1.5">
-                      {[
-                        { stars: 5, pct: 85 },
-                        { stars: 4, pct: 10 },
-                        { stars: 3, pct: 3 },
-                        { stars: 2, pct: 1 },
-                        { stars: 1, pct: 1 },
-                      ].map(({ stars, pct }) => (
-                        <div key={stars} className="flex items-center gap-2 text-xs">
-                          <span className="w-3 text-muted-foreground">{stars}</span>
-                          <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                            <div className="h-full bg-amber-500 rounded-full" style={{ width: `${pct}%` }} />
+                  {reviewCount > 0 ? (
+                    <>
+                      {/* Rating Summary */}
+                      <div className="bg-accent/50 rounded-2xl p-5 flex items-center gap-6">
+                        <div className="text-center">
+                          <div className="text-4xl font-extrabold">{avgRating}</div>
+                          <div className="flex items-center gap-0.5 mt-1">
+                            {[1,2,3,4,5].map(i => <Star key={i} className={cn('w-3.5 h-3.5 text-amber-500', i <= Math.round(Number(avgRating)) ? 'fill-amber-500' : '')} />)}
                           </div>
-                          <span className="w-8 text-right text-muted-foreground">{pct}%</span>
+                          <p className="text-xs text-muted-foreground mt-1">{reviewCount} review{reviewCount !== 1 ? 's' : ''}</p>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Individual Reviews */}
-                  <div className="space-y-3">
-                    {[
-                      { name: 'Sarah M.', rating: 5, date: '2 weeks ago', text: 'Amazing grooming service! My poodle looks absolutely fantastic. The staff was so gentle and caring.', pet: '🐩 Poodle' },
-                      { name: 'James K.', rating: 5, date: '1 month ago', text: 'Very professional and caring staff. They took the time to explain everything. Highly recommend!', pet: '🐕 Golden Retriever' },
-                      { name: 'Emily R.', rating: 4, date: '1 month ago', text: 'Great service overall, my cat was calm the whole time. Will definitely come back for another session.', pet: '🐱 Persian Cat' },
-                      { name: 'Michael T.', rating: 5, date: '2 months ago', text: 'Best pet care in town. Been coming here for 2 years and the quality has always been consistently excellent.', pet: '🐕 Labrador' },
-                    ].map((review, i) => (
-                      <div key={i} className="bg-card border rounded-xl p-4 space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-                              {review.name.charAt(0)}
+                        <div className="flex-1 space-y-1.5">
+                          {ratingDist.map(({ stars, pct }) => (
+                            <div key={stars} className="flex items-center gap-2 text-xs">
+                              <span className="w-3 text-muted-foreground">{stars}</span>
+                              <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                <div className="h-full bg-amber-500 rounded-full" style={{ width: `${pct}%` }} />
+                              </div>
+                              <span className="w-8 text-right text-muted-foreground">{pct}%</span>
                             </div>
-                            <div>
-                              <p className="text-sm font-semibold">{review.name}</p>
-                              <p className="text-[11px] text-muted-foreground">{review.date}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-0.5">
-                            {[1,2,3,4,5].map(j => (
-                              <Star key={j} className={cn('w-3 h-3', j <= review.rating ? 'text-amber-500 fill-amber-500' : 'text-muted')} />
-                            ))}
-                          </div>
+                          ))}
                         </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{review.text}</p>
-                        <span className="inline-block text-[10px] bg-secondary text-secondary-foreground rounded-full px-2 py-0.5">{review.pet}</span>
                       </div>
-                    ))}
-                  </div>
 
-                  <button className="text-sm text-primary font-medium hover:underline">See all 128 reviews →</button>
+                      {/* Individual Reviews */}
+                      <div className="space-y-3">
+                        {serviceReviews.slice(0, 4).map((review: any) => (
+                          <div key={review.id} className="bg-card border rounded-xl p-4 space-y-2.5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                                  {review.customer_name.charAt(0)}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold">{review.customer_name}</p>
+                                  <p className="text-[11px] text-muted-foreground">{format(new Date(review.created_at), 'MMM d, yyyy')}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-0.5">
+                                {[1,2,3,4,5].map(j => (
+                                  <Star key={j} className={cn('w-3 h-3', j <= review.rating ? 'text-amber-500 fill-amber-500' : 'text-muted')} />
+                                ))}
+                              </div>
+                            </div>
+                            {review.review_text && <p className="text-sm text-muted-foreground leading-relaxed">{review.review_text}</p>}
+                            {review.pet_name && (
+                              <span className="inline-block text-[10px] bg-secondary text-secondary-foreground rounded-full px-2 py-0.5">
+                                {review.pet_species === 'dog' ? '🐕' : review.pet_species === 'cat' ? '🐱' : '🐾'} {review.pet_name}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {reviewCount > 4 && (
+                        <button className="text-sm text-primary font-medium hover:underline">See all {reviewCount} reviews →</button>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No reviews yet for this service.</p>
+                  )}
                 </div>
 
                 {/* Cancellation & Terms */}

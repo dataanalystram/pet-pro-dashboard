@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, CalendarDays, Users, Inbox, Scissors,
-  Megaphone, Boxes, BarChart3, MessageSquare, UserCog, Settings, LogOut,
+  Megaphone, Boxes, BarChart3, MessageSquare, UserCog, Settings, LogOut, Star,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -19,6 +19,7 @@ const mainItems = [
   { title: "Requests", url: "/requests", icon: Inbox },
   { title: "Services", url: "/services", icon: Scissors },
   { title: "Messages", url: "/messages", icon: MessageSquare },
+  { title: "Reviews", url: "/reviews", icon: Star },
 ];
 
 const managementItems = [

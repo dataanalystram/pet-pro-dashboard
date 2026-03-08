@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
-type TableName = 'services' | 'customers' | 'staff' | 'bookings' | 'booking_requests' | 'inventory' | 'campaigns' | 'messages';
+type TableName = 'services' | 'customers' | 'staff' | 'bookings' | 'booking_requests' | 'inventory' | 'campaigns' | 'messages' | 'reviews';
 
 function useSupabaseQuery<T>(table: TableName, options?: { orderBy?: string; ascending?: boolean }) {
   return useQuery({
@@ -28,6 +28,7 @@ export function useBookingRequests() { return useSupabaseQuery<Tables<'booking_r
 export function useInventory() { return useSupabaseQuery<Tables<'inventory'>>('inventory', { orderBy: 'name' }); }
 export function useCampaigns() { return useSupabaseQuery<Tables<'campaigns'>>('campaigns', { orderBy: 'created_at', ascending: false }); }
 export function useMessages() { return useSupabaseQuery<Tables<'messages'>>('messages', { orderBy: 'created_at', ascending: true }); }
+export function useReviews() { return useSupabaseQuery<Tables<'reviews'>>('reviews', { orderBy: 'created_at', ascending: false }); }
 
 export function useInsert(table: TableName) {
   const qc = useQueryClient();

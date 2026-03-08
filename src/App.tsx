@@ -15,6 +15,7 @@ import AnalyticsPage from "@/pages/analytics/AnalyticsPage";
 import MessagesPage from "@/pages/messages/MessagesPage";
 import StaffPage from "@/pages/staff/StaffPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
+import ReviewsPage from "@/pages/reviews/ReviewsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/messages" element={<DashboardLayout><MessagesPage /></DashboardLayout>} />
           <Route path="/staff" element={<DashboardLayout><StaffPage /></DashboardLayout>} />
           <Route path="/settings" element={<DashboardLayout><SettingsPage /></DashboardLayout>} />
+          <Route path="/reviews" element={<DashboardLayout><ReviewsPage /></DashboardLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

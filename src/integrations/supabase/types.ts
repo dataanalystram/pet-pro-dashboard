@@ -272,6 +272,62 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          admin_response: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          id: string
+          pet_name: string | null
+          pet_species: string | null
+          rating: number
+          responded_at: string | null
+          review_text: string | null
+          service_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_response?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          id?: string
+          pet_name?: string | null
+          pet_species?: string | null
+          rating: number
+          responded_at?: string | null
+          review_text?: string | null
+          service_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_response?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          id?: string
+          pet_name?: string | null
+          pet_species?: string | null
+          rating?: number
+          responded_at?: string | null
+          review_text?: string | null
+          service_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           aftercare_notes: string | null

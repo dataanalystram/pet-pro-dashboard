@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
-  Inbox, Scissors, Megaphone, Boxes, UserCog, Settings,
+  Inbox, Scissors, Megaphone, Boxes, UserCog, Settings, Star,
 } from "lucide-react";
 
 const primaryTabs = [
@@ -20,6 +20,7 @@ const primaryTabs = [
 
 const moreItems = [
   { title: "Requests", url: "/requests", icon: Inbox },
+  { title: "Reviews", url: "/reviews", icon: Star },
   { title: "Services", url: "/services", icon: Scissors },
   { title: "Marketing", url: "/marketing", icon: Megaphone },
   { title: "Inventory", url: "/inventory", icon: Boxes },
