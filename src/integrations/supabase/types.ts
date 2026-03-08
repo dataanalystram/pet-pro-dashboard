@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_notifications: {
+        Row: {
+          booking_id: string
+          channel: string
+          created_at: string
+          event_type: string
+          id: string
+        }
+        Insert: {
+          booking_id: string
+          channel?: string
+          created_at?: string
+          event_type: string
+          id?: string
+        }
+        Update: {
+          booking_id?: string
+          channel?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_notifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_requests: {
         Row: {
           assigned_staff_id: string | null
@@ -110,6 +142,7 @@ export type Database = {
           created_at: string
           customer_email: string | null
           customer_name: string
+          customer_phone: string | null
           estimated_duration_minutes: number | null
           id: string
           no_show: boolean
@@ -118,6 +151,9 @@ export type Database = {
           pet_breed: string | null
           pet_name: string
           pet_species: string | null
+          pets: Json
+          recurring_group_id: string | null
+          recurring_pattern: string | null
           service_name: string
           source: string
           start_time: string
@@ -133,6 +169,7 @@ export type Database = {
           created_at?: string
           customer_email?: string | null
           customer_name: string
+          customer_phone?: string | null
           estimated_duration_minutes?: number | null
           id?: string
           no_show?: boolean
@@ -141,6 +178,9 @@ export type Database = {
           pet_breed?: string | null
           pet_name: string
           pet_species?: string | null
+          pets?: Json
+          recurring_group_id?: string | null
+          recurring_pattern?: string | null
           service_name: string
           source?: string
           start_time: string
@@ -156,6 +196,7 @@ export type Database = {
           created_at?: string
           customer_email?: string | null
           customer_name?: string
+          customer_phone?: string | null
           estimated_duration_minutes?: number | null
           id?: string
           no_show?: boolean
@@ -164,6 +205,9 @@ export type Database = {
           pet_breed?: string | null
           pet_name?: string
           pet_species?: string | null
+          pets?: Json
+          recurring_group_id?: string | null
+          recurring_pattern?: string | null
           service_name?: string
           source?: string
           start_time?: string
