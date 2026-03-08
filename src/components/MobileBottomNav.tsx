@@ -24,6 +24,7 @@ const moreItems = [
   { title: "Services", url: "/services", icon: Scissors },
   { title: "Marketing", url: "/marketing", icon: Megaphone },
   { title: "Inventory", url: "/inventory", icon: Boxes },
+  { title: "Orders", url: "/orders", icon: ShoppingCart },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Staff", url: "/staff", icon: UserCog },
   { title: "Settings", url: "/settings", icon: Settings },
