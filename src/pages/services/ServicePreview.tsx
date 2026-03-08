@@ -23,9 +23,9 @@ const dayLabels: Record<string, string> = {
   friday: 'Fri', saturday: 'Sat', sunday: 'Sun',
 };
 
-interface Props { open: boolean; onOpenChange: (open: boolean) => void; service: any; }
+interface Props { open: boolean; onOpenChange: (open: boolean) => void; service: any; allServices?: any[]; }
 
-export default function ServicePreview({ open, onOpenChange, service: s }: Props) {
+export default function ServicePreview({ open, onOpenChange, service: s, allServices = [] }: Props) {
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
@@ -86,7 +86,7 @@ export default function ServicePreview({ open, onOpenChange, service: s }: Props
             {/* Content */}
             <div className="p-5 space-y-4">
               <div>
-                <Badge className="text-xs mb-2 capitalize">{s.category}</Badge>
+                <Badge className="text-xs mb-2 capitalize">{s.custom_category || s.category}</Badge>
                 <h2 className="text-xl font-bold">{s.name}</h2>
                 {s.short_description && <p className="text-sm text-muted-foreground mt-1">{s.short_description}</p>}
               </div>
@@ -269,6 +269,27 @@ export default function ServicePreview({ open, onOpenChange, service: s }: Props
                   <p className="text-xs text-muted-foreground whitespace-pre-line">{s.terms_conditions}</p>
                 </div>
               )}
+
+              {/* Recommended Services */}
+              {s.recommended_services && s.recommended_services.length > 0 && allServices.length > 0 && (() => {
+                const recs = allServices.filter((srv: any) => s.recommended_services.includes(srv.id));
+                return recs.length > 0 ? (
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-sm">You Might Also Like</h3>
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {recs.map((r: any) => (
+                        <div key={r.id} className="flex-shrink-0 w-36 rounded-lg border bg-card p-2">
+                          <div className={cn('h-16 rounded-md mb-2', !r.cover_image_url && `bg-gradient-to-br ${categoryGradients[r.category] || categoryGradients.other}`)}>
+                            {r.cover_image_url ? <img src={r.cover_image_url} alt={r.name} className="w-full h-full object-cover rounded-md" /> : <div className="flex items-center justify-center h-full text-white/60 font-bold">{r.name.charAt(0)}</div>}
+                          </div>
+                          <p className="text-xs font-medium truncate">{r.name}</p>
+                          <p className="text-xs text-muted-foreground">{currencySymbol(r.currency || 'EUR')}{Number(r.base_price).toFixed(2)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
 
               {/* CTA */}
               <Button className="w-full mt-4" size="lg">Book Now</Button>

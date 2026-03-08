@@ -46,7 +46,7 @@ export default function ServiceCard({ service: s, onEdit, onDelete, onPreview, o
           </div>
         )}
         <div className="absolute top-2 left-2 flex gap-1.5 flex-wrap">
-          <Badge className={cn('text-[10px] border-0', categoryColors[s.category] || categoryColors.other)}>{s.category}</Badge>
+          <Badge className={cn('text-[10px] border-0', categoryColors[s.category] || categoryColors.other)}>{s.custom_category || s.category}</Badge>
           {s.featured && <Badge className="text-[10px] bg-amber-100 text-amber-700 border-0"><Sparkles className="w-3 h-3 mr-0.5" />Featured</Badge>}
           {s.difficulty_level && s.difficulty_level !== 'standard' && (
             <Badge className="text-[10px] bg-purple-100 text-purple-700 border-0 capitalize">{s.difficulty_level}</Badge>

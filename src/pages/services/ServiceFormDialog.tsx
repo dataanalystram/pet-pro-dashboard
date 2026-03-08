@@ -53,7 +53,7 @@ const DIFFICULTY_LEVELS = [
 ];
 
 export interface ServiceFormData {
-  name: string; category: string; short_description: string; description: string;
+  name: string; category: string; custom_category: string; short_description: string; description: string;
   long_description: string; base_price: string; price_from: string; price_type: string;
   currency: string; tax_rate: string; tax_inclusive: boolean; duration_minutes: string;
   buffer_minutes: string; max_bookings_per_day: string; pet_types_accepted: string[];
@@ -73,10 +73,11 @@ export interface ServiceFormData {
   faq: { question: string; answer: string }[];
   group_discount_percent: string;
   difficulty_level: string;
+  recommended_services: string[];
 }
 
 const emptyForm: ServiceFormData = {
-  name: '', category: 'grooming', short_description: '', description: '', long_description: '',
+  name: '', category: 'grooming', custom_category: '', short_description: '', description: '', long_description: '',
   base_price: '', price_from: '', price_type: 'fixed', currency: 'EUR', tax_rate: '21',
   tax_inclusive: true, duration_minutes: '', buffer_minutes: '15', max_bookings_per_day: '10',
   pet_types_accepted: ['dog', 'cat'], vaccination_required: false, age_restrictions: '',
@@ -95,6 +96,7 @@ const emptyForm: ServiceFormData = {
   faq: [],
   group_discount_percent: '0',
   difficulty_level: 'standard',
+  recommended_services: [],
 };
 
 interface Props {
@@ -103,9 +105,10 @@ interface Props {
   editing: any | null;
   onSave: (data: ServiceFormData) => void;
   saving?: boolean;
+  allServices?: any[];
 }
 
-export default function ServiceFormDialog({ open, onOpenChange, editing, onSave, saving }: Props) {
+export default function ServiceFormDialog({ open, onOpenChange, editing, onSave, saving, allServices = [] }: Props) {
   const [form, setForm] = useState<ServiceFormData>(emptyForm);
   const [newHighlight, setNewHighlight] = useState('');
   const [newTag, setNewTag] = useState('');
@@ -123,6 +126,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
       setSizePricingEnabled(!!psp);
       setForm({
         name: editing.name || '', category: editing.category || 'grooming',
+        custom_category: editing.custom_category || '',
         short_description: editing.short_description || '', description: editing.description || '',
         long_description: editing.long_description || '', base_price: editing.base_price?.toString() || '',
         price_from: editing.price_from?.toString() || '', price_type: editing.price_type || 'fixed',
@@ -154,6 +158,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
         faq: editing.faq || [],
         group_discount_percent: editing.group_discount_percent?.toString() || '0',
         difficulty_level: editing.difficulty_level || 'standard',
+        recommended_services: editing.recommended_services || [],
       });
     } else {
       setForm(emptyForm);
@@ -251,7 +256,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Category</Label>
-                <Select value={form.category} onValueChange={v => set('category', v)}>
+                <Select value={form.category} onValueChange={v => { set('category', v); if (v !== 'other') set('custom_category', ''); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
                 </Select>
@@ -264,6 +269,13 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
                 </Select>
               </div>
             </div>
+            {form.category === 'other' && (
+              <div className="space-y-1.5">
+                <Label>Custom Category Name *</Label>
+                <Input value={form.custom_category} onChange={e => set('custom_category', e.target.value)} placeholder="e.g. Aquatics, Exotic Care, Hydrotherapy" />
+                <p className="text-xs text-muted-foreground">Specify the category since "Other" was selected</p>
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label>Short Description <span className="text-muted-foreground text-xs">(max 120 chars)</span></Label>
               <Input value={form.short_description} onChange={e => set('short_description', e.target.value.slice(0, 120))} placeholder="A brief tagline for your service" />
@@ -662,7 +674,33 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
               <Textarea value={form.terms_conditions} onChange={e => set('terms_conditions', e.target.value)} rows={3} placeholder="Terms customers must accept before booking..." />
             </div>
 
-            {/* FAQ */}
+            {/* Recommendations */}
+            {allServices.length > 0 && (
+              <div className="border-t pt-4 space-y-3">
+                <Label className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> Recommended Services</Label>
+                <p className="text-xs text-muted-foreground">Suggest related services customers might also like ("You Might Also Like")</p>
+                <div className="space-y-2">
+                  {allServices
+                    .filter((srv: any) => srv.id !== editing?.id)
+                    .map((srv: any) => (
+                      <label key={srv.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                        <Checkbox
+                          checked={form.recommended_services.includes(srv.id)}
+                          onCheckedChange={(checked) => {
+                            set('recommended_services', checked
+                              ? [...form.recommended_services, srv.id]
+                              : form.recommended_services.filter((id: string) => id !== srv.id)
+                            );
+                          }}
+                        />
+                        <span>{srv.name}</span>
+                        <Badge variant="secondary" className="text-[10px] capitalize">{srv.custom_category || srv.category}</Badge>
+                      </label>
+                    ))}
+                </div>
+              </div>
+            )}
+
             <div className="border-t pt-4 space-y-3">
               <Label className="flex items-center gap-1.5"><HelpCircle className="w-3.5 h-3.5" /> FAQ</Label>
               <p className="text-xs text-muted-foreground">Common questions customers ask about this service</p>
