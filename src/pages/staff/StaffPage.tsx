@@ -320,7 +320,7 @@ export default function StaffPage() {
                         </div>
                       )}
 
-                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <Button variant="outline" size="sm" className="flex-1 h-8 text-xs" onClick={(e) => { e.stopPropagation(); openEdit(s); }}>
                           <Pencil className="w-3 h-3 mr-1" /> Edit
                         </Button>
