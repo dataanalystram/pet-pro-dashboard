@@ -11,10 +11,14 @@ export function NotificationBell() {
   const { data: notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const navigate = useNavigate();
 
-  const handleClick = (id: string, referenceId: string | null) => {
+  const handleClick = (id: string, type: string, referenceId: string | null) => {
     markAsRead.mutate(id);
     if (referenceId) {
-      navigate('/reviews');
+      if (type === 'low_stock') {
+        navigate('/inventory');
+      } else {
+        navigate('/reviews');
+      }
     }
   };
 
