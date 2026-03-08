@@ -100,13 +100,22 @@ const emptyForm: ServiceFormData = {
   recommended_services: [],
 };
 
+interface StaffAssignment {
+  staff_id: string;
+  is_primary: boolean;
+  price_override: string;
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editing: any | null;
-  onSave: (data: ServiceFormData) => void;
+  onSave: (data: ServiceFormData, staffAssignments: StaffAssignment[]) => void;
   saving?: boolean;
   allServices?: any[];
+  allStaff?: any[];
+  allBookings?: any[];
+  existingAssignments?: StaffAssignment[];
 }
 
 export default function ServiceFormDialog({ open, onOpenChange, editing, onSave, saving, allServices = [] }: Props) {
