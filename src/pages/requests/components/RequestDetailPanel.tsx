@@ -91,6 +91,7 @@ export default function RequestDetailPanel({ request, open, onClose }: Props) {
             start_time: request.preferred_time ? `${request.preferred_date}T${request.preferred_time}` : new Date().toISOString(),
             total_price: finalPrice,
             status: 'confirmed',
+            assigned_staff_id: staffId || null,
           });
           toast.success('Request accepted & booking created');
           onClose();
