@@ -126,6 +126,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
       setSizePricingEnabled(!!psp);
       setForm({
         name: editing.name || '', category: editing.category || 'grooming',
+        custom_category: editing.custom_category || '',
         short_description: editing.short_description || '', description: editing.description || '',
         long_description: editing.long_description || '', base_price: editing.base_price?.toString() || '',
         price_from: editing.price_from?.toString() || '', price_type: editing.price_type || 'fixed',
@@ -157,6 +158,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
         faq: editing.faq || [],
         group_discount_percent: editing.group_discount_percent?.toString() || '0',
         difficulty_level: editing.difficulty_level || 'standard',
+        recommended_services: editing.recommended_services || [],
       });
     } else {
       setForm(emptyForm);
