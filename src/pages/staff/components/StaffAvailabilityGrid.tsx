@@ -82,6 +82,13 @@ export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }:
   const [searchQuery, setSearchQuery] = useState('');
   const [editCell, setEditCell] = useState<CellEditState | null>(null);
   const [openPopover, setOpenPopover] = useState<string | null>(null);
+
+  // Drag-to-assign state
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStaffId, setDragStaffId] = useState<string | null>(null);
+  const [dragStartIdx, setDragStartIdx] = useState<number>(-1);
+  const [dragEndIdx, setDragEndIdx] = useState<number>(-1);
+  const [dragMode, setDragMode] = useState<'off' | 'on'>('off'); // toggle direction
   
   const updateStaff = useUpdate('staff');
 
