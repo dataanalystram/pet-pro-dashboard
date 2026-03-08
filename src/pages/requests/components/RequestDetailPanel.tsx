@@ -34,6 +34,7 @@ export default function RequestDetailPanel({ request, open, onClose }: Props) {
   const navigate = useNavigate();
   const { data: staff = [] } = useStaff();
   const { data: bookings = [] } = useBookings();
+  const { data: serviceStaff = [] } = useServiceStaff();
   const updateRequest = useUpdate('booking_requests');
   const insertBooking = useInsert('bookings');
 
