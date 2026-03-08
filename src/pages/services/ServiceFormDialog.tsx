@@ -276,7 +276,6 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
                 <p className="text-xs text-muted-foreground">Specify the category since "Other" was selected</p>
               </div>
             )}
-            </div>
             <div className="space-y-1.5">
               <Label>Short Description <span className="text-muted-foreground text-xs">(max 120 chars)</span></Label>
               <Input value={form.short_description} onChange={e => set('short_description', e.target.value.slice(0, 120))} placeholder="A brief tagline for your service" />
