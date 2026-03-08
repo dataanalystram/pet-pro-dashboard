@@ -649,6 +649,14 @@ function StorefrontDetailOverlay({ service: s, allServices, onClose }: { service
             </div>
           </div>
         )}
+        {/* Fixed Bottom Booking Bar (mobile only) */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-2xl p-4 flex items-center justify-between sm:hidden">
+          <div>
+            <span className="text-xl font-extrabold">{curr}{total.toFixed(2)}</span>
+            <p className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" />{s.duration_minutes}min</p>
+          </div>
+          <Button className="rounded-xl h-11 px-8 font-bold" size="lg">Book Now</Button>
+        </div>
       </div>
     </div>
   );

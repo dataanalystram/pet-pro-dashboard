@@ -321,77 +321,90 @@ export default function ServicePreview({ open, onOpenChange, service: s, allServ
                 )}
               </div>
 
-              {/* Right: Sticky Booking Card */}
-              <div className={cn(device === 'mobile' ? 'w-full' : 'w-80 flex-shrink-0')}>
-                <div className={cn('bg-card border rounded-2xl p-5 space-y-4 shadow-lg', device !== 'mobile' && 'sticky top-4')}>
-                  {/* Price */}
-                  <div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-extrabold">
-                        {s.price_type === 'starting_from' ? 'From ' : ''}
-                        {curr}{total.toFixed(2)}
-                      </span>
-                      {s.price_type === 'hourly' && <span className="text-muted-foreground text-sm">/hr</span>}
-                    </div>
-                    {Number(s.tax_rate) > 0 && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{s.tax_inclusive ? 'Incl.' : 'Excl.'} {s.tax_rate}% VAT</p>
-                    )}
-                    {Number(s.group_discount_percent) > 0 && (
-                      <div className="flex items-center gap-1 text-sm text-primary mt-1">
-                        <Percent className="w-4 h-4" /> {s.group_discount_percent}% multi-pet discount
+              {/* Right: Sticky Booking Card (hidden on mobile preview) */}
+              {device !== 'mobile' && (
+                <div className="w-80 flex-shrink-0">
+                  <div className="sticky top-4 bg-card border rounded-2xl p-5 space-y-4 shadow-lg">
+                    <div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-extrabold">
+                          {s.price_type === 'starting_from' ? 'From ' : ''}
+                          {curr}{total.toFixed(2)}
+                        </span>
+                        {s.price_type === 'hourly' && <span className="text-muted-foreground text-sm">/hr</span>}
                       </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{s.duration_minutes}min</span>
-                    {s.service_location && (
-                      <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{locationLabels[s.service_location]?.split(' ')[0] || s.service_location}</span>
-                    )}
-                  </div>
-
-                  {/* Interactive Add-ons */}
-                  {addons.length > 0 && (
-                    <div className="space-y-2 border-t pt-3">
-                      <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">Customize with Add-ons</h4>
-                      {addons.map((a: any, i: number) => (
-                        <label key={i} className={cn(
-                          'flex items-center justify-between rounded-xl px-3 py-2.5 text-sm cursor-pointer transition-all border',
-                          selectedAddons.has(i) ? 'bg-primary/5 border-primary/30' : 'bg-muted/50 border-transparent hover:bg-muted'
-                        )}>
-                          <div className="flex items-center gap-2">
-                            <input type="checkbox" checked={selectedAddons.has(i)} onChange={() => toggleAddon(i)} className="rounded border-primary text-primary focus:ring-primary w-4 h-4" />
-                            <span>{a.name}</span>
-                          </div>
-                          <span className="font-semibold text-xs">+{curr}{Number(a.price).toFixed(2)}</span>
-                        </label>
-                      ))}
-                      {selectedAddons.size > 0 && (
-                        <div className="flex justify-between text-sm font-medium pt-1 border-t">
-                          <span>Total</span>
-                          <span>{curr}{total.toFixed(2)}</span>
+                      {Number(s.tax_rate) > 0 && (
+                        <p className="text-xs text-muted-foreground mt-0.5">{s.tax_inclusive ? 'Incl.' : 'Excl.'} {s.tax_rate}% VAT</p>
+                      )}
+                      {Number(s.group_discount_percent) > 0 && (
+                        <div className="flex items-center gap-1 text-sm text-primary mt-1">
+                          <Percent className="w-4 h-4" /> {s.group_discount_percent}% multi-pet discount
                         </div>
                       )}
                     </div>
-                  )}
 
-                  {s.deposit_required && s.deposit_amount && (
-                    <p className="text-xs text-muted-foreground">
-                      {s.deposit_type === 'percentage' ? `${s.deposit_amount}%` : `${curr}${Number(s.deposit_amount).toFixed(2)}`} deposit to confirm
-                    </p>
-                  )}
-
-                  <Button className="w-full rounded-xl h-12 font-bold text-base" size="lg">Book Now</Button>
-                  
-                  <div className="flex items-center gap-2 justify-center">
-                    <div className="flex -space-x-2">
-                      {[1,2,3].map(i => <div key={i} className="w-6 h-6 rounded-full bg-muted border-2 border-card" />)}
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1"><Clock className="w-4 h-4" />{s.duration_minutes}min</span>
+                      {s.service_location && (
+                        <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{locationLabels[s.service_location]?.split(' ')[0] || s.service_location}</span>
+                      )}
                     </div>
-                    <p className="text-[10px] text-muted-foreground">120+ booked this month</p>
+
+                    {addons.length > 0 && (
+                      <div className="space-y-2 border-t pt-3">
+                        <h4 className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">Customize with Add-ons</h4>
+                        {addons.map((a: any, i: number) => (
+                          <label key={i} className={cn(
+                            'flex items-center justify-between rounded-xl px-3 py-2.5 text-sm cursor-pointer transition-all border',
+                            selectedAddons.has(i) ? 'bg-primary/5 border-primary/30' : 'bg-muted/50 border-transparent hover:bg-muted'
+                          )}>
+                            <div className="flex items-center gap-2">
+                              <input type="checkbox" checked={selectedAddons.has(i)} onChange={() => toggleAddon(i)} className="rounded border-primary text-primary focus:ring-primary w-4 h-4" />
+                              <span>{a.name}</span>
+                            </div>
+                            <span className="font-semibold text-xs">+{curr}{Number(a.price).toFixed(2)}</span>
+                          </label>
+                        ))}
+                        {selectedAddons.size > 0 && (
+                          <div className="flex justify-between text-sm font-medium pt-1 border-t">
+                            <span>Total</span>
+                            <span>{curr}{total.toFixed(2)}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {s.deposit_required && s.deposit_amount && (
+                      <p className="text-xs text-muted-foreground">
+                        {s.deposit_type === 'percentage' ? `${s.deposit_amount}%` : `${curr}${Number(s.deposit_amount).toFixed(2)}`} deposit to confirm
+                      </p>
+                    )}
+
+                    <Button className="w-full rounded-xl h-12 font-bold text-base" size="lg">Book Now</Button>
+                    
+                    <div className="flex items-center gap-2 justify-center">
+                      <div className="flex -space-x-2">
+                        {[1,2,3].map(i => <div key={i} className="w-6 h-6 rounded-full bg-muted border-2 border-card" />)}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">120+ booked this month</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
+
+            {/* Fixed Bottom Booking Bar (mobile device preview only) */}
+            {device === 'mobile' && (
+              <div className="sticky bottom-0 z-10 bg-card border-t shadow-2xl p-4 flex items-center justify-between">
+                <div>
+                  <span className="text-xl font-extrabold">
+                    {s.price_type === 'starting_from' ? 'From ' : ''}{curr}{total.toFixed(2)}
+                  </span>
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" />{s.duration_minutes}min</p>
+                </div>
+                <Button className="rounded-xl h-11 px-8 font-bold" size="lg">Book Now</Button>
+              </div>
+            )}
 
             {/* Recommendations */}
             {recs.length > 0 && (
