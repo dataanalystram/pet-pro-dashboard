@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Textarea } from '@/components/ui/textarea';
 import { User, PawPrint, Calendar, Clock, MessageSquare, CheckCircle, XCircle, Inbox } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { mockPendingRequests } from '@/lib/mock-data';
+import { useBookingRequests, useUpdate } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
 
 const statusStyles: Record<string, { bg: string; badge: string; label: string }> = {
@@ -16,7 +16,8 @@ const statusStyles: Record<string, { bg: string; badge: string; label: string }>
 };
 
 export default function BookingRequestsPage() {
-  const [requests, setRequests] = useState(mockPendingRequests);
+  const { data: requests = [], isLoading } = useBookingRequests();
+  const updateRequest = useUpdate('booking_requests');
   const [tabFilter, setTabFilter] = useState('pending');
   const [actionModal, setActionModal] = useState<{ open: boolean; request: any; action: string }>({ open: false, request: null, action: '' });
   const [responseMsg, setResponseMsg] = useState('');
@@ -24,13 +25,19 @@ export default function BookingRequestsPage() {
   const handleAction = (action: string) => {
     const req = actionModal.request;
     if (!req) return;
-    setRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: action === 'accept' ? 'accepted' : 'declined' } : r));
-    toast.success(action === 'accept' ? 'Request accepted' : 'Request declined');
-    setActionModal({ open: false, request: null, action: '' });
-    setResponseMsg('');
+    const newStatus = action === 'accept' ? 'accepted' : 'declined';
+    updateRequest.mutate({ id: req.id, status: newStatus }, {
+      onSuccess: () => {
+        toast.success(action === 'accept' ? 'Request accepted' : 'Request declined');
+        setActionModal({ open: false, request: null, action: '' });
+        setResponseMsg('');
+      },
+    });
   };
 
   const filtered = requests.filter(r => tabFilter === 'all' || r.status === tabFilter);
+
+  if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading requests...</div>;
 
   return (
     <div className="space-y-6">
@@ -59,13 +66,8 @@ export default function BookingRequestsPage() {
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-semibold">
-                        {req.customer_name[0]}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold">{req.customer_name}</p>
-                        <p className="text-xs text-muted-foreground">{req.customer_email}</p>
-                      </div>
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-semibold">{req.customer_name[0]}</div>
+                      <div><p className="text-sm font-semibold">{req.customer_name}</p><p className="text-xs text-muted-foreground">{req.customer_email}</p></div>
                     </div>
                     <div className="flex items-center gap-2">
                       {req.is_urgent && <Badge className="bg-red-100 text-red-700 text-[10px]">Urgent</Badge>}
@@ -73,29 +75,15 @@ export default function BookingRequestsPage() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-3">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <PawPrint className="w-4 h-4" /><span>{req.pet_name} ({req.pet_species})</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="w-4 h-4" /><span>{req.service_name}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="w-4 h-4" /><span>{req.preferred_date}</span>
-                    </div>
-                    {req.notes && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <MessageSquare className="w-4 h-4" /><span className="truncate">{req.notes}</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 text-muted-foreground"><PawPrint className="w-4 h-4" /><span>{req.pet_name} ({req.pet_species})</span></div>
+                    <div className="flex items-center gap-2 text-muted-foreground"><Clock className="w-4 h-4" /><span>{req.service_name}</span></div>
+                    <div className="flex items-center gap-2 text-muted-foreground"><Calendar className="w-4 h-4" /><span>{req.preferred_date}</span></div>
+                    {req.notes && <div className="flex items-center gap-2 text-muted-foreground"><MessageSquare className="w-4 h-4" /><span className="truncate">{req.notes}</span></div>}
                   </div>
                   {req.status === 'pending' && (
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => setActionModal({ open: true, request: req, action: 'accept' })}>
-                        <CheckCircle className="w-4 h-4 mr-1" /> Accept
-                      </Button>
-                      <Button size="sm" variant="destructive" onClick={() => setActionModal({ open: true, request: req, action: 'decline' })}>
-                        <XCircle className="w-4 h-4 mr-1" /> Decline
-                      </Button>
+                      <Button size="sm" onClick={() => setActionModal({ open: true, request: req, action: 'accept' })}><CheckCircle className="w-4 h-4 mr-1" /> Accept</Button>
+                      <Button size="sm" variant="destructive" onClick={() => setActionModal({ open: true, request: req, action: 'decline' })}><XCircle className="w-4 h-4 mr-1" /> Decline</Button>
                     </div>
                   )}
                 </CardContent>
@@ -107,20 +95,14 @@ export default function BookingRequestsPage() {
 
       <Dialog open={actionModal.open} onOpenChange={(open) => setActionModal(m => ({ ...m, open }))}>
         <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{actionModal.action === 'accept' ? 'Accept Request' : 'Decline Request'}</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>{actionModal.action === 'accept' ? 'Accept Request' : 'Decline Request'}</DialogTitle></DialogHeader>
           <div className="space-y-3 py-2">
-            <p className="text-sm text-muted-foreground">
-              {actionModal.action === 'accept' ? 'Confirm this booking request?' : 'Are you sure you want to decline?'}
-            </p>
+            <p className="text-sm text-muted-foreground">{actionModal.action === 'accept' ? 'Confirm this booking request?' : 'Are you sure you want to decline?'}</p>
             <Textarea placeholder="Optional response message..." value={responseMsg} onChange={(e) => setResponseMsg(e.target.value)} rows={3} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setActionModal({ open: false, request: null, action: '' })}>Cancel</Button>
-            <Button onClick={() => handleAction(actionModal.action)} variant={actionModal.action === 'decline' ? 'destructive' : 'default'}>
-              {actionModal.action === 'accept' ? 'Accept' : 'Decline'}
-            </Button>
+            <Button onClick={() => handleAction(actionModal.action)} variant={actionModal.action === 'decline' ? 'destructive' : 'default'}>{actionModal.action === 'accept' ? 'Accept' : 'Decline'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

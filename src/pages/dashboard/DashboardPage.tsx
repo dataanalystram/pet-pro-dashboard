@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import {
   DollarSign, Calendar, Star, Clock, TrendingUp,
   CheckCircle, ArrowRight, User, PawPrint,
@@ -6,7 +6,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { mockStats, mockTodayBookings, mockPendingRequests } from '@/lib/mock-data';
+import { useBookings, useBookingRequests } from '@/hooks/use-supabase-data';
+import { format, parseISO, startOfWeek, eachDayOfInterval, endOfWeek } from 'date-fns';
 
 const statusColors: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-700',
@@ -83,19 +84,41 @@ function RequestRow({ request }: { request: any }) {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const [stats] = useState(mockStats);
-  const [todayBookings] = useState(mockTodayBookings);
-  const [pendingRequests] = useState(mockPendingRequests);
+  const { data: bookings = [], isLoading: loadingBookings } = useBookings();
+  const { data: requests = [], isLoading: loadingRequests } = useBookingRequests();
 
-  const weekData = stats.week_revenue;
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const todayBookings = useMemo(() => bookings.filter(b => b.booking_date === today), [bookings, today]);
+  const pendingRequests = useMemo(() => requests.filter(r => r.status === 'pending'), [requests]);
+
+  const todayRevenue = useMemo(() => todayBookings.reduce((sum, b) => sum + Number(b.total_price), 0), [todayBookings]);
+  const todayCompleted = useMemo(() => todayBookings.filter(b => b.status === 'completed').length, [todayBookings]);
+
+  const weekData = useMemo(() => {
+    const now = new Date();
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+    const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
+    return days.map(day => {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      const dayBookings = bookings.filter(b => b.booking_date === dateStr);
+      return {
+        label: format(day, 'EEE'),
+        revenue: dayBookings.reduce((sum, b) => sum + Number(b.total_price), 0),
+        bookings: dayBookings.length,
+      };
+    });
+  }, [bookings]);
+
+  if (loadingBookings || loadingRequests) {
+    return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading dashboard...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-heading font-bold">
-            Good {getGreeting()}, there 👋
-          </h1>
+          <h1 className="text-2xl font-heading font-bold">Good {getGreeting()}, there 👋</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Here's what's happening with your business today</p>
         </div>
         <button onClick={() => navigate('/appointments')} className="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-card border rounded-lg text-sm font-medium hover:bg-muted/50 shadow-sm">
@@ -104,10 +127,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard icon={DollarSign} label="Today's Revenue" value={`$${stats.today_revenue.toFixed(2)}`} iconBg="bg-emerald-100 text-emerald-600" />
-        <MetricCard icon={Calendar} label="Today's Bookings" value={`${stats.today_completed}/${stats.today_bookings}`} sub="completed" iconBg="bg-blue-100 text-blue-600" />
-        <MetricCard icon={Star} label="Average Rating" value={stats.average_rating.toFixed(1)} sub={`${stats.total_reviews} reviews`} iconBg="bg-amber-100 text-amber-600" />
-        <MetricCard icon={Clock} label="Pending Requests" value={stats.pending_requests} sub="awaiting response" iconBg="bg-orange-100 text-orange-600" />
+        <MetricCard icon={DollarSign} label="Today's Revenue" value={`$${todayRevenue.toFixed(2)}`} iconBg="bg-emerald-100 text-emerald-600" />
+        <MetricCard icon={Calendar} label="Today's Bookings" value={`${todayCompleted}/${todayBookings.length}`} sub="completed" iconBg="bg-blue-100 text-blue-600" />
+        <MetricCard icon={Star} label="Average Rating" value="4.7" sub="142 reviews" iconBg="bg-amber-100 text-amber-600" />
+        <MetricCard icon={Clock} label="Pending Requests" value={pendingRequests.length} sub="awaiting response" iconBg="bg-orange-100 text-orange-600" />
       </div>
 
       <div className="grid lg:grid-cols-5 gap-6">

@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Plus, Pencil, Trash2, Clock, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { mockServices } from '@/lib/mock-data';
+import { useServices, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
 
 const categoryColors: Record<string, string> = {
   grooming: 'bg-blue-100 text-blue-700', dental: 'bg-emerald-100 text-emerald-700',
@@ -27,7 +27,10 @@ const CATEGORIES = [
 ];
 
 export default function ServicesPage() {
-  const [services, setServices] = useState(mockServices);
+  const { data: services = [], isLoading } = useServices();
+  const insertService = useInsert('services');
+  const updateService = useUpdate('services');
+  const deleteService = useDelete('services');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState({ name: '', description: '', category: 'grooming', base_price: '', duration_minutes: '', is_active: true });
@@ -45,21 +48,20 @@ export default function ServicesPage() {
   };
 
   const handleSave = () => {
+    const payload = { name: form.name, description: form.description || null, category: form.category, base_price: parseFloat(form.base_price), duration_minutes: parseInt(form.duration_minutes), is_active: form.is_active };
     if (editing) {
-      setServices(prev => prev.map(s => s.id === editing.id ? { ...s, ...form, base_price: parseFloat(form.base_price), duration_minutes: parseInt(form.duration_minutes) } : s));
-      toast.success('Service updated');
+      updateService.mutate({ id: editing.id, ...payload }, { onSuccess: () => { toast.success('Service updated'); setDialogOpen(false); } });
     } else {
-      setServices(prev => [...prev, { id: `s${Date.now()}`, ...form, base_price: parseFloat(form.base_price), duration_minutes: parseInt(form.duration_minutes), buffer_minutes: 15, pet_types_accepted: ['dog', 'cat'], vaccination_required: false, max_bookings_per_day: 8, total_bookings: 0, price_type: 'fixed' }]);
-      toast.success('Service created');
+      insertService.mutate({ ...payload, price_type: 'fixed', buffer_minutes: 15, pet_types_accepted: ['dog', 'cat'] }, { onSuccess: () => { toast.success('Service created'); setDialogOpen(false); } });
     }
-    setDialogOpen(false);
   };
 
   const handleDelete = (id: string) => {
     if (!window.confirm('Delete this service?')) return;
-    setServices(prev => prev.filter(s => s.id !== id));
-    toast.success('Service deleted');
+    deleteService.mutate(id, { onSuccess: () => toast.success('Service deleted') });
   };
+
+  if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading services...</div>;
 
   return (
     <div className="space-y-6">
@@ -84,22 +86,12 @@ export default function ServicesPage() {
               </div>
               {s.description && <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{s.description}</p>}
               <div className="flex items-center gap-4 mt-3 text-sm">
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <DollarSign className="w-3.5 h-3.5" />
-                  <span className="font-semibold text-foreground">${s.base_price}</span>
-                </div>
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{s.duration_minutes}min</span>
-                </div>
+                <div className="flex items-center gap-1 text-muted-foreground"><DollarSign className="w-3.5 h-3.5" /><span className="font-semibold text-foreground">${Number(s.base_price)}</span></div>
+                <div className="flex items-center gap-1 text-muted-foreground"><Clock className="w-3.5 h-3.5" /><span>{s.duration_minutes}min</span></div>
               </div>
               <div className="flex gap-2 mt-4">
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => openEdit(s)}>
-                  <Pencil className="w-3 h-3 mr-1" /> Edit
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => handleDelete(s.id)} className="text-destructive hover:text-destructive">
-                  <Trash2 className="w-3 h-3" />
-                </Button>
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => openEdit(s)}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
+                <Button variant="outline" size="sm" onClick={() => handleDelete(s.id)} className="text-destructive hover:text-destructive"><Trash2 className="w-3 h-3" /></Button>
               </div>
             </CardContent>
           </Card>
@@ -110,21 +102,17 @@ export default function ServicesPage() {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>{editing ? 'Edit Service' : 'Add Service'}</DialogTitle></DialogHeader>
           <div className="space-y-3 py-2">
-            <div className="space-y-1.5"><Label>Name *</Label>
-              <Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} /></div>
+            <div className="space-y-1.5"><Label>Name *</Label><Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} /></div>
             <div className="space-y-1.5"><Label>Category</Label>
               <Select value={form.category} onValueChange={(v) => setForm(f => ({ ...f, category: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>{CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
               </Select></div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5"><Label>Price ($) *</Label>
-                <Input type="number" value={form.base_price} onChange={(e) => setForm(f => ({ ...f, base_price: e.target.value }))} /></div>
-              <div className="space-y-1.5"><Label>Duration (min) *</Label>
-                <Input type="number" value={form.duration_minutes} onChange={(e) => setForm(f => ({ ...f, duration_minutes: e.target.value }))} /></div>
+              <div className="space-y-1.5"><Label>Price ($) *</Label><Input type="number" value={form.base_price} onChange={(e) => setForm(f => ({ ...f, base_price: e.target.value }))} /></div>
+              <div className="space-y-1.5"><Label>Duration (min) *</Label><Input type="number" value={form.duration_minutes} onChange={(e) => setForm(f => ({ ...f, duration_minutes: e.target.value }))} /></div>
             </div>
-            <div className="space-y-1.5"><Label>Description</Label>
-              <Textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={3} /></div>
+            <div className="space-y-1.5"><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={3} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
