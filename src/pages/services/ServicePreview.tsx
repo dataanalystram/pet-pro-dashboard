@@ -25,7 +25,7 @@ const dayLabels: Record<string, string> = {
 
 interface Props { open: boolean; onOpenChange: (open: boolean) => void; service: any; allServices?: any[]; }
 
-export default function ServicePreview({ open, onOpenChange, service: s }: Props) {
+export default function ServicePreview({ open, onOpenChange, service: s, allServices = [] }: Props) {
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
