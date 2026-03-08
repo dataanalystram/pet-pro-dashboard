@@ -156,6 +156,15 @@ export default function StaffDetailPanel({ staff: s, open, onClose, onEdit, book
                   style={{ width: `${Math.min((todayBookings.length / s.max_daily_bookings) * 100, 100)}%` }}
                 />
               </div>
+              {Object.keys(serviceBreakdown).length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {Object.entries(serviceBreakdown).map(([name, count]) => (
+                    <Badge key={name} variant="secondary" className="text-[10px] font-normal">
+                      {count}× {name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
