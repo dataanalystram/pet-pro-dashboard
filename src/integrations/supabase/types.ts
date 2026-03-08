@@ -105,14 +105,21 @@ export type Database = {
         Row: {
           assigned_staff_id: string | null
           booking_date: string
+          check_in_time: string | null
+          check_out_time: string | null
           created_at: string
           customer_email: string | null
           customer_name: string
+          estimated_duration_minutes: number | null
           id: string
+          no_show: boolean
+          notes: string | null
+          payment_status: string
           pet_breed: string | null
           pet_name: string
           pet_species: string | null
           service_name: string
+          source: string
           start_time: string
           status: string
           total_price: number
@@ -121,14 +128,21 @@ export type Database = {
         Insert: {
           assigned_staff_id?: string | null
           booking_date: string
+          check_in_time?: string | null
+          check_out_time?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name: string
+          estimated_duration_minutes?: number | null
           id?: string
+          no_show?: boolean
+          notes?: string | null
+          payment_status?: string
           pet_breed?: string | null
           pet_name: string
           pet_species?: string | null
           service_name: string
+          source?: string
           start_time: string
           status?: string
           total_price?: number
@@ -137,14 +151,21 @@ export type Database = {
         Update: {
           assigned_staff_id?: string | null
           booking_date?: string
+          check_in_time?: string | null
+          check_out_time?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name?: string
+          estimated_duration_minutes?: number | null
           id?: string
+          no_show?: boolean
+          notes?: string | null
+          payment_status?: string
           pet_breed?: string | null
           pet_name?: string
           pet_species?: string | null
           service_name?: string
+          source?: string
           start_time?: string
           status?: string
           total_price?: number
