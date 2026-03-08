@@ -11,7 +11,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Megaphone, Plus, Eye, MousePointerClick, DollarSign, Calendar, Pencil, Trash2, Tag, BarChart3, TrendingUp, Users, Percent } from 'lucide-react';
+import { Megaphone, Plus, Eye, MousePointerClick, DollarSign, Calendar, Pencil, Trash2, Tag, BarChart3, TrendingUp, Users, Percent, Link2, Copy, Check } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useCampaigns, useInsert, useUpdate, useDelete, useServices, useCampaignRedemptions } from '@/hooks/use-supabase-data';
@@ -47,6 +48,8 @@ export default function MarketingPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [detailCampaign, setDetailCampaign] = useState<any>(null);
+  const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const [form, setForm] = useState({
     name: '', type: 'discount', description: '', discount_type: 'percentage',
     discount_value: '', promo_code: '', start_date: '', end_date: '',
@@ -145,9 +148,18 @@ export default function MarketingPage() {
 
   if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading campaigns...</div>;
 
+  const promoUrl = `${window.location.origin}/promo`;
+
+  const copyPromoLink = () => {
+    navigator.clipboard.writeText(promoUrl);
+    setCopied(true);
+    toast.success('Link copied!');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-semibold">Marketing</h1>
           <div className="flex items-center gap-3 mt-1 flex-wrap">
@@ -157,8 +169,32 @@ export default function MarketingPage() {
             <Badge variant="secondary" className="text-xs">${totalDiscount.toFixed(2)} discounted</Badge>
           </div>
         </div>
-        <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> New Campaign</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={copyPromoLink}>
+            {copied ? <Check className="w-3.5 h-3.5 mr-1.5" /> : <Copy className="w-3.5 h-3.5 mr-1.5" />}
+            {copied ? 'Copied' : 'Share Promo Page'}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowQR(!showQR)}>
+            <Link2 className="w-3.5 h-3.5 mr-1.5" />QR Code
+          </Button>
+          <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> New Campaign</Button>
+        </div>
       </div>
+
+      {showQR && (
+        <Card>
+          <CardContent className="py-5 flex flex-col sm:flex-row items-center gap-4">
+            <div className="p-3 bg-white rounded-lg border">
+              <QRCodeSVG value={promoUrl} size={120} />
+            </div>
+            <div className="text-center sm:text-left space-y-1">
+              <p className="text-sm font-medium">Customer Promo Validation Page</p>
+              <p className="text-xs text-muted-foreground">Share this QR code or link so customers can check their promo codes before booking.</p>
+              <code className="text-xs bg-muted px-2 py-1 rounded block mt-2 break-all">{promoUrl}</code>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="campaigns">
         <TabsList>

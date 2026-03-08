@@ -10,10 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarIcon, PawPrint, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { CalendarIcon, PawPrint, Plus, Trash2, CheckCircle2, Tag, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
@@ -43,10 +44,22 @@ type BookingFormData = z.infer<typeof bookingSchema>;
 
 const speciesOptions = ['Dog', 'Cat', 'Bird', 'Rabbit', 'Hamster', 'Fish', 'Reptile', 'Other'];
 
+interface AppliedPromo {
+  campaign_id: string;
+  promo_code: string;
+  discount_type: string;
+  discount_value: number;
+  discount_display: string;
+}
+
 export default function PublicBookingPage() {
   const { serviceId } = useParams();
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
 
   const { data: service } = useQuery({
     queryKey: ['service', serviceId],
@@ -74,6 +87,55 @@ export default function PublicBookingPage() {
 
   const { fields, append, remove } = useFieldArray({ control: form.control, name: 'pets' });
 
+  const validatePromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError('');
+    setAppliedPromo(null);
+
+    const { data: campaign } = await supabase
+      .from('campaigns')
+      .select('*')
+      .ilike('promo_code', promoCode.trim())
+      .single();
+
+    if (!campaign) { setPromoError('Invalid promo code'); setPromoLoading(false); return; }
+    if (!campaign.is_enabled) { setPromoError('This promo code is currently disabled'); setPromoLoading(false); return; }
+
+    const now = new Date().toISOString().split('T')[0];
+    if (campaign.start_date && campaign.start_date > now) { setPromoError('This promotion hasn\'t started yet'); setPromoLoading(false); return; }
+    if (campaign.end_date && campaign.end_date < now) { setPromoError('This promotion has expired'); setPromoLoading(false); return; }
+    if (campaign.max_redemptions && campaign.redemptions >= campaign.max_redemptions) { setPromoError('This promotion is fully redeemed'); setPromoLoading(false); return; }
+
+    // Check service targeting
+    const serviceIds = campaign.applicable_service_ids || [];
+    if (serviceIds.length > 0 && serviceId && !serviceIds.includes(serviceId)) {
+      setPromoError('This promo code doesn\'t apply to this service');
+      setPromoLoading(false);
+      return;
+    }
+
+    const display = campaign.discount_type === 'percentage'
+      ? `${campaign.discount_value}% off`
+      : `$${Number(campaign.discount_value).toFixed(2)} off`;
+
+    setAppliedPromo({
+      campaign_id: campaign.id,
+      promo_code: campaign.promo_code || promoCode.toUpperCase(),
+      discount_type: campaign.discount_type,
+      discount_value: Number(campaign.discount_value),
+      discount_display: display,
+    });
+    toast.success('Promo code applied!');
+    setPromoLoading(false);
+  };
+
+  const removePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode('');
+    setPromoError('');
+  };
+
   const onSubmit = async (values: BookingFormData) => {
     setSubmitting(true);
     try {
@@ -89,6 +151,20 @@ export default function PublicBookingPage() {
       const petName = petsData.map(p => p.name).join(', ');
       const petSpecies = petsData[0]?.species || null;
 
+      // Calculate estimated price with promo
+      let estimatedPrice = service?.base_price || null;
+      if (estimatedPrice && appliedPromo) {
+        if (appliedPromo.discount_type === 'percentage') {
+          estimatedPrice = Math.round(estimatedPrice * (1 - appliedPromo.discount_value / 100) * 100) / 100;
+        } else {
+          estimatedPrice = Math.max(0, Math.round((estimatedPrice - appliedPromo.discount_value) * 100) / 100);
+        }
+      }
+
+      const promoNote = appliedPromo
+        ? `\n[Promo: ${appliedPromo.promo_code} — ${appliedPromo.discount_display}]`
+        : '';
+
       const { error } = await supabase.from('booking_requests').insert({
         customer_name: values.customer_name,
         customer_email: values.customer_email,
@@ -100,14 +176,35 @@ export default function PublicBookingPage() {
         pets: petsData as any,
         preferred_date: format(values.preferred_date, 'yyyy-MM-dd'),
         preferred_time: values.preferred_time || null,
-        notes: values.notes || null,
+        notes: (values.notes || '') + promoNote || null,
         is_urgent: values.is_urgent,
-        estimated_price: service?.base_price || null,
+        estimated_price: estimatedPrice,
         source: 'public_form',
         status: 'pending',
       });
 
       if (error) throw error;
+
+      // Record redemption if promo was used
+      if (appliedPromo) {
+        const discountAmt = appliedPromo.discount_type === 'percentage'
+          ? Math.round((service?.base_price || 0) * (appliedPromo.discount_value / 100) * 100) / 100
+          : Math.min(appliedPromo.discount_value, service?.base_price || 0);
+
+        await supabase.from('campaign_redemptions').insert({
+          campaign_id: appliedPromo.campaign_id,
+          customer_name: values.customer_name,
+          customer_email: values.customer_email || null,
+          discount_applied: discountAmt,
+        });
+
+        // Increment redemption count
+        const { data: camp } = await supabase.from('campaigns').select('redemptions').eq('id', appliedPromo.campaign_id).single();
+        if (camp) {
+          await supabase.from('campaigns').update({ redemptions: camp.redemptions + 1 }).eq('id', appliedPromo.campaign_id);
+        }
+      }
+
       setSubmitted(true);
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit request');
@@ -125,7 +222,11 @@ export default function PublicBookingPage() {
               <CheckCircle2 className="w-8 h-8 text-emerald-600" />
             </div>
             <h2 className="text-xl font-semibold">Request Submitted!</h2>
-            <p className="text-sm text-muted-foreground">We've received your booking request{service ? ` for ${service.name}` : ''}. You'll hear back from us shortly.</p>
+            <p className="text-sm text-muted-foreground">
+              We've received your booking request{service ? ` for ${service.name}` : ''}.
+              {appliedPromo && ` Your promo code (${appliedPromo.promo_code}) has been applied.`}
+              {' '}You'll hear back from us shortly.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -259,6 +360,49 @@ export default function PublicBookingPage() {
                 <Label>Preferred Time</Label>
                 <Input type="time" {...form.register('preferred_time')} />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Promo Code */}
+          <Card>
+            <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Tag className="w-4 h-4" /> Promo Code</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {appliedPromo ? (
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-emerald-200 bg-emerald-50">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-emerald-700">{appliedPromo.promo_code} applied</p>
+                    <p className="text-xs text-emerald-600">{appliedPromo.discount_display}</p>
+                  </div>
+                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={removePromo}>
+                    <XCircle className="w-4 h-4 text-muted-foreground" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={promoCode}
+                    onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); }}
+                    placeholder="Enter promo code"
+                    className="font-mono tracking-wider"
+                  />
+                  <Button type="button" variant="outline" onClick={validatePromo} disabled={promoLoading || !promoCode.trim()}>
+                    {promoLoading ? '...' : 'Apply'}
+                  </Button>
+                </div>
+              )}
+              {promoError && <p className="text-xs text-destructive">{promoError}</p>}
+              {appliedPromo && service && (
+                <div className="text-xs text-muted-foreground pt-1">
+                  Estimated price: <span className="line-through mr-1">€{service.base_price}</span>
+                  <span className="text-emerald-600 font-medium">
+                    €{appliedPromo.discount_type === 'percentage'
+                      ? (Math.round(service.base_price * (1 - appliedPromo.discount_value / 100) * 100) / 100).toFixed(2)
+                      : Math.max(0, Math.round((service.base_price - appliedPromo.discount_value) * 100) / 100).toFixed(2)
+                    }
+                  </span>
+                </div>
+              )}
             </CardContent>
           </Card>
 
