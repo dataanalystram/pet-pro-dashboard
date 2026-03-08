@@ -230,7 +230,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-2xl w-full overflow-y-auto p-0">
+      <SheetContent className="sm:max-w-2xl w-full overflow-y-auto p-0" side="bottom" style={{ height: '95vh' }}>
         <SheetHeader className="px-6 pt-6 pb-2">
           <SheetTitle className="text-lg font-semibold">
             {editing ? 'Edit Service' : 'Create New Service'}
