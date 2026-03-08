@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Calendar, CheckCircle, XCircle, AlertTriangle, Search, Filter, ChevronsUpDown, Check, Pencil } from 'lucide-react';
+import { Plus, Calendar, CheckCircle, Ban, AlertTriangle, Search, Filter, ChevronsUpDown, Check, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useStaffTimeOff, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
