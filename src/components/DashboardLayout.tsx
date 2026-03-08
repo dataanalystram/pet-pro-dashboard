@@ -53,10 +53,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             )}
 
             <div className="ml-auto flex items-center gap-1.5">
-              <button className="relative w-9 h-9 rounded-lg flex items-center justify-center hover:bg-muted transition-colors">
-                <Bell className="w-[18px] h-[18px] text-muted-foreground" />
-                <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-destructive rounded-full" />
-              </button>
+              <NotificationBell />
               {!isMobile && (
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground text-xs font-semibold shadow-sm">
                   A

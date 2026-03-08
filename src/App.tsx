@@ -40,6 +40,7 @@ const App = () => (
           <Route path="/staff" element={<DashboardLayout><StaffPage /></DashboardLayout>} />
           <Route path="/settings" element={<DashboardLayout><SettingsPage /></DashboardLayout>} />
           <Route path="/reviews" element={<DashboardLayout><ReviewsPage /></DashboardLayout>} />
+          <Route path="/review/:serviceId" element={<PublicReviewPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
