@@ -16,48 +16,90 @@ export type Database = {
     Tables: {
       booking_requests: {
         Row: {
+          assigned_staff_id: string | null
           created_at: string
           customer_email: string | null
           customer_name: string
+          customer_phone: string | null
+          decline_reason: string | null
+          estimated_price: number | null
           id: string
           is_urgent: boolean
           notes: string | null
           pet_name: string | null
           pet_species: string | null
+          pets: Json
           preferred_date: string | null
+          preferred_time: string | null
+          response_message: string | null
+          service_id: string | null
           service_name: string
+          source: string
           status: string
           updated_at: string
         }
         Insert: {
+          assigned_staff_id?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name: string
+          customer_phone?: string | null
+          decline_reason?: string | null
+          estimated_price?: number | null
           id?: string
           is_urgent?: boolean
           notes?: string | null
           pet_name?: string | null
           pet_species?: string | null
+          pets?: Json
           preferred_date?: string | null
+          preferred_time?: string | null
+          response_message?: string | null
+          service_id?: string | null
           service_name: string
+          source?: string
           status?: string
           updated_at?: string
         }
         Update: {
+          assigned_staff_id?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name?: string
+          customer_phone?: string | null
+          decline_reason?: string | null
+          estimated_price?: number | null
           id?: string
           is_urgent?: boolean
           notes?: string | null
           pet_name?: string | null
           pet_species?: string | null
+          pets?: Json
           preferred_date?: string | null
+          preferred_time?: string | null
+          response_message?: string | null
+          service_id?: string | null
           service_name?: string
+          source?: string
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "booking_requests_assigned_staff_id_fkey"
+            columns: ["assigned_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_requests_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bookings: {
         Row: {
