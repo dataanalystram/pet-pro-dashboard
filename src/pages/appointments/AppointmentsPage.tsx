@@ -151,10 +151,10 @@ export default function AppointmentsPage() {
       <AppointmentStatsRow todayBookings={todayBookings} />
 
       <Tabs defaultValue="today">
-        <TabsList className="bg-muted">
+        <TabsList className="bg-muted overflow-x-auto w-full justify-start">
           <TabsTrigger value="today"><Clock className="w-4 h-4 mr-1.5" /> Today</TabsTrigger>
           <TabsTrigger value="calendar"><CalIcon className="w-4 h-4 mr-1.5" /> Calendar</TabsTrigger>
-          <TabsTrigger value="week"><CalIcon className="w-4 h-4 mr-1.5" /> Week</TabsTrigger>
+          <TabsTrigger value="week" className="hidden sm:flex"><CalIcon className="w-4 h-4 mr-1.5" /> Week</TabsTrigger>
           <TabsTrigger value="list"><List className="w-4 h-4 mr-1.5" /> List</TabsTrigger>
         </TabsList>
 
