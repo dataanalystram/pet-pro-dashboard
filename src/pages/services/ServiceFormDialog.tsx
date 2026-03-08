@@ -108,7 +108,7 @@ interface Props {
   allServices?: any[];
 }
 
-export default function ServiceFormDialog({ open, onOpenChange, editing, onSave, saving }: Props) {
+export default function ServiceFormDialog({ open, onOpenChange, editing, onSave, saving, allServices = [] }: Props) {
   const [form, setForm] = useState<ServiceFormData>(emptyForm);
   const [newHighlight, setNewHighlight] = useState('');
   const [newTag, setNewTag] = useState('');
