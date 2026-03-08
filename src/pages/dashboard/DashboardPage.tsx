@@ -365,7 +365,7 @@ export default function DashboardPage() {
       {/* ─── Revenue Trend + Customer Health ─────────────── */}
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
-          <SectionHeader title="Revenue Trend" count={undefined} action={undefined} />
+          <SectionHeader title="Revenue Trend" action="Analytics" onAction={() => navigate('/analytics')} />
           <CardContent className="p-4 pt-2">
             <div className="h-[240px]">
               <ResponsiveContainer width="100%" height="100%">
