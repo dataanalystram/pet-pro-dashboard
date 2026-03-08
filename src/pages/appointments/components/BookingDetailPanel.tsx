@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,9 +10,11 @@ import { Input } from '@/components/ui/input';
 import {
   User, PawPrint, Calendar as CalIcon, Clock, DollarSign,
   Users, LogIn, LogOut, FileText, CreditCard, CalendarIcon, CheckCircle,
+  Repeat, Bell,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 const statusColors: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -56,19 +58,28 @@ export default function BookingDetailPanel({ booking, open, onOpenChange, staff,
   const [rescheduleDate, setRescheduleDate] = useState<Date | undefined>();
   const [rescheduleTime, setRescheduleTime] = useState('');
   const [showReschedule, setShowReschedule] = useState(false);
+  const [notificationLog, setNotificationLog] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (booking?.id) {
+      setNotes(booking.notes || '');
+      // Fetch notification log
+      supabase.from('booking_notifications').select('*').eq('booking_id', booking.id).order('created_at', { ascending: false })
+        .then(({ data }) => setNotificationLog(data || []));
+    }
+  }, [booking?.id, booking?.notes]);
 
   if (!booking) return null;
 
   const b = booking;
   const source = sourceLabels[b.source] || sourceLabels.online;
+  const pets: any[] = Array.isArray(b.pets) && b.pets.length > 0 ? b.pets : [];
   const formatTime = (t: string | null) => {
     if (!t) return '—';
     try { return format(new Date(t), 'HH:mm'); } catch { return '—'; }
   };
 
-  const handleSaveNotes = () => {
-    onUpdate(b.id, { notes });
-  };
+  const handleSaveNotes = () => onUpdate(b.id, { notes });
 
   const handleReschedule = () => {
     if (!rescheduleDate || !rescheduleTime) return;
@@ -86,18 +97,43 @@ export default function BookingDetailPanel({ booking, open, onOpenChange, staff,
             <SheetTitle className="text-lg">{b.service_name}</SheetTitle>
             <Badge className={cn('text-xs', statusColors[b.status])}>{b.no_show ? 'No-Show' : b.status?.replace('_', ' ')}</Badge>
             <Badge className={cn('text-[10px]', source.class)}>{source.label}</Badge>
+            {b.recurring_group_id && (
+              <Badge variant="outline" className="text-[10px]"><Repeat className="w-2.5 h-2.5 mr-0.5" />{b.recurring_pattern || 'Recurring'}</Badge>
+            )}
           </div>
         </SheetHeader>
 
         <div className="space-y-6">
           {/* Info */}
           <div className="space-y-3">
-            <InfoRow icon={User} label="Customer" value={b.customer_name} />
-            <InfoRow icon={PawPrint} label="Pet" value={`${b.pet_name}${b.pet_species ? ` (${b.pet_species})` : ''}${b.pet_breed ? ` · ${b.pet_breed}` : ''}`} />
+            <InfoRow icon={User} label="Customer" value={`${b.customer_name}${b.customer_phone ? ` · ${b.customer_phone}` : ''}`} />
             <InfoRow icon={CalIcon} label="Date" value={b.booking_date} />
             <InfoRow icon={Clock} label="Time" value={formatTime(b.start_time)} />
             {b.estimated_duration_minutes && <InfoRow icon={Clock} label="Duration" value={`${b.estimated_duration_minutes} min`} />}
             <InfoRow icon={DollarSign} label="Price" value={`$${Number(b.total_price).toFixed(2)}`} />
+          </div>
+
+          {/* Pets */}
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground flex items-center gap-1"><PawPrint className="w-3 h-3" /> Pets</p>
+            {pets.length > 0 ? (
+              <div className="space-y-1.5">
+                {pets.map((p: any, i: number) => (
+                  <div key={i} className="rounded-lg bg-muted p-2 text-sm flex items-center gap-2">
+                    <PawPrint className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="font-medium">{p.name}</span>
+                    {p.species && <span className="text-xs text-muted-foreground">({p.species})</span>}
+                    {p.breed && <span className="text-xs text-muted-foreground">· {p.breed}</span>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg bg-muted p-2 text-sm">
+                <span className="font-medium">{b.pet_name}</span>
+                {b.pet_species && <span className="text-xs text-muted-foreground"> ({b.pet_species})</span>}
+                {b.pet_breed && <span className="text-xs text-muted-foreground"> · {b.pet_breed}</span>}
+              </div>
+            )}
           </div>
 
           {/* Staff */}
@@ -142,6 +178,21 @@ export default function BookingDetailPanel({ booking, open, onOpenChange, staff,
               </div>
             </div>
           </div>
+
+          {/* Notification Log */}
+          {notificationLog.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><Bell className="w-3 h-3" /> Notification History</p>
+              <div className="space-y-1">
+                {notificationLog.map((n: any) => (
+                  <div key={n.id} className="flex items-center justify-between text-xs rounded bg-muted px-2.5 py-1.5">
+                    <span className="capitalize">{n.event_type?.replace('_', ' ')}</span>
+                    <span className="text-muted-foreground">{(() => { try { return format(new Date(n.created_at), 'MMM d, HH:mm'); } catch { return ''; } })()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Notes */}
           <div className="space-y-1.5">

@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, CheckCircle, Clock, DollarSign, XCircle, Footprints } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, DollarSign, XCircle, Footprints, Repeat } from 'lucide-react';
 
 interface StatsProps {
   todayBookings: any[];
@@ -11,6 +11,7 @@ export default function AppointmentStatsRow({ todayBookings }: StatsProps) {
   const inProgress = todayBookings.filter(b => b.status === 'in_progress').length;
   const noShows = todayBookings.filter(b => b.no_show).length;
   const walkIns = todayBookings.filter(b => b.source === 'walk_in').length;
+  const recurring = todayBookings.filter(b => b.recurring_group_id).length;
   const revenue = todayBookings
     .filter(b => ['completed', 'in_progress'].includes(b.status))
     .reduce((sum: number, b: any) => sum + Number(b.total_price || 0), 0);
@@ -20,8 +21,8 @@ export default function AppointmentStatsRow({ todayBookings }: StatsProps) {
     { label: 'Completed', value: completed, icon: CheckCircle, color: 'text-emerald-600' },
     { label: 'In Progress', value: inProgress, icon: Clock, color: 'text-violet-600' },
     { label: 'Revenue', value: `$${revenue.toFixed(0)}`, icon: DollarSign, color: 'text-amber-600' },
-    { label: 'No-Shows', value: noShows, icon: XCircle, color: 'text-red-600' },
     { label: 'Walk-ins', value: walkIns, icon: Footprints, color: 'text-blue-600' },
+    { label: 'Recurring', value: recurring, icon: Repeat, color: 'text-indigo-600' },
   ];
 
   return (

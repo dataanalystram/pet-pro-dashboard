@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Calendar as CalIcon, List, ChevronLeft, ChevronRight,
-  User, PawPrint, Clock, DollarSign, Filter, Search, Users, Plus, Footprints,
+  User, PawPrint, Clock, DollarSign, Filter, Search, Users, Plus, Footprints, Repeat,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -15,11 +15,12 @@ import {
   addMonths, subMonths, isSameDay, isToday, startOfWeek, endOfWeek,
   addDays,
 } from 'date-fns';
-import { useBookings, useStaff, useServiceStaff, useServices, useCustomers, useUpdate, useInsert } from '@/hooks/use-supabase-data';
+import { useBookings, useStaff, useServices, useCustomers, useUpdate, useInsert } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
 import AppointmentStatsRow from './components/AppointmentStatsRow';
 import TodayQueue from './components/TodayQueue';
 import WalkInDialog from './components/WalkInDialog';
+import CreateAppointmentDialog from './components/CreateAppointmentDialog';
 import BookingDetailPanel from './components/BookingDetailPanel';
 
 const statusColors: Record<string, string> = {
@@ -50,13 +51,14 @@ export default function AppointmentsPage() {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [walkInOpen, setWalkInOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [weekStart, setWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
 
   const handleUpdateStatus = (id: string, status: string, extras?: Record<string, any>) => {
     updateBooking.mutate({ id, status, ...extras }, {
-      onSuccess: () => { toast.success(`Updated`); setDetailOpen(false); },
+      onSuccess: () => { toast.success('Updated'); setDetailOpen(false); },
     });
   };
 
@@ -70,6 +72,23 @@ export default function AppointmentsPage() {
     insertBooking.mutate(data, {
       onSuccess: () => { toast.success('Walk-in created'); setWalkInOpen(false); },
     });
+  };
+
+  const handleCreateAppointments = (bookingsData: any[]) => {
+    // Insert all bookings sequentially (for recurring)
+    const insertAll = async () => {
+      for (const b of bookingsData) {
+        await new Promise<void>((resolve, reject) => {
+          insertBooking.mutate(b, {
+            onSuccess: () => resolve(),
+            onError: (e) => reject(e),
+          });
+        });
+      }
+      toast.success(`Created ${bookingsData.length} appointment${bookingsData.length > 1 ? 's' : ''}`);
+      setCreateOpen(false);
+    };
+    insertAll().catch(() => toast.error('Failed to create some appointments'));
   };
 
   // Today's bookings
@@ -120,7 +139,10 @@ export default function AppointmentsPage() {
           <p className="text-sm text-muted-foreground">Manage bookings, walk-ins, and today's queue</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setWalkInOpen(true)}>
+          <Button variant="outline" onClick={() => setCreateOpen(true)}>
+            <Plus className="w-4 h-4 mr-1.5" /> Appointment
+          </Button>
+          <Button onClick={() => setWalkInOpen(true)}>
             <Footprints className="w-4 h-4 mr-1.5" /> Walk-in
           </Button>
         </div>
@@ -170,6 +192,7 @@ export default function AppointmentsPage() {
                     const dayBookings = bookingsByDate[dateStr] || [];
                     const isSelected = isSameDay(day, selectedDate);
                     const inMonth = day.getMonth() === currentMonth.getMonth();
+                    const hasRecurring = dayBookings.some((b: any) => b.recurring_group_id);
                     return (
                       <button key={dateStr} onClick={() => setSelectedDate(day)}
                         className={cn("relative h-12 md:h-16 rounded-md p-1 text-left transition-all border",
@@ -178,11 +201,12 @@ export default function AppointmentsPage() {
                           {format(day, 'd')}
                         </span>
                         {dayBookings.length > 0 && (
-                          <div className="mt-0.5 flex flex-wrap gap-0.5">
+                          <div className="mt-0.5 flex flex-wrap gap-0.5 items-center">
                             {dayBookings.slice(0, 3).map((b: any) => (
                               <div key={b.id} className={cn("w-1.5 h-1.5 rounded-full", statusDots[b.status] || 'bg-muted-foreground')} />
                             ))}
                             {dayBookings.length > 3 && <span className="text-[9px] text-muted-foreground ml-0.5">+{dayBookings.length - 3}</span>}
+                            {hasRecurring && <Repeat className="w-2.5 h-2.5 text-indigo-500 ml-0.5" />}
                           </div>
                         )}
                       </button>
@@ -213,7 +237,10 @@ export default function AppointmentsPage() {
                         </div>
                         <div className={cn("w-1 h-10 rounded-full flex-shrink-0", statusDots[b.status] || 'bg-muted')} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{b.service_name}</p>
+                          <p className="text-sm font-medium truncate">
+                            {b.service_name}
+                            {b.recurring_group_id && <Repeat className="w-3 h-3 inline ml-1 text-indigo-500" />}
+                          </p>
                           <p className="text-xs text-muted-foreground">{b.customer_name} · {b.pet_name}</p>
                           {b.assigned_staff_id && (
                             <p className="text-[10px] text-primary flex items-center gap-0.5 mt-0.5">
@@ -264,7 +291,10 @@ export default function AppointmentsPage() {
                               b.status === 'cancelled' ? 'bg-red-50 border-l-red-500' :
                               'bg-amber-50 border-l-amber-500'
                             )}>
-                            <p className="font-medium truncate">{(() => { try { return format(new Date(b.start_time), 'HH:mm'); } catch { return ''; } })()} {b.service_name}</p>
+                            <p className="font-medium truncate">
+                              {(() => { try { return format(new Date(b.start_time), 'HH:mm'); } catch { return ''; } })()} {b.service_name}
+                              {b.recurring_group_id && ' 🔄'}
+                            </p>
                             <p className="text-muted-foreground truncate">{b.customer_name}</p>
                           </button>
                         ))}
@@ -305,7 +335,10 @@ export default function AppointmentsPage() {
               <Card key={b.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold">{b.service_name}</p>
+                    <p className="text-sm font-semibold">
+                      {b.service_name}
+                      {b.recurring_group_id && <Repeat className="w-3 h-3 inline ml-1 text-indigo-500" />}
+                    </p>
                     <Badge className={cn("text-[10px]", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -332,7 +365,7 @@ export default function AppointmentsPage() {
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Date & Time</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Service</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Customer</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Pet</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Pets</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Staff</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Price</th>
                       <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Source</th>
@@ -348,12 +381,15 @@ export default function AppointmentsPage() {
                           <p className="text-sm font-medium">{b.booking_date}</p>
                           <p className="text-xs text-muted-foreground">{(() => { try { return format(new Date(b.start_time), 'HH:mm'); } catch { return ''; } })()}</p>
                         </td>
-                        <td className="px-4 py-3 text-sm">{b.service_name}</td>
+                        <td className="px-4 py-3 text-sm">
+                          {b.service_name}
+                          {b.recurring_group_id && <Repeat className="w-3 h-3 inline ml-1 text-indigo-500" />}
+                        </td>
                         <td className="px-4 py-3">
                           <p className="text-sm">{b.customer_name}</p>
                           <p className="text-xs text-muted-foreground">{b.customer_email}</p>
                         </td>
-                        <td className="px-4 py-3 text-sm">{b.pet_name}{b.pet_species ? ` (${b.pet_species})` : ''}</td>
+                        <td className="px-4 py-3 text-sm">{b.pet_name}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">
                           {b.assigned_staff_id ? staff.find(s => s.id === b.assigned_staff_id)?.full_name || '—' : '—'}
                         </td>
@@ -382,6 +418,17 @@ export default function AppointmentsPage() {
         staff={staff}
         customers={customers}
         onSubmit={handleWalkIn}
+        isLoading={insertBooking.isPending}
+      />
+
+      {/* Create Appointment Dialog */}
+      <CreateAppointmentDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        services={services}
+        staff={staff}
+        customers={customers}
+        onSubmit={handleCreateAppointments}
         isLoading={insertBooking.isPending}
       />
 
