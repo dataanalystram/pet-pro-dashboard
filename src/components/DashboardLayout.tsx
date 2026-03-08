@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -24,9 +25,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const location = useLocation();
   const pageTitle = pageTitles[location.pathname] || "Dashboard";
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <div className="min-h-screen flex w-full bg-background">
         {!isMobile && <AppSidebar />}
         <div className="flex-1 flex flex-col min-w-0">
