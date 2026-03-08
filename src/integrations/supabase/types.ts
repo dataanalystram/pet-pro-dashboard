@@ -564,49 +564,64 @@ export type Database = {
       }
       staff: {
         Row: {
+          avatar_url: string | null
           average_rating: number
+          bio: string | null
           created_at: string
           email: string
           full_name: string
+          hire_date: string | null
           hourly_rate: number | null
           id: string
           max_daily_bookings: number
           phone: string | null
           role: string
           specializations: string[]
+          status: string
           title: string | null
           total_services_completed: number
           updated_at: string
+          working_hours: Json
         }
         Insert: {
+          avatar_url?: string | null
           average_rating?: number
+          bio?: string | null
           created_at?: string
           email: string
           full_name: string
+          hire_date?: string | null
           hourly_rate?: number | null
           id?: string
           max_daily_bookings?: number
           phone?: string | null
           role?: string
           specializations?: string[]
+          status?: string
           title?: string | null
           total_services_completed?: number
           updated_at?: string
+          working_hours?: Json
         }
         Update: {
+          avatar_url?: string | null
           average_rating?: number
+          bio?: string | null
           created_at?: string
           email?: string
           full_name?: string
+          hire_date?: string | null
           hourly_rate?: number | null
           id?: string
           max_daily_bookings?: number
           phone?: string | null
           role?: string
           specializations?: string[]
+          status?: string
           title?: string | null
           total_services_completed?: number
           updated_at?: string
+          working_hours?: Json
         }
         Relationships: []
       }

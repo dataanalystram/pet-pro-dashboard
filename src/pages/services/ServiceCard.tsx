@@ -126,6 +126,11 @@ export default function ServiceCard({ service: s, onEdit, onDelete, onPreview, o
           <Button variant="outline" size="sm" className="flex-1 h-7 sm:h-8 text-[10px] sm:text-xs px-2" onClick={onEdit}><Pencil className="w-3 h-3 mr-0.5 sm:mr-1" />Edit</Button>
           <Button variant="outline" size="sm" className="h-7 sm:h-8 text-[10px] sm:text-xs px-1.5" onClick={onPreview}><Eye className="w-3 h-3" /></Button>
           <Button variant="outline" size="sm" className="h-7 sm:h-8 text-[10px] sm:text-xs px-1.5" onClick={onDuplicate}><Copy className="w-3 h-3" /></Button>
+          <Button variant="outline" size="sm" className="h-7 sm:h-8 text-[10px] sm:text-xs px-1.5" onClick={(e) => {
+            e.stopPropagation();
+            navigator.clipboard.writeText(`${window.location.origin}/book/${s.id}`);
+            toast.success('Booking link copied to clipboard!');
+          }}><Share2 className="w-3 h-3 text-primary" /></Button>
           <Button variant="outline" size="sm" className="h-7 sm:h-8 text-[10px] sm:text-xs px-1.5" onClick={onDelete}><Trash2 className="w-3 h-3 text-destructive" /></Button>
         </div>
       </CardContent>
