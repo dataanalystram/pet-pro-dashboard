@@ -30,8 +30,17 @@ interface Props { open: boolean; onOpenChange: (open: boolean) => void; service:
 export default function ServicePreview({ open, onOpenChange, service: s, allServices = [] }: Props) {
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [selectedAddons, setSelectedAddons] = useState<Set<number>>(new Set());
+  const { data: allReviews = [] } = useReviews();
 
   if (!s) return null;
+
+  const serviceReviews = allReviews.filter((r: any) => r.service_id === s.id && r.status === 'published');
+  const avgRating = serviceReviews.length ? (serviceReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / serviceReviews.length).toFixed(1) : '0';
+  const reviewCount = serviceReviews.length;
+  const ratingDist = [5,4,3,2,1].map(star => {
+    const count = serviceReviews.filter((r: any) => r.rating === star).length;
+    return { stars: star, pct: reviewCount ? Math.round((count / reviewCount) * 100) : 0 };
+  });
 
   const frameWidth = device === 'mobile' ? 'max-w-[390px]' : device === 'tablet' ? 'max-w-[768px]' : 'max-w-[1024px]';
   const allPets = [...(s.pet_types_accepted || []), ...(s.custom_pet_types || [])];
