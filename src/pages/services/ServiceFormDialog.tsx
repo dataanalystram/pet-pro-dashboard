@@ -53,7 +53,7 @@ const DIFFICULTY_LEVELS = [
 ];
 
 export interface ServiceFormData {
-  name: string; category: string; short_description: string; description: string;
+  name: string; category: string; custom_category: string; short_description: string; description: string;
   long_description: string; base_price: string; price_from: string; price_type: string;
   currency: string; tax_rate: string; tax_inclusive: boolean; duration_minutes: string;
   buffer_minutes: string; max_bookings_per_day: string; pet_types_accepted: string[];
@@ -73,6 +73,7 @@ export interface ServiceFormData {
   faq: { question: string; answer: string }[];
   group_discount_percent: string;
   difficulty_level: string;
+  recommended_services: string[];
 }
 
 const emptyForm: ServiceFormData = {
