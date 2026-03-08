@@ -76,12 +76,12 @@ function Sparkline({ data, color = 'hsl(var(--primary))' }: { data: number[]; co
 }
 
 // ─── KPI Card ───────────────────────────────────────────
-function KpiCard({ label, value, change, changeType, sparkData, icon: Icon, iconBg }: {
+function KpiCard({ label, value, change, changeType, sparkData, icon: Icon, iconBg, onClick }: {
   label: string; value: string; change: string; changeType: 'up' | 'down' | 'neutral';
-  sparkData: number[]; icon: any; iconBg: string;
+  sparkData: number[]; icon: any; iconBg: string; onClick?: () => void;
 }) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={cn('hover:shadow-md transition-shadow', onClick && 'cursor-pointer group/kpi')} onClick={onClick}>
       <CardContent className="p-4 sm:p-5">
         <div className="flex items-start justify-between gap-2">
           <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', iconBg)}>
@@ -91,7 +91,10 @@ function KpiCard({ label, value, change, changeType, sparkData, icon: Icon, icon
         </div>
         <p className="text-2xl font-bold tracking-tight mt-3">{value}</p>
         <div className="flex items-center justify-between mt-1">
-          <p className="text-xs text-muted-foreground">{label}</p>
+          <div className="flex items-center gap-1">
+            <p className="text-xs text-muted-foreground">{label}</p>
+            {onClick && <ArrowRight className="w-3 h-3 text-muted-foreground/0 group-hover/kpi:text-muted-foreground transition-colors" />}
+          </div>
           <span className={cn('flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-md', {
             'text-emerald-600 bg-emerald-50': changeType === 'up',
             'text-red-600 bg-red-50': changeType === 'down',
