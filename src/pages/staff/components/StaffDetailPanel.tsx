@@ -1,8 +1,12 @@
+import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Star, Calendar, Briefcase, Clock, Pencil, UserX, UserCheck, CalendarOff } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Star, Calendar, Briefcase, Clock, Pencil, UserX, UserCheck, CalendarOff, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUpdate, useServices } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
@@ -28,6 +32,14 @@ interface Props {
 export default function StaffDetailPanel({ staff: s, open, onClose, onEdit, bookings, serviceStaff = [], timeOff = [] }: Props) {
   const updateStaff = useUpdate('staff');
   const { data: services = [] } = useServices();
+  const [editingRoster, setEditingRoster] = useState(false);
+  const [roster, setRoster] = useState<any>({});
+
+  useEffect(() => {
+    if (s?.working_hours) {
+      setRoster(JSON.parse(JSON.stringify(s.working_hours)));
+    }
+  }, [s?.working_hours, s?.id]);
 
   if (!s) return null;
 
@@ -47,6 +59,22 @@ export default function StaffDetailPanel({ staff: s, open, onClose, onEdit, book
     const newStatus = s.status === 'active' ? 'on_leave' : 'active';
     updateStaff.mutate({ id: s.id, status: newStatus }, {
       onSuccess: () => toast.success(`Status changed to ${newStatus.replace('_', ' ')}`),
+    });
+  };
+
+  const updateRosterDay = (day: string, field: string, value: any) => {
+    setRoster((prev: any) => ({
+      ...prev,
+      [day]: { ...prev[day], [field]: value },
+    }));
+  };
+
+  const saveRoster = () => {
+    updateStaff.mutate({ id: s.id, working_hours: roster }, {
+      onSuccess: () => {
+        toast.success('Working hours updated');
+        setEditingRoster(false);
+      },
     });
   };
 
@@ -212,23 +240,61 @@ export default function StaffDetailPanel({ staff: s, open, onClose, onEdit, book
             </div>
           )}
 
-          {/* Working Hours */}
+          {/* Working Hours - Editable */}
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Working Hours</p>
-            <div className="space-y-1.5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Working Hours</p>
+              {editingRoster ? (
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => { setRoster(workingHours); setEditingRoster(false); }}>Cancel</Button>
+                  <Button size="sm" className="h-6 text-xs" onClick={saveRoster}><Save className="w-3 h-3 mr-1" />Save</Button>
+                </div>
+              ) : (
+                <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => setEditingRoster(true)}><Pencil className="w-3 h-3 mr-1" />Edit</Button>
+              )}
+            </div>
+            <div className="space-y-2">
               {dayLabels.map((day, i) => {
-                const d = workingHours[day];
-                const isOff = d?.off !== false;
+                const d = editingRoster ? roster[day] : workingHours[day];
+                const isOff = !d || d.off !== false;
                 return (
-                  <div key={day} className="flex items-center justify-between text-sm">
+                  <div key={day} className="flex items-center justify-between gap-2 text-sm">
                     <span className="font-medium w-10">{dayShort[i]}</span>
-                    {isOff || !d ? (
-                      <span className="text-muted-foreground text-xs">Off</span>
-                    ) : (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="w-3 h-3" />
-                        {d.start} – {d.end}
+                    {editingRoster ? (
+                      <div className="flex items-center gap-2 flex-1 justify-end">
+                        <Label className="text-xs text-muted-foreground">Off</Label>
+                        <Switch
+                          checked={isOff}
+                          onCheckedChange={(v) => updateRosterDay(day, 'off', v)}
+                          className="scale-75"
+                        />
+                        {!isOff && (
+                          <>
+                            <Input
+                              type="time"
+                              value={d?.start || '09:00'}
+                              onChange={(e) => updateRosterDay(day, 'start', e.target.value)}
+                              className="h-7 w-20 text-xs"
+                            />
+                            <span className="text-muted-foreground">–</span>
+                            <Input
+                              type="time"
+                              value={d?.end || '17:00'}
+                              onChange={(e) => updateRosterDay(day, 'end', e.target.value)}
+                              className="h-7 w-20 text-xs"
+                            />
+                          </>
+                        )}
                       </div>
+                    ) : (
+                      isOff ? (
+                        <span className="text-muted-foreground text-xs">Off</span>
+                      ) : (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          {d?.start || '09:00'} – {d?.end || '17:00'}
+                        </div>
+                      )
                     )}
                   </div>
                 );
