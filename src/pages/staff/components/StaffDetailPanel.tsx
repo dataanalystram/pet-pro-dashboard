@@ -44,8 +44,14 @@ export default function StaffDetailPanel({ staff: s, open, onClose, onEdit, book
   if (!s) return null;
 
   const today = new Date().toISOString().split('T')[0];
-  const todayBookings = bookings.filter(b => b.booking_date === today && b.status !== 'cancelled');
+  const todayBookings = bookings.filter(b => b.assigned_staff_id === s.id && b.booking_date === today && b.status !== 'cancelled');
   const assignedBookings = bookings.filter(b => b.assigned_staff_id === s.id && b.booking_date >= today && b.status !== 'cancelled');
+
+  // Group today's bookings by service name for breakdown
+  const serviceBreakdown = todayBookings.reduce((acc: Record<string, number>, b: any) => {
+    acc[b.service_name] = (acc[b.service_name] || 0) + 1;
+    return acc;
+  }, {});
   const workingHours = s.working_hours || {};
 
   // Assigned services
