@@ -35,10 +35,12 @@ interface CellEditState {
 }
 
 export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }: Props) {
-  const weekDates = getWeekDates();
+  const [weekOffset, setWeekOffset] = useState(0);
+  const weekDates = getWeekDates(weekOffset);
   const updateStaff = useUpdate('staff');
   const [editCell, setEditCell] = useState<CellEditState | null>(null);
   const [openPopover, setOpenPopover] = useState<string | null>(null);
+  const weekLabel = `${format(parseISO(weekDates[0]), 'MMM d')} – ${format(parseISO(weekDates[6]), 'MMM d, yyyy')}`;
 
   const isOnLeave = (staffId: string, dateStr: string) => {
     return timeOff.some((t: any) => {
