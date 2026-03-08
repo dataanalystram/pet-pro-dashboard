@@ -16,9 +16,9 @@ const categoryLabels: Record<string, string> = {
   cleaning: 'Cleaning', medical: 'Medical', other: 'Other',
 };
 const categoryColors: Record<string, string> = {
-  grooming_supplies: 'bg-blue-100 text-blue-700', equipment: 'bg-slate-100 text-slate-700',
+  grooming_supplies: 'bg-blue-100 text-blue-700', equipment: 'bg-secondary text-secondary-foreground',
   retail: 'bg-emerald-100 text-emerald-700', cleaning: 'bg-amber-100 text-amber-700',
-  medical: 'bg-red-100 text-red-700', other: 'bg-slate-100 text-slate-600',
+  medical: 'bg-red-100 text-red-700', other: 'bg-secondary text-secondary-foreground',
 };
 
 export default function InventoryPage() {
@@ -58,47 +58,70 @@ export default function InventoryPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-heading font-bold">Inventory</h1><p className="text-sm text-muted-foreground">{items.length} items tracked</p></div>
+        <div><h1 className="text-xl sm:text-2xl font-semibold">Inventory</h1><p className="text-sm text-muted-foreground">{items.length} items tracked</p></div>
         <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> Add Item</Button>
       </div>
 
       {lowStock.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50">
+        <Card className="border-warning/40 bg-warning/5">
           <CardContent className="p-4 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-            <div><p className="text-sm font-medium text-amber-800">Low Stock Alert</p><p className="text-xs text-amber-600">{lowStock.map(i => i.name).join(', ')} need restocking</p></div>
+            <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0" />
+            <div><p className="text-sm font-medium">Low Stock Alert</p><p className="text-xs text-muted-foreground">{lowStock.map(i => i.name).join(', ')} need restocking</p></div>
           </CardContent>
         </Card>
       )}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px] max-w-sm"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Search items..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
-        <Select value={catFilter} onValueChange={setCatFilter}><SelectTrigger className="w-44"><SelectValue placeholder="All categories" /></SelectTrigger>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="relative flex-1 min-w-0 max-w-sm"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Search items..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" /></div>
+        <Select value={catFilter} onValueChange={setCatFilter}><SelectTrigger className="w-full sm:w-44"><SelectValue placeholder="All categories" /></SelectTrigger>
           <SelectContent><SelectItem value="all">All Categories</SelectItem>{Object.entries(categoryLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
         </Select>
       </div>
 
-      <Card>
+      {/* Mobile: card list */}
+      <div className="space-y-3 md:hidden">
+        {filtered.map((item) => (
+          <Card key={item.id}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2"><Package className="w-4 h-4 text-muted-foreground" /><span className="text-sm font-medium">{item.name}</span></div>
+                <Badge className={cn("text-[10px]", categoryColors[item.category])}>{categoryLabels[item.category]}</Badge>
+              </div>
+              <div className="flex items-center gap-4 text-sm">
+                <span className={cn("font-semibold", item.quantity_in_stock <= item.reorder_point ? "text-destructive" : "")}>{item.quantity_in_stock} in stock</span>
+                <span className="text-muted-foreground">{item.cost_per_unit ? `$${Number(item.cost_per_unit)}` : '-'}</span>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <Button variant="outline" size="sm" className="flex-1 h-9" onClick={() => openEdit(item)}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
+                <Button variant="outline" size="sm" className="h-9" onClick={() => handleDelete(item.id)}><Trash2 className="w-3 h-3 text-destructive" /></Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Desktop: table */}
+      <Card className="hidden md:block">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead><tr className="border-b bg-muted/50">
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Item</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Category</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Stock</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Cost</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Supplier</th>
-                <th className="text-right text-xs font-medium text-muted-foreground px-5 py-3">Actions</th>
+                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Item</th>
+                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Category</th>
+                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Stock</th>
+                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Cost</th>
+                <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Supplier</th>
+                <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Actions</th>
               </tr></thead>
               <tbody className="divide-y">
                 {filtered.map((item) => (
                   <tr key={item.id} className="hover:bg-muted/50">
-                    <td className="px-5 py-3"><div className="flex items-center gap-2"><Package className="w-4 h-4 text-muted-foreground" /><span className="text-sm font-medium">{item.name}</span></div></td>
-                    <td className="px-5 py-3"><Badge className={cn("text-[10px]", categoryColors[item.category])}>{categoryLabels[item.category]}</Badge></td>
-                    <td className="px-5 py-3"><span className={cn("text-sm font-semibold", item.quantity_in_stock <= item.reorder_point ? "text-red-600" : "")}>{item.quantity_in_stock}</span>{item.quantity_in_stock <= item.reorder_point && <AlertTriangle className="w-3 h-3 text-amber-500 inline ml-1" />}</td>
-                    <td className="px-5 py-3 text-sm">{item.cost_per_unit ? `$${Number(item.cost_per_unit)}` : '-'}</td>
-                    <td className="px-5 py-3 text-sm text-muted-foreground">{item.supplier_name || '-'}</td>
-                    <td className="px-5 py-3 text-right"><div className="flex gap-1 justify-end">
+                    <td className="px-4 py-3"><div className="flex items-center gap-2"><Package className="w-4 h-4 text-muted-foreground" /><span className="text-sm font-medium">{item.name}</span></div></td>
+                    <td className="px-4 py-3"><Badge className={cn("text-[10px]", categoryColors[item.category])}>{categoryLabels[item.category]}</Badge></td>
+                    <td className="px-4 py-3"><span className={cn("text-sm font-semibold", item.quantity_in_stock <= item.reorder_point ? "text-destructive" : "")}>{item.quantity_in_stock}</span>{item.quantity_in_stock <= item.reorder_point && <AlertTriangle className="w-3 h-3 text-warning inline ml-1" />}</td>
+                    <td className="px-4 py-3 text-sm">{item.cost_per_unit ? `$${Number(item.cost_per_unit)}` : '-'}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{item.supplier_name || '-'}</td>
+                    <td className="px-4 py-3 text-right"><div className="flex gap-1 justify-end">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(item)}><Pencil className="w-3 h-3" /></Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(item.id)}><Trash2 className="w-3 h-3" /></Button>
                     </div></td>

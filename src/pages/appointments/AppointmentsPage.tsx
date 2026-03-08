@@ -69,11 +69,7 @@ export default function AppointmentsPage() {
 
   const bookingsByDate = useMemo(() => {
     const map: Record<string, any[]> = {};
-    bookings.forEach((b) => {
-      const d = b.booking_date;
-      if (!map[d]) map[d] = [];
-      map[d].push(b);
-    });
+    bookings.forEach((b) => { const d = b.booking_date; if (!map[d]) map[d] = []; map[d].push(b); });
     return map;
   }, [bookings]);
 
@@ -82,11 +78,7 @@ export default function AppointmentsPage() {
     if (statusFilter !== 'all') list = list.filter((b) => b.status === statusFilter);
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      list = list.filter((b) =>
-        b.customer_name?.toLowerCase().includes(q) ||
-        b.pet_name?.toLowerCase().includes(q) ||
-        b.service_name?.toLowerCase().includes(q)
-      );
+      list = list.filter((b) => b.customer_name?.toLowerCase().includes(q) || b.pet_name?.toLowerCase().includes(q) || b.service_name?.toLowerCase().includes(q));
     }
     return list.sort((a, b) => (b.booking_date + b.start_time).localeCompare(a.booking_date + a.start_time));
   }, [bookings, statusFilter, searchQuery]);
@@ -101,7 +93,7 @@ export default function AppointmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-heading font-bold">Appointments</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold">Appointments</h1>
         <p className="text-sm text-muted-foreground">Manage all your bookings</p>
       </div>
 
@@ -112,20 +104,20 @@ export default function AppointmentsPage() {
         </TabsList>
 
         <TabsContent value="calendar" className="mt-4">
-          <div className="grid lg:grid-cols-5 gap-6">
+          <div className="grid lg:grid-cols-5 gap-4">
             <Card className="lg:col-span-3">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-base font-heading">{format(currentMonth, 'MMMM yyyy')}</CardTitle>
+                <CardTitle className="text-sm font-semibold">{format(currentMonth, 'MMMM yyyy')}</CardTitle>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="sm" onClick={() => { setCurrentMonth(new Date()); setSelectedDate(new Date()); }}>Today</Button>
-                  <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="sm" className="h-8" onClick={() => { setCurrentMonth(new Date()); setSelectedDate(new Date()); }}>Today</Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="w-4 h-4" /></Button>
                 </div>
               </CardHeader>
               <CardContent className="p-2 md:p-4">
                 <div className="grid grid-cols-7 gap-1 mb-1">
                   {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-                    <div key={d} className="text-center text-xs font-medium text-muted-foreground py-1">{d}</div>
+                    <div key={d} className="text-center text-[11px] font-medium text-muted-foreground py-1">{d}</div>
                   ))}
                 </div>
                 <div className="grid grid-cols-7 gap-1">
@@ -136,7 +128,7 @@ export default function AppointmentsPage() {
                     const inMonth = day.getMonth() === currentMonth.getMonth();
                     return (
                       <button key={dateStr} onClick={() => setSelectedDate(day)}
-                        className={cn("relative h-16 md:h-20 rounded-lg p-1 text-left transition-all border",
+                        className={cn("relative h-12 md:h-16 rounded-md p-1 text-left transition-all border",
                           isSelected ? "border-primary bg-accent" : "border-transparent hover:bg-muted/50", !inMonth && "opacity-40")}>
                         <span className={cn("text-xs font-medium", isToday(day) ? "bg-primary text-primary-foreground w-5 h-5 rounded-full flex items-center justify-center" : "")}>
                           {format(day, 'd')}
@@ -158,20 +150,20 @@ export default function AppointmentsPage() {
 
             <Card className="lg:col-span-2">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-heading">{isToday(selectedDate) ? 'Today' : format(selectedDate, 'EEEE, MMM d')}</CardTitle>
+                <CardTitle className="text-sm font-semibold">{isToday(selectedDate) ? 'Today' : format(selectedDate, 'EEEE, MMM d')}</CardTitle>
                 <p className="text-xs text-muted-foreground">{selectedDayBookings.length} bookings</p>
               </CardHeader>
               <CardContent className="p-0">
                 {selectedDayBookings.length === 0 ? (
                   <div className="flex flex-col items-center py-12 text-center px-4">
-                    <CalIcon className="w-10 h-10 text-muted-foreground/40 mb-3" />
+                    <CalIcon className="w-10 h-10 text-muted-foreground/30 mb-3" />
                     <p className="text-sm text-muted-foreground">No bookings on this day</p>
                   </div>
                 ) : (
                   <div className="divide-y max-h-[500px] overflow-y-auto">
                     {selectedDayBookings.map((b: any) => (
                       <button key={b.id} onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}
-                        className="w-full flex items-center gap-3 px-5 py-3 hover:bg-muted/50 transition-colors text-left">
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left">
                         <div className="text-xs font-mono text-muted-foreground w-10 flex-shrink-0">
                           {new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
@@ -180,7 +172,7 @@ export default function AppointmentsPage() {
                           <p className="text-sm font-medium truncate">{b.service_name}</p>
                           <p className="text-xs text-muted-foreground">{b.customer_name} · {b.pet_name}</p>
                         </div>
-                        <Badge className={cn("text-[10px]", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
+                        <Badge className={cn("text-[10px] hidden sm:inline-flex", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
                       </button>
                     ))}
                   </div>
@@ -191,13 +183,13 @@ export default function AppointmentsPage() {
         </TabsContent>
 
         <TabsContent value="list" className="mt-4">
-          <div className="flex flex-wrap items-center gap-3 mb-4">
-            <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
+            <div className="relative flex-1 min-w-0 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Search bookings..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40"><Filter className="w-4 h-4 mr-2 text-muted-foreground" /><SelectValue placeholder="All statuses" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-40"><Filter className="w-4 h-4 mr-2 text-muted-foreground" /><SelectValue placeholder="All statuses" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
@@ -209,37 +201,60 @@ export default function AppointmentsPage() {
             </Select>
           </div>
 
-          <Card>
+          {/* Mobile: card list */}
+          <div className="space-y-3 md:hidden">
+            {filteredBookings.length === 0 ? (
+              <Card><CardContent className="py-12 text-center text-sm text-muted-foreground">No bookings found</CardContent></Card>
+            ) : filteredBookings.map((b) => (
+              <Card key={b.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold">{b.service_name}</p>
+                    <Badge className={cn("text-[10px]", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span>{b.booking_date}</span>
+                    <span>{new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span className="font-medium text-foreground">${Number(b.total_price).toFixed(2)}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">{b.customer_name} · {b.pet_name}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop: table */}
+          <Card className="hidden md:block">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b bg-muted/50">
-                      <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Date & Time</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Service</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Customer</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Pet</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Price</th>
-                      <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">Status</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Date & Time</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Service</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Customer</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Pet</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Price</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {filteredBookings.length === 0 ? (
-                      <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-muted-foreground">No bookings found</td></tr>
+                      <tr><td colSpan={6} className="px-4 py-12 text-center text-sm text-muted-foreground">No bookings found</td></tr>
                     ) : filteredBookings.map((b) => (
                       <tr key={b.id} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}>
-                        <td className="px-5 py-3">
+                        <td className="px-4 py-3">
                           <p className="text-sm font-medium">{b.booking_date}</p>
                           <p className="text-xs text-muted-foreground">{new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                         </td>
-                        <td className="px-5 py-3 text-sm">{b.service_name}</td>
-                        <td className="px-5 py-3">
+                        <td className="px-4 py-3 text-sm">{b.service_name}</td>
+                        <td className="px-4 py-3">
                           <p className="text-sm">{b.customer_name}</p>
                           <p className="text-xs text-muted-foreground">{b.customer_email}</p>
                         </td>
-                        <td className="px-5 py-3 text-sm">{b.pet_name} ({b.pet_species})</td>
-                        <td className="px-5 py-3 text-sm font-medium">${Number(b.total_price).toFixed(2)}</td>
-                        <td className="px-5 py-3">
+                        <td className="px-4 py-3 text-sm">{b.pet_name} ({b.pet_species})</td>
+                        <td className="px-4 py-3 text-sm font-medium">${Number(b.total_price).toFixed(2)}</td>
+                        <td className="px-4 py-3">
                           <Badge className={cn("text-xs", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
                         </td>
                       </tr>
@@ -271,10 +286,10 @@ export default function AppointmentsPage() {
               </div>
               <DialogFooter className="flex-col sm:flex-row gap-2">
                 {selectedBooking.status === 'confirmed' && (
-                  <Button onClick={() => updateStatus(selectedBooking.id, 'in_progress')} className="bg-violet-600 hover:bg-violet-700 flex-1">Start Service</Button>
+                  <Button onClick={() => updateStatus(selectedBooking.id, 'in_progress')} className="flex-1">Start Service</Button>
                 )}
                 {selectedBooking.status === 'in_progress' && (
-                  <Button onClick={() => updateStatus(selectedBooking.id, 'completed')} className="bg-emerald-600 hover:bg-emerald-700 flex-1">Complete</Button>
+                  <Button onClick={() => updateStatus(selectedBooking.id, 'completed')} className="flex-1">Complete</Button>
                 )}
                 {selectedBooking.status === 'pending' && (
                   <Button onClick={() => updateStatus(selectedBooking.id, 'confirmed')} className="flex-1">Confirm</Button>

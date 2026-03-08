@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { useCustomers } from '@/hooks/use-supabase-data';
 
 const tierColors: Record<string, string> = {
-  new: 'bg-slate-100 text-slate-600',
+  new: 'bg-secondary text-secondary-foreground',
   regular: 'bg-blue-100 text-blue-700',
   loyal: 'bg-violet-100 text-violet-700',
   vip: 'bg-amber-100 text-amber-700',
@@ -49,7 +49,7 @@ export default function CustomersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-heading font-bold">Customers</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold">Customers</h1>
         <p className="text-sm text-muted-foreground">{customers.length} customers total</p>
       </div>
 
@@ -72,14 +72,14 @@ export default function CustomersPage() {
         })}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="relative flex-1 min-w-0 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Search customers..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 overflow-x-auto">
           {[{ key: 'total_spent', label: 'Revenue' }, { key: 'total_bookings', label: 'Bookings' }, { key: 'name', label: 'Name' }].map((s) => (
-            <Button key={s.key} variant={sortBy === s.key ? 'default' : 'outline'} size="sm" onClick={() => setSortBy(s.key)}>
+            <Button key={s.key} variant={sortBy === s.key ? 'default' : 'outline'} size="sm" onClick={() => setSortBy(s.key)} className="flex-shrink-0">
               <ArrowUpDown className="w-3 h-3 mr-1" /> {s.label}
             </Button>
           ))}
@@ -92,8 +92,8 @@ export default function CustomersPage() {
             {filtered.length === 0 ? (
               <div className="py-16 text-center text-sm text-muted-foreground">No customers found</div>
             ) : filtered.map((c) => (
-              <button key={c.id} onClick={() => setSelectedCustomer(c)} className="w-full flex items-center gap-4 px-5 py-4 hover:bg-muted/50 transition-colors text-left">
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-semibold text-sm flex-shrink-0">
+              <button key={c.id} onClick={() => setSelectedCustomer(c)} className="w-full flex items-center gap-3 sm:gap-4 px-4 py-3 sm:py-4 hover:bg-muted/50 transition-colors text-left min-h-[56px]">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-muted flex items-center justify-center font-semibold text-sm flex-shrink-0">
                   {c.customer_name?.[0]?.toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -101,7 +101,7 @@ export default function CustomersPage() {
                     <p className="text-sm font-semibold truncate">{c.customer_name}</p>
                     <Badge className={cn("text-[10px]", tierColors[c.tier])}>{c.tier}</Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground">{c.customer_email}</p>
+                  <p className="text-xs text-muted-foreground truncate">{c.customer_email}</p>
                 </div>
                 <div className="hidden sm:flex items-center gap-6 text-right">
                   <div>
@@ -111,11 +111,6 @@ export default function CustomersPage() {
                   <div>
                     <p className="text-sm font-semibold">{c.total_bookings}</p>
                     <p className="text-xs text-muted-foreground">bookings</p>
-                  </div>
-                  <div className="flex gap-1">
-                    {c.pets?.slice(0, 3).map((p) => (
-                      <Badge key={p} variant="secondary" className="text-[10px]"><PawPrint className="w-3 h-3 mr-0.5" />{p}</Badge>
-                    ))}
                   </div>
                 </div>
               </button>

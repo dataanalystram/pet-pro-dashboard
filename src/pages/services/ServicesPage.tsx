@@ -16,7 +16,7 @@ const categoryColors: Record<string, string> = {
   grooming: 'bg-blue-100 text-blue-700', dental: 'bg-emerald-100 text-emerald-700',
   medical: 'bg-red-100 text-red-700', walking: 'bg-amber-100 text-amber-700',
   boarding: 'bg-violet-100 text-violet-700', training: 'bg-orange-100 text-orange-700',
-  sitting: 'bg-pink-100 text-pink-700', other: 'bg-slate-100 text-slate-600',
+  sitting: 'bg-pink-100 text-pink-700', other: 'bg-secondary text-secondary-foreground',
 };
 
 const CATEGORIES = [
@@ -35,17 +35,8 @@ export default function ServicesPage() {
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState({ name: '', description: '', category: 'grooming', base_price: '', duration_minutes: '', is_active: true });
 
-  const openAdd = () => {
-    setEditing(null);
-    setForm({ name: '', description: '', category: 'grooming', base_price: '', duration_minutes: '', is_active: true });
-    setDialogOpen(true);
-  };
-
-  const openEdit = (s: any) => {
-    setEditing(s);
-    setForm({ name: s.name, description: s.description || '', category: s.category, base_price: s.base_price.toString(), duration_minutes: s.duration_minutes.toString(), is_active: s.is_active });
-    setDialogOpen(true);
-  };
+  const openAdd = () => { setEditing(null); setForm({ name: '', description: '', category: 'grooming', base_price: '', duration_minutes: '', is_active: true }); setDialogOpen(true); };
+  const openEdit = (s: any) => { setEditing(s); setForm({ name: s.name, description: s.description || '', category: s.category, base_price: s.base_price.toString(), duration_minutes: s.duration_minutes.toString(), is_active: s.is_active }); setDialogOpen(true); };
 
   const handleSave = () => {
     const payload = { name: form.name, description: form.description || null, category: form.category, base_price: parseFloat(form.base_price), duration_minutes: parseInt(form.duration_minutes), is_active: form.is_active };
@@ -56,10 +47,7 @@ export default function ServicesPage() {
     }
   };
 
-  const handleDelete = (id: string) => {
-    if (!window.confirm('Delete this service?')) return;
-    deleteService.mutate(id, { onSuccess: () => toast.success('Service deleted') });
-  };
+  const handleDelete = (id: string) => { if (!window.confirm('Delete this service?')) return; deleteService.mutate(id, { onSuccess: () => toast.success('Service deleted') }); };
 
   if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading services...</div>;
 
@@ -67,16 +55,16 @@ export default function ServicesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-heading font-bold">Services</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold">Services</h1>
           <p className="text-sm text-muted-foreground">{services.length} services</p>
         </div>
         <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> Add Service</Button>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {services.map((s) => (
           <Card key={s.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-5">
+            <CardContent className="p-4">
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <p className="text-sm font-semibold">{s.name}</p>
@@ -89,9 +77,9 @@ export default function ServicesPage() {
                 <div className="flex items-center gap-1 text-muted-foreground"><DollarSign className="w-3.5 h-3.5" /><span className="font-semibold text-foreground">${Number(s.base_price)}</span></div>
                 <div className="flex items-center gap-1 text-muted-foreground"><Clock className="w-3.5 h-3.5" /><span>{s.duration_minutes}min</span></div>
               </div>
-              <div className="flex gap-2 mt-4">
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => openEdit(s)}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
-                <Button variant="outline" size="sm" onClick={() => handleDelete(s.id)} className="text-destructive hover:text-destructive"><Trash2 className="w-3 h-3" /></Button>
+              <div className="flex gap-2 mt-3">
+                <Button variant="outline" size="sm" className="flex-1 h-9" onClick={() => openEdit(s)}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
+                <Button variant="outline" size="sm" className="h-9" onClick={() => handleDelete(s.id)}><Trash2 className="w-3 h-3 text-destructive" /></Button>
               </div>
             </CardContent>
           </Card>

@@ -46,61 +46,44 @@ export default function SettingsPage() {
   const updateHours = (day: string, field: string, value: any) => {
     setSettings((s) => ({
       ...s,
-      business_hours: {
-        ...s.business_hours,
-        [day]: { ...s.business_hours?.[day], [field]: value },
-      },
+      business_hours: { ...s.business_hours, [day]: { ...s.business_hours?.[day], [field]: value } },
     }));
   };
 
-  const save = () => {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      toast.success('Settings saved');
-    }, 500);
-  };
+  const save = () => { setSaving(true); setTimeout(() => { setSaving(false); toast.success('Settings saved'); }, 500); };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-heading font-bold">Settings</h1>
+      <h1 className="text-xl sm:text-2xl font-semibold">Settings</h1>
 
       <Tabs defaultValue="business">
-        <TabsList className="bg-muted">
-          <TabsTrigger value="business"><Building className="w-4 h-4 mr-1.5" /> Business</TabsTrigger>
-          <TabsTrigger value="hours"><Clock className="w-4 h-4 mr-1.5" /> Hours</TabsTrigger>
-          <TabsTrigger value="booking"><Shield className="w-4 h-4 mr-1.5" /> Booking</TabsTrigger>
-          <TabsTrigger value="notifications"><Bell className="w-4 h-4 mr-1.5" /> Notifications</TabsTrigger>
+        <TabsList className="bg-muted flex-wrap h-auto gap-1 p-1">
+          <TabsTrigger value="business" className="text-xs sm:text-sm"><Building className="w-4 h-4 mr-1.5" /> <span className="hidden sm:inline">Business</span></TabsTrigger>
+          <TabsTrigger value="hours" className="text-xs sm:text-sm"><Clock className="w-4 h-4 mr-1.5" /> <span className="hidden sm:inline">Hours</span></TabsTrigger>
+          <TabsTrigger value="booking" className="text-xs sm:text-sm"><Shield className="w-4 h-4 mr-1.5" /> <span className="hidden sm:inline">Booking</span></TabsTrigger>
+          <TabsTrigger value="notifications" className="text-xs sm:text-sm"><Bell className="w-4 h-4 mr-1.5" /> <span className="hidden sm:inline">Notifications</span></TabsTrigger>
         </TabsList>
 
         <TabsContent value="business" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base font-heading">Business Information</CardTitle>
+              <CardTitle className="text-sm font-semibold">Business Information</CardTitle>
               <CardDescription>Update your business profile</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label>Business Name</Label>
-                  <Input value={settings.business_name} onChange={(e) => update('business_name', e.target.value)} /></div>
-                <div className="space-y-1.5"><Label>Phone</Label>
-                  <Input value={settings.phone} onChange={(e) => update('phone', e.target.value)} /></div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5"><Label>Business Name</Label><Input value={settings.business_name} onChange={(e) => update('business_name', e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Phone</Label><Input value={settings.phone} onChange={(e) => update('phone', e.target.value)} /></div>
               </div>
-              <div className="space-y-1.5"><Label>Tagline</Label>
-                <Input value={settings.tagline} onChange={(e) => update('tagline', e.target.value)} /></div>
-              <div className="space-y-1.5"><Label>Description</Label>
-                <Textarea value={settings.description} onChange={(e) => update('description', e.target.value)} rows={3} /></div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label>Address</Label>
-                  <Input value={settings.address_line1} onChange={(e) => update('address_line1', e.target.value)} /></div>
-                <div className="space-y-1.5"><Label>City</Label>
-                  <Input value={settings.city} onChange={(e) => update('city', e.target.value)} /></div>
+              <div className="space-y-1.5"><Label>Tagline</Label><Input value={settings.tagline} onChange={(e) => update('tagline', e.target.value)} /></div>
+              <div className="space-y-1.5"><Label>Description</Label><Textarea value={settings.description} onChange={(e) => update('description', e.target.value)} rows={3} /></div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5"><Label>Address</Label><Input value={settings.address_line1} onChange={(e) => update('address_line1', e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>City</Label><Input value={settings.city} onChange={(e) => update('city', e.target.value)} /></div>
               </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label>State</Label>
-                  <Input value={settings.state} onChange={(e) => update('state', e.target.value)} /></div>
-                <div className="space-y-1.5"><Label>Postal Code</Label>
-                  <Input value={settings.postal_code} onChange={(e) => update('postal_code', e.target.value)} /></div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5"><Label>State</Label><Input value={settings.state} onChange={(e) => update('state', e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Postal Code</Label><Input value={settings.postal_code} onChange={(e) => update('postal_code', e.target.value)} /></div>
               </div>
               <Button onClick={save} disabled={saving}><Save className="w-4 h-4 mr-2" /> {saving ? 'Saving...' : 'Save Changes'}</Button>
             </CardContent>
@@ -110,17 +93,15 @@ export default function SettingsPage() {
         <TabsContent value="hours" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base font-heading">Business Hours</CardTitle>
+              <CardTitle className="text-sm font-semibold">Business Hours</CardTitle>
               <CardDescription>Set your operating hours</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {DAYS.map((day) => {
                 const hours = settings.business_hours?.[day] || {};
                 return (
-                  <div key={day} className="flex items-center gap-4 py-2 border-b last:border-0">
-                    <div className="w-24">
-                      <p className="text-sm font-medium capitalize">{day}</p>
-                    </div>
+                  <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 py-2 border-b last:border-0">
+                    <div className="w-24"><p className="text-sm font-medium capitalize">{day}</p></div>
                     <Switch checked={hours.is_open !== false} onCheckedChange={(v) => updateHours(day, 'is_open', v)} />
                     {hours.is_open !== false ? (
                       <div className="flex items-center gap-2">
@@ -142,7 +123,7 @@ export default function SettingsPage() {
         <TabsContent value="booking" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base font-heading">Booking Preferences</CardTitle>
+              <CardTitle className="text-sm font-semibold">Booking Preferences</CardTitle>
               <CardDescription>Control how bookings work</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -154,13 +135,10 @@ export default function SettingsPage() {
                 <div><p className="text-sm font-medium">Auto-Accept Bookings</p><p className="text-xs text-muted-foreground">Automatically confirm new bookings</p></div>
                 <Switch checked={settings.auto_accept_bookings} onCheckedChange={(v) => update('auto_accept_bookings', v)} />
               </div>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="space-y-1.5"><Label>Max Daily Bookings</Label>
-                  <Input type="number" value={settings.max_daily_bookings} onChange={(e) => update('max_daily_bookings', parseInt(e.target.value))} /></div>
-                <div className="space-y-1.5"><Label>Lead Time (hours)</Label>
-                  <Input type="number" value={settings.booking_lead_time_hours} onChange={(e) => update('booking_lead_time_hours', parseInt(e.target.value))} /></div>
-                <div className="space-y-1.5"><Label>Cancel Window (hours)</Label>
-                  <Input type="number" value={settings.cancellation_window_hours} onChange={(e) => update('cancellation_window_hours', parseInt(e.target.value))} /></div>
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5"><Label>Max Daily Bookings</Label><Input type="number" value={settings.max_daily_bookings} onChange={(e) => update('max_daily_bookings', parseInt(e.target.value))} /></div>
+                <div className="space-y-1.5"><Label>Lead Time (hours)</Label><Input type="number" value={settings.booking_lead_time_hours} onChange={(e) => update('booking_lead_time_hours', parseInt(e.target.value))} /></div>
+                <div className="space-y-1.5"><Label>Cancel Window (hours)</Label><Input type="number" value={settings.cancellation_window_hours} onChange={(e) => update('cancellation_window_hours', parseInt(e.target.value))} /></div>
               </div>
               <Button onClick={save} disabled={saving}><Save className="w-4 h-4 mr-2" /> {saving ? 'Saving...' : 'Save Preferences'}</Button>
             </CardContent>
@@ -170,7 +148,7 @@ export default function SettingsPage() {
         <TabsContent value="notifications" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base font-heading">Notification Preferences</CardTitle>
+              <CardTitle className="text-sm font-semibold">Notification Preferences</CardTitle>
               <CardDescription>Control how you receive notifications</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -182,10 +160,7 @@ export default function SettingsPage() {
                   </div>
                   <Switch
                     checked={settings.notification_preferences?.[type] ?? true}
-                    onCheckedChange={(v) => setSettings(s => ({
-                      ...s,
-                      notification_preferences: { ...s.notification_preferences, [type]: v },
-                    }))}
+                    onCheckedChange={(v) => setSettings(s => ({ ...s, notification_preferences: { ...s.notification_preferences, [type]: v } }))}
                   />
                 </div>
               ))}

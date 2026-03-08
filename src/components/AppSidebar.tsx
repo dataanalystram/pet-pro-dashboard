@@ -1,31 +1,14 @@
 import {
-  LayoutDashboard,
-  CalendarDays,
-  Users,
-  Inbox,
-  Scissors,
-  Megaphone,
-  Boxes,
-  BarChart3,
-  MessageSquare,
-  UserCog,
-  Settings,
+  LayoutDashboard, CalendarDays, Users, Inbox, Scissors,
+  Megaphone, Boxes, BarChart3, MessageSquare, UserCog, Settings,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
-import heroPet from "@/assets/hero-pet.png";
 
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
-  useSidebar,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
+  SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
+  SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
 
 const mainItems = [
@@ -55,16 +38,18 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <div className="p-4 flex items-center gap-3">
-          <img src={heroPet} alt="PetDash" className="w-10 h-10 rounded-full object-cover" />
+          <div className="w-9 h-9 rounded-lg bg-sidebar-primary flex items-center justify-center flex-shrink-0">
+            <span className="text-sidebar-primary-foreground font-bold text-sm">PD</span>
+          </div>
           {!collapsed && (
-            <span className="font-heading text-lg font-bold text-foreground">
+            <span className="font-semibold text-sidebar-accent-foreground tracking-tight">
               PetDash Pro
             </span>
           )}
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/50 uppercase text-[10px] tracking-widest font-medium">Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
@@ -82,7 +67,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>System</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/50 uppercase text-[10px] tracking-widest font-medium">System</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryItems.map((item) => (
@@ -102,7 +87,7 @@ export function AppSidebar() {
 
       <SidebarFooter>
         {!collapsed && (
-          <div className="p-4 text-xs text-muted-foreground">
+          <div className="p-4 text-[11px] text-sidebar-foreground/40">
             © 2026 PetDash Pro
           </div>
         )}

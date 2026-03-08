@@ -15,60 +15,42 @@ export default function MessagesPage() {
   const [search, setSearch] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
 
-  // Derive conversations from messages
   const conversations = useMemo(() => {
     const map = new Map<string, { customer_email: string; customer_name: string; last_message: string; last_message_time: string; unread_count: number }>();
     allMessages.forEach(m => {
       const existing = map.get(m.customer_email);
       if (!existing || m.created_at > existing.last_message_time) {
-        map.set(m.customer_email, {
-          customer_email: m.customer_email,
-          customer_name: m.customer_name,
-          last_message: m.content,
-          last_message_time: m.created_at,
-          unread_count: 0,
-        });
+        map.set(m.customer_email, { customer_email: m.customer_email, customer_name: m.customer_name, last_message: m.content, last_message_time: m.created_at, unread_count: 0 });
       }
     });
     return Array.from(map.values()).sort((a, b) => b.last_message_time.localeCompare(a.last_message_time));
   }, [allMessages]);
 
-  // Thread for active conversation
   const thread = useMemo(() => {
     if (!activeConvo) return [];
     return allMessages.filter(m => m.customer_email === activeConvo.customer_email);
   }, [allMessages, activeConvo]);
 
   useEffect(() => {
-    if (activeConvo) {
-      setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-    }
+    if (activeConvo) setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   }, [activeConvo, thread]);
 
   const sendMsg = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !activeConvo) return;
-    insertMessage.mutate({
-      customer_email: activeConvo.customer_email,
-      customer_name: activeConvo.customer_name,
-      content: newMessage.trim(),
-      sender: 'provider',
-    });
+    insertMessage.mutate({ customer_email: activeConvo.customer_email, customer_name: activeConvo.customer_name, content: newMessage.trim(), sender: 'provider' });
     setNewMessage('');
   };
 
-  const filtered = conversations.filter(c => {
-    if (!search) return true;
-    return c.customer_name.toLowerCase().includes(search.toLowerCase());
-  });
+  const filtered = conversations.filter(c => !search || c.customer_name.toLowerCase().includes(search.toLowerCase()));
 
   if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading messages...</div>;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-heading font-bold">Messages</h1>
+    <div className="space-y-4">
+      <h1 className="text-xl sm:text-2xl font-semibold">Messages</h1>
 
-      <div className="grid lg:grid-cols-3 gap-4 h-[600px]">
+      <div className="grid lg:grid-cols-3 gap-3 h-[calc(100vh-12rem)]">
         <Card className={cn("lg:col-span-1", activeConvo && "hidden lg:block")}>
           <CardContent className="p-0 h-full flex flex-col">
             <div className="p-3 border-b">
@@ -77,14 +59,11 @@ export default function MessagesPage() {
             <div className="flex-1 overflow-y-auto divide-y">
               {filtered.map((convo) => (
                 <button key={convo.customer_email} onClick={() => setActiveConvo(convo)}
-                  className={cn("w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left",
+                  className={cn("w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left min-h-[56px]",
                     activeConvo?.customer_email === convo.customer_email && "bg-accent")}>
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-semibold text-sm flex-shrink-0">{convo.customer_name[0]}</div>
+                  <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center font-semibold text-sm flex-shrink-0">{convo.customer_name[0]}</div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold truncate">{convo.customer_name}</p>
-                      {convo.unread_count > 0 && <Badge className="bg-primary text-primary-foreground text-[10px] h-5 w-5 rounded-full flex items-center justify-center p-0">{convo.unread_count}</Badge>}
-                    </div>
+                    <p className="text-sm font-semibold truncate">{convo.customer_name}</p>
                     <p className="text-xs text-muted-foreground truncate">{convo.last_message}</p>
                   </div>
                 </button>
@@ -95,11 +74,11 @@ export default function MessagesPage() {
 
         <Card className={cn("lg:col-span-2", !activeConvo && "hidden lg:flex lg:items-center lg:justify-center")}>
           {!activeConvo ? (
-            <div className="text-center text-muted-foreground"><User className="w-12 h-12 mx-auto mb-3 opacity-40" /><p className="text-sm">Select a conversation</p></div>
+            <div className="text-center text-muted-foreground"><User className="w-12 h-12 mx-auto mb-3 opacity-30" /><p className="text-sm">Select a conversation</p></div>
           ) : (
             <CardContent className="p-0 h-full flex flex-col">
               <div className="flex items-center gap-3 px-4 py-3 border-b">
-                <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setActiveConvo(null)}><ArrowLeft className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9" onClick={() => setActiveConvo(null)}><ArrowLeft className="w-4 h-4" /></Button>
                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">{activeConvo.customer_name[0]}</div>
                 <p className="font-semibold text-sm">{activeConvo.customer_name}</p>
               </div>
@@ -119,7 +98,7 @@ export default function MessagesPage() {
               </div>
               <form onSubmit={sendMsg} className="flex items-center gap-2 p-3 border-t">
                 <Input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type a message..." className="flex-1" />
-                <Button type="submit" size="icon" disabled={!newMessage.trim()}><Send className="w-4 h-4" /></Button>
+                <Button type="submit" size="icon" className="h-10 w-10" disabled={!newMessage.trim()}><Send className="w-4 h-4" /></Button>
               </form>
             </CardContent>
           )}
