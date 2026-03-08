@@ -149,8 +149,6 @@ export default function MarketingPage() {
   if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading campaigns...</div>;
 
   const promoUrl = `${window.location.origin}/promo`;
-  const [copied, setCopied] = useState(false);
-  const [showQR, setShowQR] = useState(false);
 
   const copyPromoLink = () => {
     navigator.clipboard.writeText(promoUrl);
