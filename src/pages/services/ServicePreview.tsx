@@ -23,7 +23,7 @@ const dayLabels: Record<string, string> = {
   friday: 'Fri', saturday: 'Sat', sunday: 'Sun',
 };
 
-interface Props { open: boolean; onOpenChange: (open: boolean) => void; service: any; }
+interface Props { open: boolean; onOpenChange: (open: boolean) => void; service: any; allServices?: any[]; }
 
 export default function ServicePreview({ open, onOpenChange, service: s }: Props) {
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
