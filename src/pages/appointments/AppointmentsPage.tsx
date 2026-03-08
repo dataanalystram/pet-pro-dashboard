@@ -47,6 +47,8 @@ function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value
 
 export default function AppointmentsPage() {
   const { data: bookings = [], isLoading } = useBookings();
+  const { data: staff = [] } = useStaff();
+  const { data: serviceStaff = [] } = useServiceStaff();
   const updateBooking = useUpdate('bookings');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
