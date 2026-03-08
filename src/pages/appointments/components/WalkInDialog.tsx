@@ -144,7 +144,7 @@ export default function WalkInDialog({ open, onOpenChange, services, staff, cust
                 </div>
                 <Input value={pet.name} onChange={e => updatePet(i, 'name', e.target.value)} placeholder="Pet name *" className="h-8 text-sm" />
                 <div className="grid grid-cols-2 gap-2">
-                  <Select value={pet.species} onValueChange={v => updatePet(i, 'species', v)}>
+                  <Select value={pet.species === 'dog' || pet.species === 'cat' || pet.species === 'bird' || pet.species === 'rabbit' || pet.species === '' ? pet.species : 'other'} onValueChange={v => updatePet(i, 'species', v === 'other' ? '' : v)}>
                     <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Species" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="dog">Dog</SelectItem>
@@ -156,6 +156,14 @@ export default function WalkInDialog({ open, onOpenChange, services, staff, cust
                   </Select>
                   <Input value={pet.breed} onChange={e => updatePet(i, 'breed', e.target.value)} placeholder="Breed" className="h-8 text-sm" />
                 </div>
+                {pet.species !== 'dog' && pet.species !== 'cat' && pet.species !== 'bird' && pet.species !== 'rabbit' && pet.species !== '' && (
+                  <Input value={pet.species} onChange={e => updatePet(i, 'species', e.target.value)} placeholder="Enter pet type (e.g. hamster, turtle...)" className="h-8 text-sm" />
+                )}
+                {(pet.species === '' && pets.some((_, idx) => idx === i)) && (() => {
+                  // Check if "other" was just selected by looking at select value
+                  const selectVal = pet.species === 'dog' || pet.species === 'cat' || pet.species === 'bird' || pet.species === 'rabbit' || pet.species === '' ? pet.species : 'other';
+                  return null;
+                })()}
               </div>
             ))}
           </div>
