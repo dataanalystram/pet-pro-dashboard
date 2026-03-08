@@ -619,6 +619,17 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
             </div>
           </TabsContent>
 
+          {/* STAFF */}
+          <TabsContent value="staff" className="space-y-4 mt-4">
+            <ServiceStaffTab
+              staff={allStaff}
+              bookings={allBookings}
+              assignments={staffAssignments}
+              serviceDays={form.available_days}
+              onAssignmentsChange={setStaffAssignments}
+            />
+          </TabsContent>
+
           {/* MEDIA */}
           <TabsContent value="media" className="space-y-4 mt-4">
             <div className="space-y-2">
