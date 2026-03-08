@@ -287,6 +287,7 @@ export type Database = {
           cover_image_url: string | null
           created_at: string
           currency: string
+          custom_category: string | null
           custom_pet_types: string[]
           deposit_amount: number | null
           deposit_required: boolean
@@ -311,6 +312,7 @@ export type Database = {
           preparation_notes: string | null
           price_from: number | null
           price_type: string
+          recommended_services: string[]
           service_addons: Json
           service_area_km: number | null
           service_location: string
@@ -338,6 +340,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           currency?: string
+          custom_category?: string | null
           custom_pet_types?: string[]
           deposit_amount?: number | null
           deposit_required?: boolean
@@ -362,6 +365,7 @@ export type Database = {
           preparation_notes?: string | null
           price_from?: number | null
           price_type?: string
+          recommended_services?: string[]
           service_addons?: Json
           service_area_km?: number | null
           service_location?: string
@@ -389,6 +393,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           currency?: string
+          custom_category?: string | null
           custom_pet_types?: string[]
           deposit_amount?: number | null
           deposit_required?: boolean
@@ -413,6 +418,7 @@ export type Database = {
           preparation_notes?: string | null
           price_from?: number | null
           price_type?: string
+          recommended_services?: string[]
           service_addons?: Json
           service_area_km?: number | null
           service_location?: string
