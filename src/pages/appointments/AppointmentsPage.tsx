@@ -15,7 +15,8 @@ import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
   addMonths, subMonths, isSameDay, isToday, startOfWeek, endOfWeek,
 } from 'date-fns';
-import { mockBookings } from '@/lib/mock-data';
+import { useBookings, useUpdate } from '@/hooks/use-supabase-data';
+import { toast } from 'sonner';
 
 const statusColors: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -45,7 +46,8 @@ function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value
 }
 
 export default function AppointmentsPage() {
-  const [bookings, setBookings] = useState(mockBookings);
+  const { data: bookings = [], isLoading } = useBookings();
+  const updateBooking = useUpdate('bookings');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [statusFilter, setStatusFilter] = useState('all');
@@ -54,8 +56,9 @@ export default function AppointmentsPage() {
   const [detailOpen, setDetailOpen] = useState(false);
 
   const updateStatus = (bookingId: string, newStatus: string) => {
-    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
-    setDetailOpen(false);
+    updateBooking.mutate({ id: bookingId, status: newStatus }, {
+      onSuccess: () => { toast.success(`Status updated to ${newStatus}`); setDetailOpen(false); },
+    });
   };
 
   const monthStart = startOfMonth(currentMonth);
@@ -90,8 +93,10 @@ export default function AppointmentsPage() {
 
   const selectedDayBookings = useMemo(() => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    return (bookingsByDate[dateStr] || []).sort((a, b) => a.start_time.localeCompare(b.start_time));
+    return (bookingsByDate[dateStr] || []).sort((a: any, b: any) => a.start_time.localeCompare(b.start_time));
   }, [selectedDate, bookingsByDate]);
+
+  if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading appointments...</div>;
 
   return (
     <div className="space-y-6">
@@ -130,29 +135,18 @@ export default function AppointmentsPage() {
                     const isSelected = isSameDay(day, selectedDate);
                     const inMonth = day.getMonth() === currentMonth.getMonth();
                     return (
-                      <button
-                        key={dateStr}
-                        onClick={() => setSelectedDate(day)}
-                        className={cn(
-                          "relative h-16 md:h-20 rounded-lg p-1 text-left transition-all border",
-                          isSelected ? "border-primary bg-accent" : "border-transparent hover:bg-muted/50",
-                          !inMonth && "opacity-40"
-                        )}
-                      >
-                        <span className={cn(
-                          "text-xs font-medium",
-                          isToday(day) ? "bg-primary text-primary-foreground w-5 h-5 rounded-full flex items-center justify-center" : ""
-                        )}>
+                      <button key={dateStr} onClick={() => setSelectedDate(day)}
+                        className={cn("relative h-16 md:h-20 rounded-lg p-1 text-left transition-all border",
+                          isSelected ? "border-primary bg-accent" : "border-transparent hover:bg-muted/50", !inMonth && "opacity-40")}>
+                        <span className={cn("text-xs font-medium", isToday(day) ? "bg-primary text-primary-foreground w-5 h-5 rounded-full flex items-center justify-center" : "")}>
                           {format(day, 'd')}
                         </span>
                         {dayBookings.length > 0 && (
                           <div className="mt-0.5 flex flex-wrap gap-0.5">
-                            {dayBookings.slice(0, 3).map((b) => (
+                            {dayBookings.slice(0, 3).map((b: any) => (
                               <div key={b.id} className={cn("w-1.5 h-1.5 rounded-full", statusDots[b.status] || 'bg-muted-foreground')} />
                             ))}
-                            {dayBookings.length > 3 && (
-                              <span className="text-[9px] text-muted-foreground ml-0.5">+{dayBookings.length - 3}</span>
-                            )}
+                            {dayBookings.length > 3 && <span className="text-[9px] text-muted-foreground ml-0.5">+{dayBookings.length - 3}</span>}
                           </div>
                         )}
                       </button>
@@ -164,9 +158,7 @@ export default function AppointmentsPage() {
 
             <Card className="lg:col-span-2">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-heading">
-                  {isToday(selectedDate) ? 'Today' : format(selectedDate, 'EEEE, MMM d')}
-                </CardTitle>
+                <CardTitle className="text-base font-heading">{isToday(selectedDate) ? 'Today' : format(selectedDate, 'EEEE, MMM d')}</CardTitle>
                 <p className="text-xs text-muted-foreground">{selectedDayBookings.length} bookings</p>
               </CardHeader>
               <CardContent className="p-0">
@@ -177,12 +169,9 @@ export default function AppointmentsPage() {
                   </div>
                 ) : (
                   <div className="divide-y max-h-[500px] overflow-y-auto">
-                    {selectedDayBookings.map((b) => (
-                      <button
-                        key={b.id}
-                        onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}
-                        className="w-full flex items-center gap-3 px-5 py-3 hover:bg-muted/50 transition-colors text-left"
-                      >
+                    {selectedDayBookings.map((b: any) => (
+                      <button key={b.id} onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}
+                        className="w-full flex items-center gap-3 px-5 py-3 hover:bg-muted/50 transition-colors text-left">
                         <div className="text-xs font-mono text-muted-foreground w-10 flex-shrink-0">
                           {new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
@@ -208,10 +197,7 @@ export default function AppointmentsPage() {
               <Input placeholder="Search bookings..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40">
-                <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
-                <SelectValue placeholder="All statuses" />
-              </SelectTrigger>
+              <SelectTrigger className="w-40"><Filter className="w-4 h-4 mr-2 text-muted-foreground" /><SelectValue placeholder="All statuses" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
@@ -240,26 +226,24 @@ export default function AppointmentsPage() {
                   <tbody className="divide-y">
                     {filteredBookings.length === 0 ? (
                       <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-muted-foreground">No bookings found</td></tr>
-                    ) : (
-                      filteredBookings.map((b) => (
-                        <tr key={b.id} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}>
-                          <td className="px-5 py-3">
-                            <p className="text-sm font-medium">{b.booking_date}</p>
-                            <p className="text-xs text-muted-foreground">{new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                          </td>
-                          <td className="px-5 py-3 text-sm">{b.service_name}</td>
-                          <td className="px-5 py-3">
-                            <p className="text-sm">{b.customer_name}</p>
-                            <p className="text-xs text-muted-foreground">{b.customer_email}</p>
-                          </td>
-                          <td className="px-5 py-3 text-sm">{b.pet_name} ({b.pet_species})</td>
-                          <td className="px-5 py-3 text-sm font-medium">${b.total_price.toFixed(2)}</td>
-                          <td className="px-5 py-3">
-                            <Badge className={cn("text-xs", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
-                          </td>
-                        </tr>
-                      ))
-                    )}
+                    ) : filteredBookings.map((b) => (
+                      <tr key={b.id} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => { setSelectedBooking(b); setDetailOpen(true); }}>
+                        <td className="px-5 py-3">
+                          <p className="text-sm font-medium">{b.booking_date}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </td>
+                        <td className="px-5 py-3 text-sm">{b.service_name}</td>
+                        <td className="px-5 py-3">
+                          <p className="text-sm">{b.customer_name}</p>
+                          <p className="text-xs text-muted-foreground">{b.customer_email}</p>
+                        </td>
+                        <td className="px-5 py-3 text-sm">{b.pet_name} ({b.pet_species})</td>
+                        <td className="px-5 py-3 text-sm font-medium">${Number(b.total_price).toFixed(2)}</td>
+                        <td className="px-5 py-3">
+                          <Badge className={cn("text-xs", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -283,7 +267,7 @@ export default function AppointmentsPage() {
                 <InfoRow icon={PawPrint} label="Pet" value={`${selectedBooking.pet_name} (${selectedBooking.pet_species})`} />
                 <InfoRow icon={CalIcon} label="Date" value={selectedBooking.booking_date} />
                 <InfoRow icon={Clock} label="Time" value={new Date(selectedBooking.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} />
-                <InfoRow icon={DollarSign} label="Total" value={`$${selectedBooking.total_price.toFixed(2)}`} />
+                <InfoRow icon={DollarSign} label="Total" value={`$${Number(selectedBooking.total_price).toFixed(2)}`} />
               </div>
               <DialogFooter className="flex-col sm:flex-row gap-2">
                 {selectedBooking.status === 'confirmed' && (

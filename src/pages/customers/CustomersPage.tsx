@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Users, Search, Crown, Star, PawPrint, Calendar, DollarSign, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { mockCustomers } from '@/lib/mock-data';
+import { useCustomers } from '@/hooks/use-supabase-data';
 
 const tierColors: Record<string, string> = {
   new: 'bg-slate-100 text-slate-600',
@@ -26,7 +26,7 @@ function StatBox({ icon: Icon, label, value }: { icon: any; label: string; value
 }
 
 export default function CustomersPage() {
-  const [customers] = useState(mockCustomers);
+  const { data: customers = [], isLoading } = useCustomers();
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('total_spent');
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
@@ -38,11 +38,13 @@ export default function CustomersPage() {
       return c.customer_name?.toLowerCase().includes(q) || c.customer_email?.toLowerCase().includes(q);
     })
     .sort((a, b) => {
-      if (sortBy === 'total_spent') return b.total_spent - a.total_spent;
+      if (sortBy === 'total_spent') return Number(b.total_spent) - Number(a.total_spent);
       if (sortBy === 'total_bookings') return b.total_bookings - a.total_bookings;
       if (sortBy === 'name') return a.customer_name.localeCompare(b.customer_name);
       return 0;
     });
+
+  if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading customers...</div>;
 
   return (
     <div className="space-y-6">
@@ -90,7 +92,7 @@ export default function CustomersPage() {
             {filtered.length === 0 ? (
               <div className="py-16 text-center text-sm text-muted-foreground">No customers found</div>
             ) : filtered.map((c) => (
-              <button key={c.customer_email} onClick={() => setSelectedCustomer(c)} className="w-full flex items-center gap-4 px-5 py-4 hover:bg-muted/50 transition-colors text-left">
+              <button key={c.id} onClick={() => setSelectedCustomer(c)} className="w-full flex items-center gap-4 px-5 py-4 hover:bg-muted/50 transition-colors text-left">
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-semibold text-sm flex-shrink-0">
                   {c.customer_name?.[0]?.toUpperCase()}
                 </div>
@@ -103,7 +105,7 @@ export default function CustomersPage() {
                 </div>
                 <div className="hidden sm:flex items-center gap-6 text-right">
                   <div>
-                    <p className="text-sm font-semibold">${c.total_spent}</p>
+                    <p className="text-sm font-semibold">${Number(c.total_spent)}</p>
                     <p className="text-xs text-muted-foreground">spent</p>
                   </div>
                   <div>
@@ -139,9 +141,9 @@ export default function CustomersPage() {
                 </div>
               </DialogHeader>
               <div className="grid grid-cols-3 gap-3 py-3">
-                <StatBox icon={DollarSign} label="Total Spent" value={`$${selectedCustomer.total_spent}`} />
+                <StatBox icon={DollarSign} label="Total Spent" value={`$${Number(selectedCustomer.total_spent)}`} />
                 <StatBox icon={Calendar} label="Bookings" value={selectedCustomer.total_bookings} />
-                <StatBox icon={Star} label="Avg Value" value={`$${selectedCustomer.total_bookings ? Math.round(selectedCustomer.total_spent / selectedCustomer.total_bookings) : 0}`} />
+                <StatBox icon={Star} label="Avg Value" value={`$${selectedCustomer.total_bookings ? Math.round(Number(selectedCustomer.total_spent) / selectedCustomer.total_bookings) : 0}`} />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-2">Pets</p>
