@@ -272,7 +272,7 @@ export default function AppointmentsPage() {
               </div>
             </CardHeader>
             <CardContent className="p-2 md:p-4">
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-2 overflow-x-auto min-w-[700px]">
                 {weekDays.map((day) => {
                   const dateStr = format(day, 'yyyy-MM-dd');
                   const dayBookings = (bookingsByDate[dateStr] || []).sort((a: any, b: any) => a.start_time.localeCompare(b.start_time));

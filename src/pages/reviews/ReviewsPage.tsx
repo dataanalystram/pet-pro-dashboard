@@ -125,7 +125,7 @@ export default function ReviewsPage() {
 
           {/* Filters row */}
           <div className="flex flex-wrap gap-3">
-            <div className="relative flex-1 min-w-[200px]">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Search reviews..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
