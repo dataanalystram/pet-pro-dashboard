@@ -12,7 +12,7 @@ import { CheckCircle, XCircle, CalendarIcon, MessageSquare, PawPrint, User, Mail
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { useStaff, useBookings, useInsert, useUpdate } from '@/hooks/use-supabase-data';
+import { useStaff, useBookings, useServiceStaff, useInsert, useUpdate } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
 
 interface Pet {
