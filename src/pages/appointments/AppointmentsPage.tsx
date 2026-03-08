@@ -297,6 +297,28 @@ export default function AppointmentsPage() {
                 <InfoRow icon={CalIcon} label="Date" value={selectedBooking.booking_date} />
                 <InfoRow icon={Clock} label="Time" value={new Date(selectedBooking.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} />
                 <InfoRow icon={DollarSign} label="Total" value={`$${Number(selectedBooking.total_price).toFixed(2)}`} />
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Assigned Staff</p>
+                  <Select
+                    value={selectedBooking.assigned_staff_id || 'unassigned'}
+                    onValueChange={(v) => {
+                      const val = v === 'unassigned' ? null : v;
+                      updateBooking.mutate({ id: selectedBooking.id, assigned_staff_id: val }, {
+                        onSuccess: () => toast.success('Staff reassigned'),
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Assign staff" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {staff.map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <DialogFooter className="flex-col sm:flex-row gap-2">
                 {selectedBooking.status === 'confirmed' && (
