@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Calendar, CheckCircle, XCircle, AlertTriangle, Search, Filter, ChevronsUpDown, Check, Pencil } from 'lucide-react';
+import { Plus, Calendar, CheckCircle, Ban, AlertTriangle, Search, Filter, ChevronsUpDown, Check, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useStaffTimeOff, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
@@ -178,7 +178,7 @@ export default function StaffTimeOffPanel({ staff, bookings }: Props) {
             <CheckCircle className="w-3 h-3 mr-1" />Approve All
           </Button>
           <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => bulkUpdateStatus('rejected')}>
-            <XCircle className="w-3 h-3 mr-1" />Reject All
+            <Ban className="w-3 h-3 mr-1" />Reject All
           </Button>
           <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setSelectedIds(new Set())}>Clear</Button>
         </div>
@@ -227,18 +227,18 @@ export default function StaffTimeOffPanel({ staff, bookings }: Props) {
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(t)}>
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                      <Button variant="ghost" size="icon" className="h-7 w-7" title={t.status === 'approved' ? 'Reject' : 'Approve'} onClick={() => {
                         const next = t.status === 'approved' ? 'rejected' : 'approved';
                         updateTimeOff.mutate({ id: t.id, status: next }, {
                           onSuccess: () => toast.success(`Status changed to ${next}`),
                         });
                       }}>
-                        {t.status === 'approved' ? <XCircle className="w-3.5 h-3.5 text-destructive" /> : <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />}
+                        {t.status === 'approved' ? <Ban className="w-3.5 h-3.5 text-destructive" /> : <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />}
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => {
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" title="Delete" onClick={() => {
                         if (window.confirm('Remove this time off entry?')) deleteTimeOff.mutate(t.id, { onSuccess: () => toast.success('Removed') });
                       }}>
-                        <XCircle className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </div>

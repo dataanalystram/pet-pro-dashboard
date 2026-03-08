@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { parseISO, isWithinInterval } from 'date-fns';
+import { parseISO, isWithinInterval, addDays, format, startOfWeek } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { useUpdate } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -18,15 +19,11 @@ interface Props {
   timeOff?: any[];
 }
 
-function getWeekDates() {
+function getWeekDates(offset: number) {
   const now = new Date();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d.toISOString().split('T')[0];
-  });
+  const monday = startOfWeek(now, { weekStartsOn: 1 });
+  const shifted = addDays(monday, offset * 7);
+  return Array.from({ length: 7 }, (_, i) => format(addDays(shifted, i), 'yyyy-MM-dd'));
 }
 
 interface CellEditState {
@@ -38,10 +35,12 @@ interface CellEditState {
 }
 
 export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }: Props) {
-  const weekDates = getWeekDates();
+  const [weekOffset, setWeekOffset] = useState(0);
+  const weekDates = getWeekDates(weekOffset);
   const updateStaff = useUpdate('staff');
   const [editCell, setEditCell] = useState<CellEditState | null>(null);
   const [openPopover, setOpenPopover] = useState<string | null>(null);
+  const weekLabel = `${format(parseISO(weekDates[0]), 'MMM d')} – ${format(parseISO(weekDates[6]), 'MMM d, yyyy')}`;
 
   const isOnLeave = (staffId: string, dateStr: string) => {
     return timeOff.some((t: any) => {
@@ -86,6 +85,21 @@ export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }:
   return (
     <div className="overflow-x-auto">
       <div className="min-w-[600px]">
+        {/* Week Navigation */}
+        <div className="flex items-center justify-between mb-3">
+          <Button variant="outline" size="sm" onClick={() => setWeekOffset(o => o - 1)}>
+            <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+          </Button>
+          <div className="text-center">
+            <p className="text-sm font-semibold">{weekLabel}</p>
+            {weekOffset !== 0 && (
+              <button className="text-xs text-primary hover:underline" onClick={() => setWeekOffset(0)}>Today</button>
+            )}
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setWeekOffset(o => o + 1)}>
+            Next <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
+        </div>
         {/* Header */}
         <div className="grid gap-1" style={{ gridTemplateColumns: `160px repeat(7, 1fr)` }}>
           <div className="p-2 text-xs font-medium text-muted-foreground">Staff</div>
