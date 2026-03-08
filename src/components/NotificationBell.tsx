@@ -1,4 +1,4 @@
-import { Bell, CheckCheck, AlertTriangle, Star } from "lucide-react";
+import { Bell, CheckCheck, AlertTriangle, Star, PackageX } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,10 +11,14 @@ export function NotificationBell() {
   const { data: notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const navigate = useNavigate();
 
-  const handleClick = (id: string, referenceId: string | null) => {
+  const handleClick = (id: string, type: string, referenceId: string | null) => {
     markAsRead.mutate(id);
     if (referenceId) {
-      navigate('/reviews');
+      if (type === 'low_stock') {
+        navigate('/inventory');
+      } else {
+        navigate('/reviews');
+      }
     }
   };
 
@@ -55,7 +59,7 @@ export function NotificationBell() {
               {notifications.map((n) => (
                 <button
                   key={n.id}
-                  onClick={() => handleClick(n.id, n.reference_id)}
+                  onClick={() => handleClick(n.id, n.type, n.reference_id)}
                   className={cn(
                     "w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors flex gap-3",
                     !n.is_read && "bg-primary/5"
@@ -64,6 +68,8 @@ export function NotificationBell() {
                   <div className="mt-0.5 shrink-0">
                     {n.type === 'negative_review' ? (
                       <AlertTriangle className="w-4 h-4 text-destructive" />
+                    ) : n.type === 'low_stock' ? (
+                      <PackageX className="w-4 h-4 text-amber-500" />
                     ) : (
                       <Star className="w-4 h-4 text-muted-foreground" />
                     )}
