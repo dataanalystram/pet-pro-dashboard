@@ -326,6 +326,7 @@ export default function DashboardPage() {
           change={`${metrics.revChange >= 0 ? '+' : ''}${metrics.revChange.toFixed(0)}%`}
           changeType={metrics.revChange >= 0 ? 'up' : 'down'}
           sparkData={metrics.revSpark}
+          onClick={() => navigate('/analytics')}
         />
         <KpiCard
           icon={Calendar} iconBg="bg-blue-100 text-blue-600"
@@ -333,6 +334,7 @@ export default function DashboardPage() {
           change={`${metrics.bookChange >= 0 ? '+' : ''}${metrics.bookChange.toFixed(0)}%`}
           changeType={metrics.bookChange >= 0 ? 'up' : 'down'}
           sparkData={metrics.bookSpark}
+          onClick={() => navigate('/appointments')}
         />
         <KpiCard
           icon={Users} iconBg="bg-violet-100 text-violet-600"
@@ -340,6 +342,7 @@ export default function DashboardPage() {
           change={`${metrics.custChange >= 0 ? '+' : ''}${metrics.custChange.toFixed(0)}%`}
           changeType={metrics.custChange >= 0 ? 'up' : 'down'}
           sparkData={metrics.custSpark}
+          onClick={() => navigate('/customers')}
         />
         <KpiCard
           icon={ShoppingCart} iconBg="bg-orange-100 text-orange-600"
@@ -347,6 +350,7 @@ export default function DashboardPage() {
           change={`${metrics.ordChange >= 0 ? '+' : ''}${metrics.ordChange.toFixed(0)}%`}
           changeType={metrics.ordChange >= 0 ? 'up' : 'down'}
           sparkData={metrics.ordSpark}
+          onClick={() => navigate('/orders')}
         />
         <KpiCard
           icon={Star} iconBg="bg-amber-100 text-amber-600"
@@ -354,6 +358,7 @@ export default function DashboardPage() {
           change={`${reviews.length} reviews`}
           changeType="neutral"
           sparkData={metrics.ratSpark}
+          onClick={() => navigate('/reviews')}
         />
       </div>
 
