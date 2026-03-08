@@ -143,19 +143,36 @@ export default function WalkInDialog({ open, onOpenChange, services, staff, cust
                   )}
                 </div>
                 <Input value={pet.name} onChange={e => updatePet(i, 'name', e.target.value)} placeholder="Pet name *" className="h-8 text-sm" />
-                <div className="grid grid-cols-2 gap-2">
-                  <Select value={pet.species} onValueChange={v => updatePet(i, 'species', v)}>
-                    <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Species" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="dog">Dog</SelectItem>
-                      <SelectItem value="cat">Cat</SelectItem>
-                      <SelectItem value="bird">Bird</SelectItem>
-                      <SelectItem value="rabbit">Rabbit</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input value={pet.breed} onChange={e => updatePet(i, 'breed', e.target.value)} placeholder="Breed" className="h-8 text-sm" />
-                </div>
+                {(() => {
+                  const knownSpecies = ['dog', 'cat', 'bird', 'rabbit'];
+                  const isKnown = knownSpecies.includes(pet.species);
+                  const selectVal = isKnown ? pet.species : (pet.species ? 'other' : '');
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Select value={selectVal} onValueChange={v => updatePet(i, 'species', v === 'other' ? 'other' : v)}>
+                          <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Species" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="dog">Dog</SelectItem>
+                            <SelectItem value="cat">Cat</SelectItem>
+                            <SelectItem value="bird">Bird</SelectItem>
+                            <SelectItem value="rabbit">Rabbit</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input value={pet.breed} onChange={e => updatePet(i, 'breed', e.target.value)} placeholder="Breed" className="h-8 text-sm" />
+                      </div>
+                      {selectVal === 'other' && (
+                        <Input
+                          value={pet.species === 'other' ? '' : pet.species}
+                          onChange={e => updatePet(i, 'species', e.target.value || 'other')}
+                          placeholder="Enter pet type (e.g. hamster, turtle...)"
+                          className="h-8 text-sm"
+                        />
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             ))}
           </div>
