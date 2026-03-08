@@ -178,7 +178,7 @@ export default function StaffTimeOffPanel({ staff, bookings }: Props) {
             <CheckCircle className="w-3 h-3 mr-1" />Approve All
           </Button>
           <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => bulkUpdateStatus('rejected')}>
-            <XCircle className="w-3 h-3 mr-1" />Reject All
+            <Ban className="w-3 h-3 mr-1" />Reject All
           </Button>
           <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setSelectedIds(new Set())}>Clear</Button>
         </div>
