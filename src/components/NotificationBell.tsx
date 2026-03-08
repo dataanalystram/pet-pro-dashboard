@@ -68,6 +68,8 @@ export function NotificationBell() {
                   <div className="mt-0.5 shrink-0">
                     {n.type === 'negative_review' ? (
                       <AlertTriangle className="w-4 h-4 text-destructive" />
+                    ) : n.type === 'low_stock' ? (
+                      <PackageX className="w-4 h-4 text-amber-500" />
                     ) : (
                       <Star className="w-4 h-4 text-muted-foreground" />
                     )}
