@@ -276,14 +276,26 @@ export default function StaffAvailabilityGrid({ staff, bookings, timeOff = [] }:
                 >
                   <PopoverTrigger asChild>
                     <button
-                      onClick={() => openEditor(s, day)}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleDragStart(s.id, i, isOff);
+                      }}
+                      onMouseEnter={() => handleDragEnter(i)}
+                      onClick={() => {
+                        if (!isDragging) openEditor(s, day);
+                      }}
                       className={cn(
-                        "rounded-lg p-2 text-center text-xs transition-colors relative cursor-pointer hover:ring-2 hover:ring-primary/30",
-                        onLeave ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' :
-                        isOff ? 'bg-muted/50 text-muted-foreground' :
-                        load >= 0.8 ? 'bg-destructive/15 text-destructive' :
-                        load >= 0.5 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        "rounded-lg p-2 text-center text-xs transition-colors relative cursor-pointer select-none",
+                        isDayInDragRange(s.id, i) 
+                          ? 'ring-2 ring-primary bg-primary/20'
+                          : 'hover:ring-2 hover:ring-primary/30',
+                        !isDayInDragRange(s.id, i) && (
+                          onLeave ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' :
+                          isOff ? 'bg-muted/50 text-muted-foreground' :
+                          load >= 0.8 ? 'bg-destructive/15 text-destructive' :
+                          load >= 0.5 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                          'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        )
                       )}
                     >
                       {onLeave ? '🏖️' : isOff ? 'Off' : `${dayBookings}/${s.max_daily_bookings}`}
