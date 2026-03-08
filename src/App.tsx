@@ -18,6 +18,7 @@ import SettingsPage from "@/pages/settings/SettingsPage";
 import ReviewsPage from "@/pages/reviews/ReviewsPage";
 import NotFound from "./pages/NotFound";
 import PublicReviewPage from "./pages/reviews/PublicReviewPage";
+import PublicBookingPage from "./pages/requests/PublicBookingPage";
 
 const queryClient = new QueryClient();
 
