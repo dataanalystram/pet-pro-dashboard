@@ -20,6 +20,7 @@ const primaryTabs = [
 
 const moreItems = [
   { title: "Requests", url: "/requests", icon: Inbox },
+  { title: "Reviews", url: "/reviews", icon: Star },
   { title: "Services", url: "/services", icon: Scissors },
   { title: "Marketing", url: "/marketing", icon: Megaphone },
   { title: "Inventory", url: "/inventory", icon: Boxes },

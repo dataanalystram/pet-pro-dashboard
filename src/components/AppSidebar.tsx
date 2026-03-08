@@ -19,6 +19,7 @@ const mainItems = [
   { title: "Requests", url: "/requests", icon: Inbox },
   { title: "Services", url: "/services", icon: Scissors },
   { title: "Messages", url: "/messages", icon: MessageSquare },
+  { title: "Reviews", url: "/reviews", icon: Star },
 ];
 
 const managementItems = [
