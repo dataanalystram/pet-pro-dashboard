@@ -29,6 +29,8 @@ export function useInventory() { return useSupabaseQuery<Tables<'inventory'>>('i
 export function useCampaigns() { return useSupabaseQuery<Tables<'campaigns'>>('campaigns', { orderBy: 'created_at', ascending: false }); }
 export function useMessages() { return useSupabaseQuery<Tables<'messages'>>('messages', { orderBy: 'created_at', ascending: true }); }
 export function useReviews() { return useSupabaseQuery<Tables<'reviews'>>('reviews', { orderBy: 'created_at', ascending: false }); }
+export function useServiceStaff() { return useSupabaseQuery<Tables<'service_staff'>>('service_staff', { orderBy: 'created_at' }); }
+export function useStaffTimeOff() { return useSupabaseQuery<Tables<'staff_time_off'>>('staff_time_off', { orderBy: 'start_date', ascending: false }); }
 
 export function useInsert(table: TableName) {
   const qc = useQueryClient();
