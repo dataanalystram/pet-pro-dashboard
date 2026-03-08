@@ -1,29 +1,27 @@
-import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, Clock, DollarSign } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Plus, Search, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServices, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-data';
-
-const categoryColors: Record<string, string> = {
-  grooming: 'bg-blue-100 text-blue-700', dental: 'bg-emerald-100 text-emerald-700',
-  medical: 'bg-red-100 text-red-700', walking: 'bg-amber-100 text-amber-700',
-  boarding: 'bg-violet-100 text-violet-700', training: 'bg-orange-100 text-orange-700',
-  sitting: 'bg-pink-100 text-pink-700', other: 'bg-secondary text-secondary-foreground',
-};
+import ServiceCard from './ServiceCard';
+import ServiceFormDialog, { ServiceFormData } from './ServiceFormDialog';
+import ServicePreview from './ServicePreview';
 
 const CATEGORIES = [
+  { value: 'all', label: 'All Categories' },
   { value: 'grooming', label: 'Grooming' }, { value: 'dental', label: 'Dental' },
   { value: 'medical', label: 'Medical' }, { value: 'walking', label: 'Walking' },
   { value: 'boarding', label: 'Boarding' }, { value: 'training', label: 'Training' },
   { value: 'sitting', label: 'Pet Sitting' }, { value: 'other', label: 'Other' },
+];
+
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All Status' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+  { value: 'featured', label: 'Featured' },
 ];
 
 export default function ServicesPage() {
@@ -31,83 +29,169 @@ export default function ServicesPage() {
   const insertService = useInsert('services');
   const updateService = useUpdate('services');
   const deleteService = useDelete('services');
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState({ name: '', description: '', category: 'grooming', base_price: '', duration_minutes: '', is_active: true });
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewService, setPreviewService] = useState<any>(null);
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
 
-  const openAdd = () => { setEditing(null); setForm({ name: '', description: '', category: 'grooming', base_price: '', duration_minutes: '', is_active: true }); setDialogOpen(true); };
-  const openEdit = (s: any) => { setEditing(s); setForm({ name: s.name, description: s.description || '', category: s.category, base_price: s.base_price.toString(), duration_minutes: s.duration_minutes.toString(), is_active: s.is_active }); setDialogOpen(true); };
+  const filtered = useMemo(() => {
+    return services.filter((s: any) => {
+      const matchSearch = !search || s.name.toLowerCase().includes(search.toLowerCase()) ||
+        (s.tags && s.tags.some((t: string) => t.toLowerCase().includes(search.toLowerCase()))) ||
+        (s.short_description && s.short_description.toLowerCase().includes(search.toLowerCase()));
+      const matchCategory = categoryFilter === 'all' || s.category === categoryFilter;
+      const matchStatus = statusFilter === 'all' ||
+        (statusFilter === 'active' && s.is_active) ||
+        (statusFilter === 'inactive' && !s.is_active) ||
+        (statusFilter === 'featured' && s.featured);
+      return matchSearch && matchCategory && matchStatus;
+    });
+  }, [services, search, categoryFilter, statusFilter]);
 
-  const handleSave = () => {
-    const payload = { name: form.name, description: form.description || null, category: form.category, base_price: parseFloat(form.base_price), duration_minutes: parseInt(form.duration_minutes), is_active: form.is_active };
+  const openAdd = () => { setEditing(null); setDialogOpen(true); };
+  const openEdit = (s: any) => { setEditing(s); setDialogOpen(true); };
+  const openPreview = (s: any) => { setPreviewService(s); setPreviewOpen(true); };
+
+  const handleSave = (form: ServiceFormData) => {
+    const payload: Record<string, any> = {
+      name: form.name, category: form.category,
+      short_description: form.short_description || null,
+      description: form.short_description || null,
+      long_description: form.long_description || null,
+      base_price: parseFloat(form.base_price),
+      price_from: form.price_from ? parseFloat(form.price_from) : null,
+      price_type: form.price_type,
+      currency: form.currency,
+      tax_rate: parseFloat(form.tax_rate) || 0,
+      tax_inclusive: form.tax_inclusive,
+      duration_minutes: parseInt(form.duration_minutes),
+      buffer_minutes: parseInt(form.buffer_minutes) || 0,
+      max_bookings_per_day: parseInt(form.max_bookings_per_day) || 10,
+      pet_types_accepted: form.pet_types_accepted,
+      vaccination_required: form.vaccination_required,
+      age_restrictions: form.age_restrictions || null,
+      breed_restrictions: form.breed_restrictions,
+      weight_limit_kg: form.weight_limit_kg ? parseFloat(form.weight_limit_kg) : null,
+      cover_image_url: form.cover_image_url || null,
+      gallery_urls: form.gallery_urls,
+      preparation_notes: form.preparation_notes || null,
+      aftercare_notes: form.aftercare_notes || null,
+      cancellation_policy: form.cancellation_policy || null,
+      highlights: form.highlights,
+      tags: form.tags,
+      is_active: form.is_active,
+      featured: form.featured,
+    };
+
     if (editing) {
-      updateService.mutate({ id: editing.id, ...payload }, { onSuccess: () => { toast.success('Service updated'); setDialogOpen(false); } });
+      updateService.mutate({ id: editing.id, ...payload }, {
+        onSuccess: () => { toast.success('Service updated'); setDialogOpen(false); },
+      });
     } else {
-      insertService.mutate({ ...payload, price_type: 'fixed', buffer_minutes: 15, pet_types_accepted: ['dog', 'cat'] }, { onSuccess: () => { toast.success('Service created'); setDialogOpen(false); } });
+      insertService.mutate(payload, {
+        onSuccess: () => { toast.success('Service created'); setDialogOpen(false); },
+      });
     }
   };
 
-  const handleDelete = (id: string) => { if (!window.confirm('Delete this service?')) return; deleteService.mutate(id, { onSuccess: () => toast.success('Service deleted') }); };
+  const handleDelete = (id: string) => {
+    if (!window.confirm('Delete this service?')) return;
+    deleteService.mutate(id, { onSuccess: () => toast.success('Service deleted') });
+  };
 
-  if (isLoading) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading services...</div>;
+  const handleDuplicate = (s: any) => {
+    const { id, created_at, updated_at, total_bookings, ...rest } = s;
+    insertService.mutate({ ...rest, name: `${s.name} (Copy)`, is_active: false }, {
+      onSuccess: () => toast.success('Service duplicated'),
+    });
+  };
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading services...</div>;
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-semibold">Services</h1>
-          <p className="text-sm text-muted-foreground">{services.length} services</p>
+          <p className="text-sm text-muted-foreground">
+            {filtered.length} service{filtered.length !== 1 ? 's' : ''}
+            {services.length !== filtered.length && ` of ${services.length} total`}
+          </p>
         </div>
-        <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> Add Service</Button>
+        <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> New Service</Button>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {services.map((s) => (
-          <Card key={s.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <p className="text-sm font-semibold">{s.name}</p>
-                  <Badge className={cn("text-[10px] mt-1", categoryColors[s.category] || categoryColors.other)}>{s.category}</Badge>
-                </div>
-                {!s.is_active && <Badge variant="secondary" className="text-[10px]">Inactive</Badge>}
-              </div>
-              {s.description && <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{s.description}</p>}
-              <div className="flex items-center gap-4 mt-3 text-sm">
-                <div className="flex items-center gap-1 text-muted-foreground"><DollarSign className="w-3.5 h-3.5" /><span className="font-semibold text-foreground">${Number(s.base_price)}</span></div>
-                <div className="flex items-center gap-1 text-muted-foreground"><Clock className="w-3.5 h-3.5" /><span>{s.duration_minutes}min</span></div>
-              </div>
-              <div className="flex gap-2 mt-3">
-                <Button variant="outline" size="sm" className="flex-1 h-9" onClick={() => openEdit(s)}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
-                <Button variant="outline" size="sm" className="h-9" onClick={() => handleDelete(s.id)}><Trash2 className="w-3 h-3 text-destructive" /></Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search services, tags..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-full sm:w-44"><SelectValue /></SelectTrigger>
+          <SelectContent>{CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full sm:w-36"><SelectValue /></SelectTrigger>
+          <SelectContent>{STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+        </Select>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{editing ? 'Edit Service' : 'Add Service'}</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
-            <div className="space-y-1.5"><Label>Name *</Label><Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-            <div className="space-y-1.5"><Label>Category</Label>
-              <Select value={form.category} onValueChange={(v) => setForm(f => ({ ...f, category: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
-              </Select></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5"><Label>Price ($) *</Label><Input type="number" value={form.base_price} onChange={(e) => setForm(f => ({ ...f, base_price: e.target.value }))} /></div>
-              <div className="space-y-1.5"><Label>Duration (min) *</Label><Input type="number" value={form.duration_minutes} onChange={(e) => setForm(f => ({ ...f, duration_minutes: e.target.value }))} /></div>
-            </div>
-            <div className="space-y-1.5"><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} rows={3} /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={!form.name || !form.base_price}>{editing ? 'Save Changes' : 'Add Service'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Grid */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <p className="text-lg font-medium">No services found</p>
+          <p className="text-sm mt-1">
+            {search || categoryFilter !== 'all' || statusFilter !== 'all'
+              ? 'Try adjusting your filters'
+              : 'Create your first service to get started'}
+          </p>
+          {!search && categoryFilter === 'all' && statusFilter === 'all' && (
+            <Button onClick={openAdd} className="mt-4"><Plus className="w-4 h-4 mr-2" /> Create Service</Button>
+          )}
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((s: any) => (
+            <ServiceCard
+              key={s.id}
+              service={s}
+              onEdit={() => openEdit(s)}
+              onDelete={() => handleDelete(s.id)}
+              onPreview={() => openPreview(s)}
+              onDuplicate={() => handleDuplicate(s)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Form Dialog */}
+      <ServiceFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        editing={editing}
+        onSave={handleSave}
+        saving={insertService.isPending || updateService.isPending}
+      />
+
+      {/* Preview */}
+      <ServicePreview
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        service={previewService}
+      />
     </div>
   );
 }
