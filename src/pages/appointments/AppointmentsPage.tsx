@@ -264,6 +264,9 @@ export default function AppointmentsPage() {
                           <p className="text-xs text-muted-foreground">{b.customer_email}</p>
                         </td>
                         <td className="px-4 py-3 text-sm">{b.pet_name} ({b.pet_species})</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
+                          {b.assigned_staff_id ? staff.find(s => s.id === b.assigned_staff_id)?.full_name || '—' : '—'}
+                        </td>
                         <td className="px-4 py-3 text-sm font-medium">${Number(b.total_price).toFixed(2)}</td>
                         <td className="px-4 py-3">
                           <Badge className={cn("text-xs", statusColors[b.status])}>{b.status?.replace('_', ' ')}</Badge>
