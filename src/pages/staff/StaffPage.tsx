@@ -13,7 +13,7 @@ import { useStaff, useInsert, useUpdate, useDelete } from '@/hooks/use-supabase-
 
 const roleColors: Record<string, string> = {
   owner: 'bg-amber-100 text-amber-700', manager: 'bg-violet-100 text-violet-700',
-  staff: 'bg-blue-100 text-blue-700', part_time: 'bg-slate-100 text-slate-600',
+  staff: 'bg-blue-100 text-blue-700', part_time: 'bg-secondary text-secondary-foreground',
   contractor: 'bg-orange-100 text-orange-700',
 };
 
@@ -45,20 +45,20 @@ export default function StaffPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-heading font-bold">Staff</h1><p className="text-sm text-muted-foreground">{staff.length} team members</p></div>
+        <div><h1 className="text-xl sm:text-2xl font-semibold">Staff</h1><p className="text-sm text-muted-foreground">{staff.length} team members</p></div>
         <Button onClick={openAdd}><UserPlus className="w-4 h-4 mr-2" /> Add Staff</Button>
       </div>
 
       {staff.length === 0 ? (
-        <Card><CardContent className="py-16 text-center"><UserPlus className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" /><p className="text-sm text-muted-foreground">No staff members yet</p><Button onClick={openAdd} className="mt-4" size="sm">Add Your First Staff</Button></CardContent></Card>
+        <Card><CardContent className="py-16 text-center"><UserPlus className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" /><p className="text-sm text-muted-foreground">No staff members yet</p><Button onClick={openAdd} className="mt-4" size="sm">Add Your First Staff</Button></CardContent></Card>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {staff.map((s) => (
             <Card key={s.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-5">
+              <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center font-bold">{s.full_name?.[0]?.toUpperCase()}</div>
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold text-sm">{s.full_name?.[0]?.toUpperCase()}</div>
                     <div><p className="text-sm font-semibold">{s.full_name}</p><p className="text-xs text-muted-foreground">{s.title || s.role}</p></div>
                   </div>
                   <Badge className={cn("text-[10px]", roleColors[s.role] || roleColors.staff)}>{s.role?.replace('_', ' ')}</Badge>
@@ -70,8 +70,8 @@ export default function StaffPage() {
                 </div>
                 {s.specializations?.length > 0 && <div className="flex flex-wrap gap-1 mb-3">{s.specializations.map((sp) => <Badge key={sp} variant="secondary" className="text-[10px] capitalize">{sp}</Badge>)}</div>}
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1" onClick={() => openEdit(s)}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
-                  <Button variant="outline" size="sm" onClick={() => handleDelete(s.id)} className="text-destructive hover:text-destructive"><Trash2 className="w-3 h-3" /></Button>
+                  <Button variant="outline" size="sm" className="flex-1 h-9" onClick={() => openEdit(s)}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
+                  <Button variant="outline" size="sm" className="h-9" onClick={() => handleDelete(s.id)}><Trash2 className="w-3 h-3 text-destructive" /></Button>
                 </div>
               </CardContent>
             </Card>

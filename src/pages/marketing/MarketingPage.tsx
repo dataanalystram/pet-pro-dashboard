@@ -16,7 +16,7 @@ const typeColors: Record<string, string> = {
   discount: 'bg-emerald-100 text-emerald-700', first_time: 'bg-blue-100 text-blue-700',
   loyalty_reward: 'bg-violet-100 text-violet-700', seasonal: 'bg-amber-100 text-amber-700',
   flash_sale: 'bg-red-100 text-red-700', referral: 'bg-orange-100 text-orange-700',
-  bundle: 'bg-slate-100 text-slate-700',
+  bundle: 'bg-secondary text-secondary-foreground',
 };
 
 export default function MarketingPage() {
@@ -47,33 +47,33 @@ export default function MarketingPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-heading font-bold">Marketing</h1><p className="text-sm text-muted-foreground">{campaigns.length} campaigns</p></div>
+        <div><h1 className="text-xl sm:text-2xl font-semibold">Marketing</h1><p className="text-sm text-muted-foreground">{campaigns.length} campaigns</p></div>
         <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> New Campaign</Button>
       </div>
 
       {campaigns.length === 0 ? (
-        <Card><CardContent className="py-16 text-center"><Megaphone className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" /><p className="text-sm text-muted-foreground">No campaigns yet</p><Button onClick={openAdd} className="mt-4" size="sm">Create Your First Campaign</Button></CardContent></Card>
+        <Card><CardContent className="py-16 text-center"><Megaphone className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" /><p className="text-sm text-muted-foreground">No campaigns yet</p><Button onClick={openAdd} className="mt-4" size="sm">Create Your First Campaign</Button></CardContent></Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {campaigns.map((c) => (
             <Card key={c.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-5">
+              <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <div className="flex items-center gap-2"><p className="text-base font-semibold">{c.name}</p><Badge className={cn("text-[10px]", typeColors[c.type] || typeColors.discount)}>{c.type.replace('_', ' ')}</Badge></div>
-                    <p className="text-sm text-muted-foreground mt-1">{c.description}</p>
+                    <div className="flex items-center gap-2 flex-wrap"><p className="text-sm sm:text-base font-semibold">{c.name}</p><Badge className={cn("text-[10px]", typeColors[c.type] || typeColors.discount)}>{c.type.replace('_', ' ')}</Badge></div>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{c.description}</p>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 flex-shrink-0">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(c)}><Pencil className="w-3 h-3" /></Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(c.id)}><Trash2 className="w-3 h-3" /></Button>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Tag className="w-4 h-4" /><span className="font-mono font-semibold text-foreground">{c.promo_code}</span></div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><DollarSign className="w-4 h-4" /><span>{Number(c.discount_value)}{c.discount_type === 'percentage' ? '%' : '$'} off</span></div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Calendar className="w-4 h-4" /><span>{c.start_date} - {c.end_date}</span></div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><Eye className="w-4 h-4" /><span>{c.views} views</span></div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground"><MousePointerClick className="w-4 h-4" /><span>{c.redemptions} used</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 text-sm">
+                  <div className="flex items-center gap-2 text-muted-foreground"><Tag className="w-3.5 h-3.5 flex-shrink-0" /><span className="font-mono font-semibold text-foreground truncate">{c.promo_code}</span></div>
+                  <div className="flex items-center gap-2 text-muted-foreground"><DollarSign className="w-3.5 h-3.5 flex-shrink-0" /><span>{Number(c.discount_value)}{c.discount_type === 'percentage' ? '%' : '$'} off</span></div>
+                  <div className="flex items-center gap-2 text-muted-foreground col-span-2 sm:col-span-1"><Calendar className="w-3.5 h-3.5 flex-shrink-0" /><span className="truncate">{c.start_date} - {c.end_date}</span></div>
+                  <div className="flex items-center gap-2 text-muted-foreground"><Eye className="w-3.5 h-3.5 flex-shrink-0" /><span>{c.views} views</span></div>
+                  <div className="flex items-center gap-2 text-muted-foreground"><MousePointerClick className="w-3.5 h-3.5 flex-shrink-0" /><span>{c.redemptions} used</span></div>
                 </div>
               </CardContent>
             </Card>

@@ -10,9 +10,9 @@ import { useBookingRequests, useUpdate } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
 
 const statusStyles: Record<string, { bg: string; badge: string; label: string }> = {
-  pending: { bg: 'bg-amber-50 border-amber-200', badge: 'bg-amber-100 text-amber-700', label: 'Pending' },
-  accepted: { bg: 'bg-emerald-50 border-emerald-200', badge: 'bg-emerald-100 text-emerald-700', label: 'Accepted' },
-  declined: { bg: 'bg-red-50 border-red-200', badge: 'bg-red-100 text-red-700', label: 'Declined' },
+  pending: { bg: 'border-amber-200/60 bg-card', badge: 'bg-amber-100 text-amber-700', label: 'Pending' },
+  accepted: { bg: 'border-emerald-200/60 bg-card', badge: 'bg-emerald-100 text-emerald-700', label: 'Accepted' },
+  declined: { bg: 'border-red-200/60 bg-card', badge: 'bg-red-100 text-red-700', label: 'Declined' },
 };
 
 export default function BookingRequestsPage() {
@@ -27,11 +27,7 @@ export default function BookingRequestsPage() {
     if (!req) return;
     const newStatus = action === 'accept' ? 'accepted' : 'declined';
     updateRequest.mutate({ id: req.id, status: newStatus }, {
-      onSuccess: () => {
-        toast.success(action === 'accept' ? 'Request accepted' : 'Request declined');
-        setActionModal({ open: false, request: null, action: '' });
-        setResponseMsg('');
-      },
+      onSuccess: () => { toast.success(action === 'accept' ? 'Request accepted' : 'Request declined'); setActionModal({ open: false, request: null, action: '' }); setResponseMsg(''); },
     });
   };
 
@@ -42,19 +38,19 @@ export default function BookingRequestsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-heading font-bold">Booking Requests</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold">Booking Requests</h1>
         <p className="text-sm text-muted-foreground">{requests.filter(r => r.status === 'pending').length} pending requests</p>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 overflow-x-auto">
         {[{ key: 'pending', label: 'Pending' }, { key: 'accepted', label: 'Accepted' }, { key: 'declined', label: 'Declined' }, { key: 'all', label: 'All' }].map(t => (
-          <Button key={t.key} variant={tabFilter === t.key ? 'default' : 'outline'} size="sm" onClick={() => setTabFilter(t.key)}>{t.label}</Button>
+          <Button key={t.key} variant={tabFilter === t.key ? 'default' : 'outline'} size="sm" onClick={() => setTabFilter(t.key)} className="flex-shrink-0">{t.label}</Button>
         ))}
       </div>
 
       {filtered.length === 0 ? (
         <Card><CardContent className="py-16 text-center">
-          <Inbox className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+          <Inbox className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">No {tabFilter} requests</p>
         </CardContent></Card>
       ) : (
@@ -63,27 +59,27 @@ export default function BookingRequestsPage() {
             const style = statusStyles[req.status] || statusStyles.pending;
             return (
               <Card key={req.id} className={cn("border", style.bg)}>
-                <CardContent className="p-5">
+                <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-semibold">{req.customer_name[0]}</div>
-                      <div><p className="text-sm font-semibold">{req.customer_name}</p><p className="text-xs text-muted-foreground">{req.customer_email}</p></div>
+                      <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center font-semibold text-sm flex-shrink-0">{req.customer_name[0]}</div>
+                      <div className="min-w-0"><p className="text-sm font-semibold truncate">{req.customer_name}</p><p className="text-xs text-muted-foreground truncate">{req.customer_email}</p></div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {req.is_urgent && <Badge className="bg-red-100 text-red-700 text-[10px]">Urgent</Badge>}
                       <Badge className={cn("text-[10px]", style.badge)}>{style.label}</Badge>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-3">
-                    <div className="flex items-center gap-2 text-muted-foreground"><PawPrint className="w-4 h-4" /><span>{req.pet_name} ({req.pet_species})</span></div>
-                    <div className="flex items-center gap-2 text-muted-foreground"><Clock className="w-4 h-4" /><span>{req.service_name}</span></div>
-                    <div className="flex items-center gap-2 text-muted-foreground"><Calendar className="w-4 h-4" /><span>{req.preferred_date}</span></div>
-                    {req.notes && <div className="flex items-center gap-2 text-muted-foreground"><MessageSquare className="w-4 h-4" /><span className="truncate">{req.notes}</span></div>}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mb-3">
+                    <div className="flex items-center gap-2 text-muted-foreground"><PawPrint className="w-3.5 h-3.5 flex-shrink-0" /><span className="truncate">{req.pet_name} ({req.pet_species})</span></div>
+                    <div className="flex items-center gap-2 text-muted-foreground"><Clock className="w-3.5 h-3.5 flex-shrink-0" /><span className="truncate">{req.service_name}</span></div>
+                    <div className="flex items-center gap-2 text-muted-foreground"><Calendar className="w-3.5 h-3.5 flex-shrink-0" /><span>{req.preferred_date}</span></div>
+                    {req.notes && <div className="flex items-center gap-2 text-muted-foreground col-span-2 sm:col-span-1"><MessageSquare className="w-3.5 h-3.5 flex-shrink-0" /><span className="truncate">{req.notes}</span></div>}
                   </div>
                   {req.status === 'pending' && (
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => setActionModal({ open: true, request: req, action: 'accept' })}><CheckCircle className="w-4 h-4 mr-1" /> Accept</Button>
-                      <Button size="sm" variant="destructive" onClick={() => setActionModal({ open: true, request: req, action: 'decline' })}><XCircle className="w-4 h-4 mr-1" /> Decline</Button>
+                      <Button size="sm" className="h-9" onClick={() => setActionModal({ open: true, request: req, action: 'accept' })}><CheckCircle className="w-4 h-4 mr-1" /> Accept</Button>
+                      <Button size="sm" variant="destructive" className="h-9" onClick={() => setActionModal({ open: true, request: req, action: 'decline' })}><XCircle className="w-4 h-4 mr-1" /> Decline</Button>
                     </div>
                   )}
                 </CardContent>
