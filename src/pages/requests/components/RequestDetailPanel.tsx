@@ -51,8 +51,17 @@ export default function RequestDetailPanel({ request, open, onClose }: Props) {
   const pets: Pet[] = Array.isArray(request.pets) ? request.pets : [];
   const requestDate = request.preferred_date;
 
+  // Filter staff to those assigned to this service (if any assignments exist)
+  const assignedStaffIds = serviceStaff
+    .filter((ss: any) => ss.service_id === request.service_id)
+    .map((ss: any) => ss.staff_id);
+
+  const qualifiedStaff = assignedStaffIds.length > 0
+    ? staff.filter(s => assignedStaffIds.includes(s.id))
+    : staff;
+
   // Staff availability for the requested date
-  const staffWithAvailability = staff.map(s => {
+  const staffWithAvailability = qualifiedStaff.map(s => {
     const dayBookings = bookings.filter(b =>
       b.booking_date === requestDate && b.status !== 'cancelled'
     ).length;
