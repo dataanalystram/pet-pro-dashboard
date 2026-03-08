@@ -15,6 +15,7 @@ import AnalyticsPage from "@/pages/analytics/AnalyticsPage";
 import MessagesPage from "@/pages/messages/MessagesPage";
 import StaffPage from "@/pages/staff/StaffPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
+import ReviewsPage from "@/pages/reviews/ReviewsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
