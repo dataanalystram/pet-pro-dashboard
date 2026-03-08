@@ -8,14 +8,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Calendar as CalIcon, List, ChevronLeft, ChevronRight,
-  User, PawPrint, Clock, DollarSign, Filter, Search,
+  User, PawPrint, Clock, DollarSign, Filter, Search, Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
   addMonths, subMonths, isSameDay, isToday, startOfWeek, endOfWeek,
 } from 'date-fns';
-import { useBookings, useUpdate } from '@/hooks/use-supabase-data';
+import { useBookings, useStaff, useServiceStaff, useUpdate } from '@/hooks/use-supabase-data';
 import { toast } from 'sonner';
 
 const statusColors: Record<string, string> = {
