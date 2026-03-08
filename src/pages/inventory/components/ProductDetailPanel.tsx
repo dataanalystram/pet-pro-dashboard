@@ -22,7 +22,7 @@ export default function ProductDetailPanel({ product, open, onOpenChange, onEdit
 
   const images = product.images || [];
   const price = product.retail_price ?? product.cost_per_unit ?? 0;
-  const margin = product.retail_price && product.cost_per_unit
+  const margin = product.retail_price && product.retail_price > 0 && product.cost_per_unit != null
     ? ((1 - product.cost_per_unit / product.retail_price) * 100).toFixed(1) : null;
 
   // Orders containing this product
