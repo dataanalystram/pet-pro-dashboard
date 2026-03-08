@@ -367,7 +367,7 @@ export default function DashboardPage() {
         <Card className="lg:col-span-2">
           <SectionHeader title="Revenue Trend" action="Analytics" onAction={() => navigate('/analytics')} />
           <CardContent className="p-4 pt-2">
-            <div className="h-[240px]">
+            <div className="h-[240px] cursor-pointer" onClick={() => navigate('/analytics')}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={metrics.revenueTrend} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
                   <defs>
