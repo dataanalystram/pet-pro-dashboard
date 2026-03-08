@@ -230,21 +230,21 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-2xl w-full overflow-y-auto p-0">
-        <SheetHeader className="px-6 pt-6 pb-2">
-          <SheetTitle className="text-lg font-semibold">
+      <SheetContent className="sm:max-w-2xl w-full max-w-full overflow-y-auto p-0">
+        <SheetHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
+          <SheetTitle className="text-base sm:text-lg font-semibold">
             {editing ? 'Edit Service' : 'Create New Service'}
           </SheetTitle>
         </SheetHeader>
 
-        <Tabs defaultValue="basic" className="px-6">
-          <TabsList className="grid grid-cols-6 w-full h-9 text-xs">
-            <TabsTrigger value="basic" className="text-xs px-1">Basic</TabsTrigger>
-            <TabsTrigger value="pricing" className="text-xs px-1">Pricing</TabsTrigger>
-            <TabsTrigger value="schedule" className="text-xs px-1">Schedule</TabsTrigger>
-            <TabsTrigger value="pets" className="text-xs px-1">Pets</TabsTrigger>
-            <TabsTrigger value="media" className="text-xs px-1">Media</TabsTrigger>
-            <TabsTrigger value="details" className="text-xs px-1">Details</TabsTrigger>
+        <Tabs defaultValue="basic" className="px-4 sm:px-6">
+          <TabsList className="grid grid-cols-3 sm:grid-cols-6 w-full h-auto gap-1 p-1">
+            <TabsTrigger value="basic" className="text-xs px-2 py-1.5">Basic</TabsTrigger>
+            <TabsTrigger value="pricing" className="text-xs px-2 py-1.5">Pricing</TabsTrigger>
+            <TabsTrigger value="schedule" className="text-xs px-2 py-1.5">Schedule</TabsTrigger>
+            <TabsTrigger value="pets" className="text-xs px-2 py-1.5">Pets</TabsTrigger>
+            <TabsTrigger value="media" className="text-xs px-2 py-1.5">Media</TabsTrigger>
+            <TabsTrigger value="details" className="text-xs px-2 py-1.5">Details</TabsTrigger>
           </TabsList>
 
           {/* BASIC INFO */}
@@ -507,7 +507,7 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
           <TabsContent value="pets" className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label>Accepted Pet Types</Label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {PET_TYPES.map(pet => (
                   <button
                     key={pet}
@@ -726,9 +726,9 @@ export default function ServiceFormDialog({ open, onOpenChange, editing, onSave,
           </TabsContent>
         </Tabs>
 
-        <div className="sticky bottom-0 bg-background border-t px-6 py-4 flex justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onSave(form)} disabled={!isValid || saving}>
+        <div className="sticky bottom-0 bg-background border-t px-4 sm:px-6 py-3 sm:py-4 flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button size="sm" onClick={() => onSave(form)} disabled={!isValid || saving}>
             {saving ? 'Saving...' : editing ? 'Save Changes' : 'Create Service'}
           </Button>
         </div>

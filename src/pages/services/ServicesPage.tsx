@@ -154,11 +154,11 @@ export default function ServicesPage() {
             {services.length !== filtered.length && ` of ${services.length} total`}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setStorefrontOpen(true)}>
-            <Store className="w-4 h-4 mr-2" /> Storefront Preview
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button variant="outline" onClick={() => setStorefrontOpen(true)} className="w-full sm:w-auto" size="sm">
+            <Store className="w-4 h-4 mr-2" /> Storefront
           </Button>
-          <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> New Service</Button>
+          <Button onClick={openAdd} className="w-full sm:w-auto" size="sm"><Plus className="w-4 h-4 mr-2" /> New Service</Button>
         </div>
       </div>
 
