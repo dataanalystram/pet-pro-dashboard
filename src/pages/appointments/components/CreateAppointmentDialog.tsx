@@ -207,7 +207,7 @@ export default function CreateAppointmentDialog({ open, onOpenChange, services, 
                 </div>
                 <Input value={pet.name} onChange={e => updatePet(i, 'name', e.target.value)} placeholder="Pet name *" className="h-8 text-sm" />
                 {(() => {
-                  const knownSpecies = ['dog', 'cat', 'bird', 'rabbit'];
+                  const knownSpecies = ['dog', 'cat', 'bird', 'rabbit', 'hamster', 'fish', 'reptile'];
                   const isKnown = knownSpecies.includes(pet.species);
                   const selectVal = isKnown ? pet.species : (pet.species ? 'other' : '');
                   return (
@@ -220,6 +220,9 @@ export default function CreateAppointmentDialog({ open, onOpenChange, services, 
                             <SelectItem value="cat">Cat</SelectItem>
                             <SelectItem value="bird">Bird</SelectItem>
                             <SelectItem value="rabbit">Rabbit</SelectItem>
+                            <SelectItem value="hamster">Hamster</SelectItem>
+                            <SelectItem value="fish">Fish</SelectItem>
+                            <SelectItem value="reptile">Reptile</SelectItem>
                             <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>
