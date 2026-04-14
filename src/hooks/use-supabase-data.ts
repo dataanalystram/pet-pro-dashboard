@@ -33,6 +33,7 @@ export function useServiceStaff() { return useSupabaseQuery<Tables<'service_staf
 export function useStaffTimeOff() { return useSupabaseQuery<Tables<'staff_time_off'>>('staff_time_off', { orderBy: 'start_date', ascending: false }); }
 export function useOrders() { return useSupabaseQuery<Tables<'orders'>>('orders', { orderBy: 'created_at', ascending: false }); }
 export function useCampaignRedemptions() { return useSupabaseQuery<Tables<'campaign_redemptions'>>('campaign_redemptions', { orderBy: 'redeemed_at', ascending: false }); }
+export function useBookingNotifications() { return useSupabaseQuery<Tables<'booking_notifications'>>('booking_notifications', { orderBy: 'created_at', ascending: false }); }
 
 export function useInsert(table: TableName) {
   const qc = useQueryClient();
