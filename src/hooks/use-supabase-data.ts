@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
-type TableName = 'services' | 'customers' | 'staff' | 'bookings' | 'booking_requests' | 'inventory' | 'campaigns' | 'messages' | 'reviews' | 'service_staff' | 'staff_time_off' | 'notifications' | 'orders' | 'campaign_redemptions';
+type TableName = 'services' | 'customers' | 'staff' | 'bookings' | 'booking_requests' | 'inventory' | 'campaigns' | 'messages' | 'reviews' | 'service_staff' | 'staff_time_off' | 'notifications' | 'orders' | 'campaign_redemptions' | 'booking_notifications';
 
 function useSupabaseQuery<T>(table: TableName, options?: { orderBy?: string; ascending?: boolean }) {
   return useQuery({
