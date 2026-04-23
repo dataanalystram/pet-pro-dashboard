@@ -33,7 +33,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex w-full premium-shell">
         {!isMobile && <AppSidebar />}
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-16 flex items-center gap-3 border-b border-border/60 px-4 lg:px-6 bg-surface-glass/80 backdrop-blur-2xl sticky top-0 z-10 supports-[backdrop-filter]:bg-surface-glass/70">
+          <header className="h-16 flex items-center gap-3 border-b border-border/60 px-4 lg:px-6 bg-surface-glass backdrop-blur-2xl sticky top-0 z-10">
             {!isMobile && <SidebarTrigger className="mr-1 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent" />}
             
             {isMobile ? (
