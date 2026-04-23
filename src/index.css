@@ -123,11 +123,15 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background:
+      radial-gradient(circle at 15% -10%, hsl(var(--brand-mist) / 0.22), transparent 34rem),
+      radial-gradient(circle at 85% 0%, hsl(var(--brand-glow) / 0.18), transparent 32rem),
+      hsl(var(--background));
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    letter-spacing: -0.025em;
+    letter-spacing: 0;
   }
 
   .safe-area-bottom {
@@ -144,17 +148,33 @@
     border: 1px solid hsl(var(--glass-border));
     box-shadow:
       0 0 0 1px hsl(var(--glass-highlight)) inset,
-      0 2px 8px -2px rgba(0, 0, 0, 0.08),
-      0 8px 24px -4px rgba(0, 0, 0, 0.06);
+      0 18px 55px -35px hsl(var(--glass-shadow)),
+      0 8px 24px -18px hsl(var(--glass-shadow));
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .glass-card:hover {
     box-shadow:
       0 0 0 1px hsl(var(--glass-highlight)) inset,
-      0 4px 12px -2px rgba(0, 0, 0, 0.1),
-      0 12px 32px -4px rgba(0, 0, 0, 0.08);
+      0 24px 70px -38px hsl(var(--glass-shadow)),
+      0 12px 34px -22px hsl(var(--glass-shadow));
     transform: translateY(-1px);
+  }
+
+  .premium-shell {
+    background:
+      linear-gradient(135deg, hsl(var(--surface-glass)), hsl(var(--background) / 0.72)),
+      radial-gradient(circle at 20% 10%, hsl(var(--brand-glow) / 0.12), transparent 28rem),
+      radial-gradient(circle at 90% 20%, hsl(var(--brand-mist) / 0.12), transparent 30rem);
+  }
+
+  .premium-panel {
+    @apply glass-card rounded-2xl;
+  }
+
+  .premium-icon {
+    @apply rounded-2xl bg-primary/10 text-primary shadow-sm;
+    box-shadow: 0 10px 30px -18px hsl(var(--primary) / 0.55), 0 0 0 1px hsl(var(--primary) / 0.12) inset;
   }
 
   /* Gradient mesh background for hero sections */
