@@ -351,17 +351,17 @@ export default function DashboardPage() {
                 {format(new Date(), 'EEEE, MMMM d, yyyy')} — Here's your business at a glance
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" className="glass-card border-0 hover:bg-primary/5" onClick={() => navigate('/appointments')}>
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+              <Button size="sm" variant="outline" className="glass-card border-0 hover:bg-primary/5 min-w-0" onClick={() => navigate('/appointments')}>
                 <Calendar className="w-4 h-4 mr-1.5" /> Schedule
               </Button>
-              <Button size="sm" variant="outline" className="glass-card border-0 hover:bg-primary/5" onClick={() => navigate('/requests')}>
+              <Button size="sm" variant="outline" className="glass-card border-0 hover:bg-primary/5 min-w-0" onClick={() => navigate('/requests')}>
                 <Clock className="w-4 h-4 mr-1.5" /> Requests
                 {metrics.pendingRequests > 0 && (
                   <Badge variant="destructive" className="ml-1.5 h-5 min-w-5 text-[10px] px-1.5 animate-scale-in">{metrics.pendingRequests}</Badge>
                 )}
               </Button>
-              <Button size="sm" className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-lg shadow-primary/25" onClick={() => navigate('/appointments')}>
+              <Button size="sm" className="col-span-2 sm:col-span-1 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-lg shadow-primary/25 min-w-0" onClick={() => navigate('/appointments')}>
                 <Plus className="w-4 h-4 mr-1.5" /> New Booking
               </Button>
             </div>
@@ -439,7 +439,7 @@ export default function DashboardPage() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex items-center gap-6 mt-3 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 text-xs text-muted-foreground">
                 <span className="flex items-center gap-2"><span className="w-3 h-[3px] rounded-full bg-primary" /> Booking Revenue</span>
                 <span className="flex items-center gap-2"><span className="w-3 h-[3px] rounded-full bg-success opacity-70" style={{ borderTop: '2px dashed' }} /> Order Revenue</span>
               </div>
@@ -706,7 +706,7 @@ export default function DashboardPage() {
                       <p className="text-[11px] text-muted-foreground">{c.redemptions}{c.max_redemptions ? `/${c.max_redemptions}` : ''} used</p>
                     </div>
                     {c.promo_code && (
-                      <code className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-md font-mono font-semibold">{c.promo_code}</code>
+                      <code className="max-w-20 truncate text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-md font-mono font-semibold">{c.promo_code}</code>
                     )}
                   </div>
                 ))}
