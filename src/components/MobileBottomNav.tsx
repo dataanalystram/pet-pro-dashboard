@@ -44,8 +44,8 @@ export function MobileBottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t safe-area-bottom">
-        <div className="flex items-stretch justify-around">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-surface-glass/85 backdrop-blur-2xl safe-area-bottom">
+        <div className="mx-auto flex max-w-lg items-stretch justify-around px-2">
           {primaryTabs.map((tab) => {
             const active = tab.url === "__more__" ? isMoreActive || moreOpen : isActive(tab.url);
             return (
@@ -59,8 +59,8 @@ export function MobileBottomNav() {
                   }
                 }}
                 className={cn(
-                  "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] transition-colors",
-                  active ? "text-primary" : "text-muted-foreground"
+                   "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[60px] transition-all duration-200 rounded-2xl",
+                   active ? "text-primary bg-primary/10" : "text-muted-foreground"
                 )}
               >
                 <tab.icon className="w-5 h-5" />
@@ -72,7 +72,7 @@ export function MobileBottomNav() {
       </nav>
 
       <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-        <SheetContent side="bottom" className="rounded-t-2xl pb-8">
+        <SheetContent side="bottom" className="rounded-t-3xl pb-8 bg-surface-glass/95 backdrop-blur-2xl border-border/60">
           <SheetHeader className="pb-2">
             <SheetTitle className="text-base">More Options</SheetTitle>
           </SheetHeader>
@@ -85,8 +85,8 @@ export function MobileBottomNav() {
                   setMoreOpen(false);
                 }}
                 className={cn(
-                  "flex flex-col items-center gap-1.5 p-3 rounded-xl transition-colors min-h-[72px]",
-                  isActive(item.url) ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"
+                  "flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all duration-200 min-h-[72px]",
+                  isActive(item.url) ? "bg-primary/10 text-primary shadow-sm" : "text-muted-foreground hover:bg-muted/70"
                 )}
               >
                 <item.icon className="w-6 h-6" />
