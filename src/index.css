@@ -6,11 +6,17 @@
 
 @layer base {
   :root {
-    --background: 220 16% 96%;
+    --background: 220 24% 96%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
+    --surface: 220 33% 98%;
+    --surface-foreground: 222 47% 11%;
+    --surface-elevated: 0 0% 100%;
+    --surface-glass: 0 0% 100% / 0.74;
+    --brand-glow: 221 83% 63%;
+    --brand-mist: 186 78% 72%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
@@ -34,7 +40,7 @@
     --input: 220 13% 91%;
     --ring: 221 83% 53%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 215 20% 65%;
@@ -53,15 +59,16 @@
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+    --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
+    --shadow-md: 0 16px 40px -28px hsl(222 47% 11% / 0.35);
+    --shadow-lg: 0 28px 80px -42px hsl(222 47% 11% / 0.45);
 
     /* Premium glassmorphism tokens */
     --glass-bg: 0 0% 100% / 0.72;
     --glass-border: 0 0% 100% / 0.25;
     --glass-blur: 20px;
     --glass-highlight: 0 0% 100% / 0.5;
+    --glass-shadow: 222 47% 11% / 0.12;
   }
 
   .dark {
@@ -71,6 +78,12 @@
     --card-foreground: 210 40% 96%;
     --popover: 222 47% 9%;
     --popover-foreground: 210 40% 96%;
+    --surface: 222 47% 8%;
+    --surface-foreground: 210 40% 96%;
+    --surface-elevated: 222 47% 11%;
+    --surface-glass: 222 47% 10% / 0.72;
+    --brand-glow: 221 83% 66%;
+    --brand-mist: 186 78% 60%;
     --primary: 221 83% 56%;
     --primary-foreground: 210 40% 98%;
     --secondary: 222 40% 14%;
@@ -96,6 +109,7 @@
     --glass-bg: 222 47% 11% / 0.72;
     --glass-border: 0 0% 100% / 0.08;
     --glass-highlight: 0 0% 100% / 0.05;
+    --glass-shadow: 0 0% 0% / 0.35;
   }
 }
 
