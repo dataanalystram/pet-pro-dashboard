@@ -83,7 +83,7 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
-        <Card>
+        <Card className="premium-panel border-border/60">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Revenue Over Time</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[200px] sm:h-[250px]">
@@ -102,7 +102,7 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="premium-panel border-border/60">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Booking Volume</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[200px] sm:h-[250px]">
@@ -123,7 +123,7 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card>
+        <Card className="premium-panel border-border/60">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Booking Status</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[200px]">
@@ -149,14 +149,14 @@ export default function AnalyticsPage() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                   <XAxis dataKey="day" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <Bar dataKey="bookings" fill="hsl(160, 60%, 40%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="bookings" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="sm:col-span-2 lg:col-span-1">
+        <Card className="premium-panel border-border/60 sm:col-span-2 lg:col-span-1">
           <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Top Services</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -177,7 +177,7 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      <Card>
+        <Card className="premium-panel border-border/60">
         <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Top Customers by Revenue</CardTitle></CardHeader>
         <CardContent className="p-0">
           {/* Mobile: card list */}
