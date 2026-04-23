@@ -44,7 +44,7 @@ export function MobileBottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-surface-glass/85 backdrop-blur-2xl safe-area-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-surface-glass backdrop-blur-2xl safe-area-bottom">
         <div className="mx-auto flex max-w-lg items-stretch justify-around px-2">
           {primaryTabs.map((tab) => {
             const active = tab.url === "__more__" ? isMoreActive || moreOpen : isActive(tab.url);
@@ -72,7 +72,7 @@ export function MobileBottomNav() {
       </nav>
 
       <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl pb-8 bg-surface-glass/95 backdrop-blur-2xl border-border/60">
+        <SheetContent side="bottom" className="rounded-t-3xl pb-8 bg-surface-glass backdrop-blur-2xl border-border/60">
           <SheetHeader className="pb-2">
             <SheetTitle className="text-base">More Options</SheetTitle>
           </SheetHeader>
