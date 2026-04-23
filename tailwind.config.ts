@@ -51,6 +51,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          foreground: "hsl(var(--surface-foreground))",
+          elevated: "hsl(var(--surface-elevated))",
+          glass: "hsl(var(--surface-glass))",
+        },
+        brand: {
+          glow: "hsl(var(--brand-glow))",
+          mist: "hsl(var(--brand-mist))",
+        },
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
@@ -112,6 +122,7 @@ export default {
         "fade-out": "fade-out 0.3s ease-out",
         "scale-in": "scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         "slide-in-right": "slide-in-right 0.3s ease-out",
+        "ambient-float": "ambient-float 12s ease-in-out infinite",
       },
     },
   },

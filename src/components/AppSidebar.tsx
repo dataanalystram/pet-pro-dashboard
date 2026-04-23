@@ -41,16 +41,16 @@ export function AppSidebar() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarContent className="gap-0">
+    <Sidebar collapsible="icon" className="border-sidebar-border/60">
+      <SidebarContent className="gap-0 bg-sidebar/95 backdrop-blur-2xl">
         {/* Logo */}
-        <div className="h-14 flex items-center gap-3 px-4 border-b border-sidebar-border">
-          <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center flex-shrink-0">
+        <div className="h-16 flex items-center gap-3 px-4 border-b border-sidebar-border/70">
+          <div className="w-9 h-9 rounded-2xl bg-sidebar-primary flex items-center justify-center flex-shrink-0 shadow-sm shadow-sidebar-primary/20">
             <span className="text-sidebar-primary-foreground font-bold text-xs">PD</span>
           </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="font-semibold text-sm text-sidebar-accent-foreground tracking-tight leading-tight">
+              <span className="font-semibold text-sm text-sidebar-accent-foreground tracking-normal leading-tight">
                 PetDash Pro
               </span>
               <span className="text-[10px] text-sidebar-foreground/50 leading-tight">Business Suite</span>
@@ -60,7 +60,7 @@ export function AppSidebar() {
 
         {/* Main Nav */}
         <SidebarGroup className="pt-4">
-          <SidebarGroupLabel className="text-sidebar-foreground/40 uppercase text-[10px] tracking-[0.1em] font-medium px-4 mb-1">
+          <SidebarGroupLabel className="text-sidebar-foreground/45 uppercase text-[10px] tracking-[0.14em] font-semibold px-4 mb-1">
             Main
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -68,7 +68,7 @@ export function AppSidebar() {
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                    <NavLink to={item.url} end>
+                    <NavLink to={item.url} end className="rounded-2xl transition-all duration-200">
                       <item.icon className="h-[18px] w-[18px]" />
                       <span>{item.title}</span>
                     </NavLink>
@@ -81,7 +81,7 @@ export function AppSidebar() {
 
         {/* Management */}
         <SidebarGroup className="pt-2">
-          <SidebarGroupLabel className="text-sidebar-foreground/40 uppercase text-[10px] tracking-[0.1em] font-medium px-4 mb-1">
+          <SidebarGroupLabel className="text-sidebar-foreground/45 uppercase text-[10px] tracking-[0.14em] font-semibold px-4 mb-1">
             Management
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -89,7 +89,7 @@ export function AppSidebar() {
               {managementItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                    <NavLink to={item.url} end>
+                    <NavLink to={item.url} end className="rounded-2xl transition-all duration-200">
                       <item.icon className="h-[18px] w-[18px]" />
                       <span>{item.title}</span>
                     </NavLink>
@@ -107,7 +107,7 @@ export function AppSidebar() {
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                    <NavLink to={item.url} end>
+                    <NavLink to={item.url} end className="rounded-2xl transition-all duration-200">
                       <item.icon className="h-[18px] w-[18px]" />
                       <span>{item.title}</span>
                     </NavLink>
@@ -119,17 +119,17 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border">
+      <SidebarFooter className="border-t border-sidebar-border/70 bg-sidebar/95 backdrop-blur-2xl">
         {!collapsed ? (
           <div className="p-3 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center text-sidebar-accent-foreground text-xs font-semibold flex-shrink-0">
+            <div className="w-9 h-9 rounded-2xl bg-sidebar-accent flex items-center justify-center text-sidebar-accent-foreground text-xs font-semibold flex-shrink-0">
               A
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-sidebar-accent-foreground truncate">Admin User</p>
               <p className="text-[10px] text-sidebar-foreground/50 truncate">admin@petdash.com</p>
             </div>
-            <button className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-sidebar-accent transition-colors flex-shrink-0">
+            <button className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-sidebar-accent transition-colors flex-shrink-0">
               <LogOut className="w-3.5 h-3.5 text-sidebar-foreground/50" />
             </button>
           </div>

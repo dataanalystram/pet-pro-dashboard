@@ -6,11 +6,17 @@
 
 @layer base {
   :root {
-    --background: 220 16% 96%;
+    --background: 220 24% 96%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
+    --surface: 220 33% 98%;
+    --surface-foreground: 222 47% 11%;
+    --surface-elevated: 0 0% 100%;
+    --surface-glass: 0 0% 100% / 0.74;
+    --brand-glow: 221 83% 63%;
+    --brand-mist: 186 78% 72%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
@@ -34,7 +40,7 @@
     --input: 220 13% 91%;
     --ring: 221 83% 53%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 215 20% 65%;
@@ -53,15 +59,16 @@
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+    --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
+    --shadow-md: 0 16px 40px -28px hsl(222 47% 11% / 0.35);
+    --shadow-lg: 0 28px 80px -42px hsl(222 47% 11% / 0.45);
 
     /* Premium glassmorphism tokens */
     --glass-bg: 0 0% 100% / 0.72;
     --glass-border: 0 0% 100% / 0.25;
     --glass-blur: 20px;
     --glass-highlight: 0 0% 100% / 0.5;
+    --glass-shadow: 222 47% 11% / 0.12;
   }
 
   .dark {
@@ -71,6 +78,12 @@
     --card-foreground: 210 40% 96%;
     --popover: 222 47% 9%;
     --popover-foreground: 210 40% 96%;
+    --surface: 222 47% 8%;
+    --surface-foreground: 210 40% 96%;
+    --surface-elevated: 222 47% 11%;
+    --surface-glass: 222 47% 10% / 0.72;
+    --brand-glow: 221 83% 66%;
+    --brand-mist: 186 78% 60%;
     --primary: 221 83% 56%;
     --primary-foreground: 210 40% 98%;
     --secondary: 222 40% 14%;
@@ -96,6 +109,7 @@
     --glass-bg: 222 47% 11% / 0.72;
     --glass-border: 0 0% 100% / 0.08;
     --glass-highlight: 0 0% 100% / 0.05;
+    --glass-shadow: 0 0% 0% / 0.35;
   }
 }
 
@@ -109,11 +123,15 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background:
+      radial-gradient(circle at 15% -10%, hsl(var(--brand-mist) / 0.22), transparent 34rem),
+      radial-gradient(circle at 85% 0%, hsl(var(--brand-glow) / 0.18), transparent 32rem),
+      hsl(var(--background));
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    letter-spacing: -0.025em;
+    letter-spacing: 0;
   }
 
   .safe-area-bottom {
@@ -130,17 +148,33 @@
     border: 1px solid hsl(var(--glass-border));
     box-shadow:
       0 0 0 1px hsl(var(--glass-highlight)) inset,
-      0 2px 8px -2px rgba(0, 0, 0, 0.08),
-      0 8px 24px -4px rgba(0, 0, 0, 0.06);
+      0 18px 55px -35px hsl(var(--glass-shadow)),
+      0 8px 24px -18px hsl(var(--glass-shadow));
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .glass-card:hover {
     box-shadow:
       0 0 0 1px hsl(var(--glass-highlight)) inset,
-      0 4px 12px -2px rgba(0, 0, 0, 0.1),
-      0 12px 32px -4px rgba(0, 0, 0, 0.08);
+      0 24px 70px -38px hsl(var(--glass-shadow)),
+      0 12px 34px -22px hsl(var(--glass-shadow));
     transform: translateY(-1px);
+  }
+
+  .premium-shell {
+    background:
+      linear-gradient(135deg, hsl(var(--surface-glass)), hsl(var(--background) / 0.72)),
+      radial-gradient(circle at 20% 10%, hsl(var(--brand-glow) / 0.12), transparent 28rem),
+      radial-gradient(circle at 90% 20%, hsl(var(--brand-mist) / 0.12), transparent 30rem);
+  }
+
+  .premium-panel {
+    @apply glass-card rounded-2xl;
+  }
+
+  .premium-icon {
+    @apply rounded-2xl bg-primary/10 text-primary shadow-sm;
+    box-shadow: 0 10px 30px -18px hsl(var(--primary) / 0.55), 0 0 0 1px hsl(var(--primary) / 0.12) inset;
   }
 
   /* Gradient mesh background for hero sections */
