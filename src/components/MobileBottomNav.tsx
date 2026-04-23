@@ -44,8 +44,8 @@ export function MobileBottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-surface-glass backdrop-blur-2xl safe-area-bottom">
-        <div className="mx-auto flex max-w-lg items-stretch justify-around px-2">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none safe-area-bottom">
+        <div className="mx-auto mb-3 flex max-w-[370px] items-center justify-between gap-1 rounded-[2rem] border border-border/60 bg-surface-glass p-1.5 shadow-lg backdrop-blur-2xl pointer-events-auto">
           {primaryTabs.map((tab) => {
             const active = tab.url === "__more__" ? isMoreActive || moreOpen : isActive(tab.url);
             return (
@@ -59,12 +59,19 @@ export function MobileBottomNav() {
                   }
                 }}
                 className={cn(
-                   "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 min-h-[60px] transition-all duration-200 rounded-2xl",
-                   active ? "text-primary bg-primary/10" : "text-muted-foreground"
+                  "relative flex min-h-[58px] flex-1 flex-col items-center justify-center gap-1 rounded-[1.5rem] px-1 transition-all duration-300 active:scale-95",
+                  active
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
-                <tab.icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{tab.title}</span>
+                <span className={cn(
+                  "flex h-7 w-7 items-center justify-center rounded-full transition-all duration-300",
+                  active ? "bg-primary-foreground/15" : "bg-transparent"
+                )}>
+                  <tab.icon className="w-4.5 h-4.5" />
+                </span>
+                <span className="text-[10px] font-semibold leading-none tracking-normal">{tab.title}</span>
               </button>
             );
           })}
