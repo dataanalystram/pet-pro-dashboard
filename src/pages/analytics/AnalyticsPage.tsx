@@ -9,14 +9,14 @@ import {
 import { format, subDays, eachDayOfInterval } from 'date-fns';
 import { useBookings, useCustomers } from '@/hooks/use-supabase-data';
 
-const COLORS = ['hsl(220, 70%, 50%)', 'hsl(160, 60%, 40%)', 'hsl(25, 90%, 50%)', 'hsl(270, 50%, 55%)', 'hsl(38, 92%, 50%)', 'hsl(0, 72%, 51%)'];
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--info))', 'hsl(var(--accent-foreground))', 'hsl(var(--destructive))'];
 
-function KpiCard({ icon: Icon, label, value, bg }: { icon: any; label: string; value: string | number; bg: string }) {
+function KpiCard({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
   return (
-    <Card>
+    <Card className="premium-panel overflow-hidden border-border/60 transition-all duration-300 hover:-translate-y-0.5">
       <CardContent className="p-4 flex items-center gap-3">
-        <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", bg)}><Icon className="w-5 h-5" /></div>
-        <div><p className="text-xl font-bold">{value}</p><p className="text-xs text-muted-foreground">{label}</p></div>
+        <div className="premium-icon flex h-11 w-11 items-center justify-center"><Icon className="w-5 h-5" /></div>
+        <div className="min-w-0"><p className="text-xl font-bold tabular-nums">{value}</p><p className="text-xs text-muted-foreground truncate">{label}</p></div>
       </CardContent>
     </Card>
   );
@@ -72,14 +72,14 @@ export default function AnalyticsPage() {
   if (loadingBookings || loadingCustomers) return <div className="flex items-center justify-center py-20 text-muted-foreground">Loading analytics...</div>;
 
   return (
-    <div className="space-y-6">
-      <div><h1 className="text-xl sm:text-2xl font-semibold">Analytics</h1><p className="text-sm text-muted-foreground">Business performance overview</p></div>
+    <div className="space-y-6 animate-fade-in">
+      <div className="premium-panel p-5 sm:p-6"><h1 className="text-2xl sm:text-3xl font-semibold">Analytics</h1><p className="text-sm text-muted-foreground">Business performance overview</p></div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard icon={DollarSign} label="Total Revenue" value={`$${analytics.totalRevenue.toLocaleString()}`} bg="bg-emerald-100 text-emerald-600" />
-        <KpiCard icon={Calendar} label="Total Bookings" value={analytics.totalBookings} bg="bg-blue-100 text-blue-600" />
-        <KpiCard icon={Users} label="Unique Customers" value={analytics.totalCustomers} bg="bg-violet-100 text-violet-600" />
-        <KpiCard icon={TrendingUp} label="Avg Booking Value" value={`$${analytics.avgBookingValue}`} bg="bg-amber-100 text-amber-600" />
+        <KpiCard icon={DollarSign} label="Total Revenue" value={`$${analytics.totalRevenue.toLocaleString()}`} />
+        <KpiCard icon={Calendar} label="Total Bookings" value={analytics.totalBookings} />
+        <KpiCard icon={Users} label="Unique Customers" value={analytics.totalCustomers} />
+        <KpiCard icon={TrendingUp} label="Avg Booking Value" value={`$${analytics.avgBookingValue}`} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
