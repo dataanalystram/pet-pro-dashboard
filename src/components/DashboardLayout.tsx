@@ -30,14 +30,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-screen flex w-full premium-shell">
         {!isMobile && <AppSidebar />}
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center gap-3 border-b px-4 lg:px-6 bg-card/80 backdrop-blur-sm sticky top-0 z-10">
-            {!isMobile && <SidebarTrigger className="mr-1 text-muted-foreground hover:text-foreground" />}
+          <header className="h-16 flex items-center gap-3 border-b border-border/60 px-4 lg:px-6 bg-surface-glass/80 backdrop-blur-2xl sticky top-0 z-10 supports-[backdrop-filter]:bg-surface-glass/70">
+            {!isMobile && <SidebarTrigger className="mr-1 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent" />}
             
             {isMobile ? (
-              <span className="font-semibold text-sm tracking-tight">{pageTitle}</span>
+              <span className="font-semibold text-sm tracking-normal">{pageTitle}</span>
             ) : (
               <>
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground mr-4">
@@ -47,7 +47,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 </div>
                 <div className="hidden md:flex relative flex-1 max-w-xs ml-auto mr-3">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                  <Input placeholder="Search anything..." className="pl-9 h-8 text-sm bg-muted/60 border-0 focus-visible:ring-1 rounded-lg" />
+                  <Input placeholder="Search anything..." className="pl-9 h-9 text-sm bg-background/55 border-border/50 focus-visible:ring-1 rounded-2xl shadow-sm" />
                 </div>
               </>
             )}
@@ -55,13 +55,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <div className="ml-auto flex items-center gap-1.5">
               <NotificationBell />
               {!isMobile && (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground text-xs font-semibold shadow-sm">
+                <div className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold shadow-sm shadow-primary/20">
                   A
                 </div>
               )}
             </div>
           </header>
-          <main className={`flex-1 p-4 lg:p-6 overflow-auto ${isMobile ? 'pb-24' : ''}`}>
+          <main className={`flex-1 p-4 lg:p-7 overflow-auto ${isMobile ? 'pb-24' : ''}`}>
             {children}
           </main>
         </div>
