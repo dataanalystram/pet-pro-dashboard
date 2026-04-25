@@ -59,17 +59,17 @@ export function MobileBottomNav() {
                   }
                 }}
                 className={cn(
-                  "relative flex min-h-[54px] flex-1 flex-col items-center justify-center gap-1 rounded-[1.35rem] px-1 transition-all duration-300 active:scale-95",
+                  "relative flex min-h-[54px] flex-1 flex-col items-center justify-center gap-1 rounded-[1.35rem] px-1 transition-all duration-300 ease-out will-change-transform active:scale-[0.88] active:duration-100",
                   active
-                    ? "bg-primary/18 text-foreground shadow-sm ring-1 ring-primary/25 backdrop-blur-xl"
+                    ? "bg-primary/18 text-foreground shadow-sm ring-1 ring-primary/25 backdrop-blur-xl animate-[tab-pop_0.45s_cubic-bezier(0.34,1.56,0.64,1)]"
                     : "text-muted-foreground hover:bg-accent/55 hover:text-accent-foreground"
                 )}
               >
                 <span className={cn(
-                  "flex h-7 w-7 items-center justify-center rounded-full transition-all duration-300",
-                  active ? "bg-primary/20 text-primary" : "bg-transparent"
+                  "flex h-7 w-7 items-center justify-center rounded-full transition-all duration-300 ease-out",
+                  active ? "bg-primary/20 text-primary scale-110" : "bg-transparent scale-100"
                 )}>
-                  <tab.icon className="w-[18px] h-[18px]" />
+                  <tab.icon className="w-[18px] h-[18px] transition-transform duration-300" />
                 </span>
                 <span className="text-[10px] font-semibold leading-none tracking-normal">{tab.title}</span>
               </button>
