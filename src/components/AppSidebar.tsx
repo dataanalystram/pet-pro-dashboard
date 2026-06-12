@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, CalendarDays, Users, Inbox, Scissors,
-  Megaphone, Boxes, BarChart3, MessageSquare, UserCog, Settings, LogOut, Star, ShoppingCart,
+  Megaphone, Boxes, BarChart3, MessageSquare, UserCog, Settings, LogOut, Star, ShoppingCart, Sparkles,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -31,6 +31,8 @@ const managementItems = [
 ];
 
 const secondaryItems = [
+  { title: "Pricing", url: "/pricing", icon: Sparkles },
+  { title: "Billing", url: "/billing", icon: Star },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 

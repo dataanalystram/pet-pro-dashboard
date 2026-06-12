@@ -21,6 +21,8 @@ import NotFound from "./pages/NotFound";
 import PublicReviewPage from "./pages/reviews/PublicReviewPage";
 import PublicBookingPage from "./pages/requests/PublicBookingPage";
 import PublicPromoPage from "./pages/marketing/PublicPromoPage";
+import PricingPage from "./pages/billing/PricingPage";
+import BillingPage from "./pages/billing/BillingPage";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +46,8 @@ const App = () => (
           <Route path="/staff" element={<DashboardLayout><StaffPage /></DashboardLayout>} />
           <Route path="/settings" element={<DashboardLayout><SettingsPage /></DashboardLayout>} />
           <Route path="/reviews" element={<DashboardLayout><ReviewsPage /></DashboardLayout>} />
+          <Route path="/pricing" element={<DashboardLayout><PricingPage /></DashboardLayout>} />
+          <Route path="/billing" element={<DashboardLayout><BillingPage /></DashboardLayout>} />
           <Route path="/review/:serviceId" element={<PublicReviewPage />} />
           <Route path="/book/:serviceId" element={<PublicBookingPage />} />
           <Route path="/promo" element={<PublicPromoPage />} />
