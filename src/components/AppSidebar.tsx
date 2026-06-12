@@ -31,6 +31,8 @@ const managementItems = [
 ];
 
 const secondaryItems = [
+  { title: "Pricing", url: "/pricing", icon: Sparkles },
+  { title: "Billing", url: "/billing", icon: Star },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
