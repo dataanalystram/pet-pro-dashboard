@@ -21,6 +21,8 @@ import NotFound from "./pages/NotFound";
 import PublicReviewPage from "./pages/reviews/PublicReviewPage";
 import PublicBookingPage from "./pages/requests/PublicBookingPage";
 import PublicPromoPage from "./pages/marketing/PublicPromoPage";
+import PricingPage from "./pages/billing/PricingPage";
+import BillingPage from "./pages/billing/BillingPage";
 
 const queryClient = new QueryClient();
 
