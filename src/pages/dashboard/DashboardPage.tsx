@@ -306,7 +306,7 @@ export default function DashboardPage() {
   // ─── Loading Skeleton ──────────────────────────────────
   if (isLoading) {
     return (
-      <div className="gradient-mesh min-h-screen p-1">
+      <div className="premium-dashboard min-h-screen -m-4 sm:-m-6 p-4 sm:p-6">
         <div className="space-y-6 max-w-[1440px] mx-auto">
           <div className="h-16 shimmer rounded-2xl" />
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
@@ -331,42 +331,89 @@ export default function DashboardPage() {
   const totalActionItems = actionItems.reduce((s, a) => s + a.count, 0);
 
   return (
-    <div className="gradient-mesh min-h-screen -m-4 sm:-m-6 p-4 sm:p-6">
+    <div className="premium-dashboard min-h-screen -m-4 sm:-m-6 p-4 sm:p-6">
       <div className="space-y-6 max-w-[1440px] mx-auto stagger-children">
 
         {/* ─── Hero Header ─────────────────────────────────── */}
-        <div className="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden">
-          {/* Animated gradient orbs */}
-          <div className="gradient-orb w-32 h-32 bg-primary/30 -top-10 -right-10" />
-          <div className="gradient-orb w-24 h-24 bg-success/20 bottom-0 left-1/4" style={{ animationDelay: '3s' }} />
+        <div className="relative">
+          <div className="hero-glow" />
+          <div className="hero-tile rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+            <div className="absolute -top-16 -right-10 w-56 h-56 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 left-1/4 w-40 h-40 rounded-full bg-violet-500/15 blur-3xl pointer-events-none" />
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="w-5 h-5 text-primary" />
-                <span className="text-xs font-semibold text-primary uppercase tracking-wider">Executive Dashboard</span>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+              {/* Greeting + headline KPI */}
+              <div className="lg:col-span-7 flex flex-col justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                    </span>
+                    <span className="text-[11px] font-bold text-primary-foreground/80 uppercase tracking-[0.18em]">Executive Console · Live</span>
+                  </div>
+                  <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">{getGreeting()}, Operator</h1>
+                  <p className="text-sm text-muted-foreground mt-1.5">
+                    {format(new Date(), 'EEEE, MMMM d, yyyy')} — your business at a glance
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[11px] font-bold text-primary-foreground/70 uppercase tracking-[0.18em] mb-2">Revenue · Last 30 days</p>
+                  <div className="flex items-end gap-4 flex-wrap">
+                    <span className="text-5xl sm:text-6xl font-extrabold tracking-tight tabular-nums text-foreground" style={{ textShadow: '0 0 32px hsl(244 79% 60% / 0.45)' }}>
+                      {fmtCurrency(metrics.totalRev30)}
+                    </span>
+                    <span className={cn(
+                      'flex items-center gap-1 text-sm font-bold px-3 py-1.5 rounded-full mb-2 border',
+                      metrics.revChange >= 0
+                        ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30'
+                        : 'text-red-300 bg-red-500/10 border-red-500/30'
+                    )}>
+                      {metrics.revChange >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                      {metrics.revChange >= 0 ? '+' : ''}{metrics.revChange.toFixed(1)}% vs prior 30d
+                    </span>
+                  </div>
+                  <div className="mt-3 -mx-1">
+                    <Sparkline data={metrics.revSpark} color="hsl(244 90% 70%)" height={56} />
+                  </div>
+                </div>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{getGreeting()} 👋</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {format(new Date(), 'EEEE, MMMM d, yyyy')} — Here's your business at a glance
-              </p>
-            </div>
-            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
-              <Button size="sm" variant="outline" className="glass-card border-0 hover:bg-primary/5 min-w-0" onClick={() => navigate('/appointments')}>
-                <Calendar className="w-4 h-4 mr-1.5" /> Schedule
-              </Button>
-              <Button size="sm" variant="outline" className="glass-card border-0 hover:bg-primary/5 min-w-0" onClick={() => navigate('/requests')}>
-                <Clock className="w-4 h-4 mr-1.5" /> Requests
-                {metrics.pendingRequests > 0 && (
-                  <Badge variant="destructive" className="ml-1.5 h-5 min-w-5 text-[10px] px-1.5 animate-scale-in">{metrics.pendingRequests}</Badge>
-                )}
-              </Button>
-              <Button size="sm" className="col-span-2 sm:col-span-1 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-lg shadow-primary/25 min-w-0" onClick={() => navigate('/appointments')}>
-                <Plus className="w-4 h-4 mr-1.5" /> New Booking
-              </Button>
+
+              {/* Quick actions + day brief */}
+              <div className="lg:col-span-5 flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-primary/30 bg-background/30 backdrop-blur-md p-4">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Today's Bookings</p>
+                    <p className="text-2xl font-extrabold tabular-nums mt-1.5">{metrics.todayBookings.length}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">{metrics.todayCompleted} completed · {metrics.completionRate}%</p>
+                  </div>
+                  <div className="rounded-2xl border border-primary/30 bg-background/30 backdrop-blur-md p-4">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Action Queue</p>
+                    <p className="text-2xl font-extrabold tabular-nums mt-1.5 text-amber-300">{metrics.pendingRequests + metrics.lowStockItems + metrics.negativeReviews + metrics.unreadMessages}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">items need attention</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <Button size="sm" variant="outline" className="bg-background/30 border-primary/30 hover:bg-primary/15 text-foreground" onClick={() => navigate('/appointments')}>
+                    <Calendar className="w-4 h-4 mr-1.5" /> Schedule
+                  </Button>
+                  <Button size="sm" variant="outline" className="bg-background/30 border-primary/30 hover:bg-primary/15 text-foreground relative" onClick={() => navigate('/requests')}>
+                    <Clock className="w-4 h-4 mr-1.5" /> Requests
+                    {metrics.pendingRequests > 0 && (
+                      <Badge variant="destructive" className="ml-1.5 h-5 min-w-5 text-[10px] px-1.5">{metrics.pendingRequests}</Badge>
+                    )}
+                  </Button>
+                  <Button size="sm" className="col-span-2 sm:col-span-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_24px_hsl(244_79%_55%/0.55)]" onClick={() => navigate('/appointments')}>
+                    <Plus className="w-4 h-4 mr-1.5" /> New Booking
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
 
         {/* ─── KPI Cards ────────────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
