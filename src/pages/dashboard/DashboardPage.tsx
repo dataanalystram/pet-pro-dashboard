@@ -306,7 +306,7 @@ export default function DashboardPage() {
   // ─── Loading Skeleton ──────────────────────────────────
   if (isLoading) {
     return (
-      <div className="gradient-mesh min-h-screen p-1">
+      <div className="premium-dashboard min-h-screen -m-4 sm:-m-6 p-4 sm:p-6">
         <div className="space-y-6 max-w-[1440px] mx-auto">
           <div className="h-16 shimmer rounded-2xl" />
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
