@@ -75,11 +75,22 @@ function Sparkline({ data, color = 'hsl(var(--primary))', height = 40 }: { data:
 }
 
 // ─── Glass KPI Card ─────────────────────────────────────
-function GlassKpiCard({ label, value, change, changeType, sparkData, icon: Icon, gradient, onClick }: {
+const tonePresets: Record<string, { icon: string; spark: string; orb: string }> = {
+  emerald: { icon: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20', spark: 'hsl(142, 71%, 45%)', orb: 'bg-emerald-500/15' },
+  blue:    { icon: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',             spark: 'hsl(221, 83%, 53%)', orb: 'bg-blue-500/15' },
+  violet:  { icon: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20',      spark: 'hsl(270, 60%, 55%)', orb: 'bg-violet-500/15' },
+  orange:  { icon: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',      spark: 'hsl(25, 95%, 53%)',  orb: 'bg-orange-500/15' },
+  amber:   { icon: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',          spark: 'hsl(38, 92%, 50%)',  orb: 'bg-amber-500/15' },
+  red:     { icon: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',                  spark: 'hsl(0, 84%, 60%)',   orb: 'bg-red-500/15' },
+  indigo:  { icon: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',      spark: 'hsl(244, 79%, 59%)', orb: 'bg-indigo-500/15' },
+};
+
+function GlassKpiCard({ label, value, change, changeType, sparkData, icon: Icon, tone = 'blue', onClick }: {
   label: string; value: string; change: string; changeType: 'up' | 'down' | 'neutral';
-  sparkData: number[]; icon: any; gradient: string; onClick?: () => void;
+  sparkData: number[]; icon: any; tone?: keyof typeof tonePresets; onClick?: () => void;
 }) {
-  const sparkColor = changeType === 'down' ? 'hsl(0, 84%, 60%)' : gradient.includes('emerald') ? 'hsl(142, 71%, 45%)' : gradient.includes('blue') ? 'hsl(221, 83%, 53%)' : gradient.includes('violet') ? 'hsl(270, 60%, 50%)' : gradient.includes('orange') ? 'hsl(25, 95%, 53%)' : 'hsl(38, 92%, 50%)';
+  const t = tonePresets[tone] ?? tonePresets.blue;
+  const sparkColor = changeType === 'down' ? 'hsl(0, 84%, 60%)' : t.spark;
 
   return (
     <div
@@ -89,16 +100,15 @@ function GlassKpiCard({ label, value, change, changeType, sparkData, icon: Icon,
       )}
       onClick={onClick}
     >
-      {/* Subtle gradient orb */}
-      <div className={cn('absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-20 blur-2xl transition-opacity group-hover:opacity-30', gradient)} />
+      <div className={cn('absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-40 blur-2xl transition-opacity group-hover:opacity-60', t.orb)} />
 
       <div className="flex items-center justify-between mb-3 relative">
-        <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', gradient)}>
-          <Icon className="w-5 h-5 text-white" />
+        <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center border', t.icon)}>
+          <Icon className="w-[18px] h-[18px]" strokeWidth={2} />
         </div>
         <span className={cn('flex items-center gap-0.5 text-xs font-semibold px-2 py-1 rounded-full', {
-          'text-emerald-600 bg-emerald-500/10': changeType === 'up',
-          'text-red-500 bg-red-500/10': changeType === 'down',
+          'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10': changeType === 'up',
+          'text-red-500 dark:text-red-400 bg-red-500/10': changeType === 'down',
           'text-muted-foreground bg-muted': changeType === 'neutral',
         })}>
           {changeType === 'up' && <ArrowUpRight className="w-3.5 h-3.5" />}
@@ -110,18 +120,17 @@ function GlassKpiCard({ label, value, change, changeType, sparkData, icon: Icon,
       <p className="text-3xl font-extrabold tracking-tight tabular-nums relative">{value}</p>
       <p className="text-xs text-muted-foreground mt-1 relative">{label}</p>
 
-      {/* Inline sparkline */}
       <div className="mt-3 relative">
         <Sparkline data={sparkData} color={sparkColor} height={36} />
       </div>
 
-      {/* Hover arrow */}
       {onClick && (
         <ChevronRight className="absolute bottom-4 right-4 w-4 h-4 text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all group-hover:translate-x-0.5" />
       )}
     </div>
   );
 }
+
 
 // ─── Glass Section Card ─────────────────────────────────
 function GlassSection({ title, count, action, onAction, children, className }: {
@@ -322,10 +331,10 @@ export default function DashboardPage() {
   }
 
   const actionItems = [
-    { label: 'Pending Requests', count: metrics.pendingRequests, icon: Clock, gradient: 'bg-gradient-to-br from-amber-400 to-orange-500', path: '/requests' },
-    { label: 'Low Stock Items', count: metrics.lowStockItems, icon: Package, gradient: 'bg-gradient-to-br from-red-400 to-rose-500', path: '/inventory' },
-    { label: 'Negative Reviews', count: metrics.negativeReviews, icon: ThumbsDown, gradient: 'bg-gradient-to-br from-orange-400 to-amber-500', path: '/reviews' },
-    { label: 'Messages', count: metrics.unreadMessages, icon: MessageSquare, gradient: 'bg-gradient-to-br from-blue-400 to-indigo-500', path: '/messages' },
+    { label: 'Pending Requests', count: metrics.pendingRequests, icon: Clock,        tone: 'amber'  as const, path: '/requests' },
+    { label: 'Low Stock Items',  count: metrics.lowStockItems,   icon: Package,      tone: 'red'    as const, path: '/inventory' },
+    { label: 'Negative Reviews', count: metrics.negativeReviews, icon: ThumbsDown,   tone: 'orange' as const, path: '/reviews' },
+    { label: 'Messages',         count: metrics.unreadMessages,  icon: MessageSquare, tone: 'blue'  as const, path: '/messages' },
   ];
 
   const totalActionItems = actionItems.reduce((s, a) => s + a.count, 0);
@@ -418,7 +427,7 @@ export default function DashboardPage() {
         {/* ─── KPI Cards ────────────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <GlassKpiCard
-            icon={DollarSign} gradient="bg-gradient-to-br from-emerald-500 to-green-600"
+            icon={DollarSign} tone="emerald"
             label="Revenue (30d)" value={fmtCurrency(metrics.totalRev30)}
             change={`${metrics.revChange >= 0 ? '+' : ''}${metrics.revChange.toFixed(0)}%`}
             changeType={metrics.revChange >= 0 ? 'up' : 'down'}
@@ -426,7 +435,7 @@ export default function DashboardPage() {
             onClick={() => navigate('/analytics')}
           />
           <GlassKpiCard
-            icon={Calendar} gradient="bg-gradient-to-br from-blue-500 to-indigo-600"
+            icon={Calendar} tone="blue"
             label="Bookings (30d)" value={fmtCompact(metrics.bookings30)}
             change={`${metrics.bookChange >= 0 ? '+' : ''}${metrics.bookChange.toFixed(0)}%`}
             changeType={metrics.bookChange >= 0 ? 'up' : 'down'}
@@ -434,7 +443,7 @@ export default function DashboardPage() {
             onClick={() => navigate('/appointments')}
           />
           <GlassKpiCard
-            icon={Users} gradient="bg-gradient-to-br from-violet-500 to-purple-600"
+            icon={Users} tone="violet"
             label="New Customers" value={fmtCompact(metrics.newCust30)}
             change={`${metrics.custChange >= 0 ? '+' : ''}${metrics.custChange.toFixed(0)}%`}
             changeType={metrics.custChange >= 0 ? 'up' : 'down'}
@@ -442,7 +451,7 @@ export default function DashboardPage() {
             onClick={() => navigate('/customers')}
           />
           <GlassKpiCard
-            icon={ShoppingCart} gradient="bg-gradient-to-br from-orange-500 to-red-500"
+            icon={ShoppingCart} tone="orange"
             label="Orders (30d)" value={fmtCompact(metrics.orders30)}
             change={`${metrics.ordChange >= 0 ? '+' : ''}${metrics.ordChange.toFixed(0)}%`}
             changeType={metrics.ordChange >= 0 ? 'up' : 'down'}
@@ -450,13 +459,14 @@ export default function DashboardPage() {
             onClick={() => navigate('/orders')}
           />
           <GlassKpiCard
-            icon={Star} gradient="bg-gradient-to-br from-amber-500 to-yellow-500"
+            icon={Star} tone="amber"
             label="Avg Rating" value={metrics.avgRating.toFixed(1)}
             change={`${reviews.length} reviews`}
             changeType="neutral"
             sparkData={metrics.ratSpark}
             onClick={() => navigate('/reviews')}
           />
+
         </div>
 
         {/* ─── Revenue Trend + Customer Health ─────────────── */}
@@ -570,8 +580,8 @@ export default function DashboardPage() {
                   onClick={() => navigate(item.path)}
                   className="flex items-center gap-3 w-full px-3 py-3 rounded-xl hover:bg-primary/[0.04] transition-all text-left group/action"
                 >
-                  <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm', item.gradient)}>
-                    <item.icon className="w-4 h-4 text-white" />
+                  <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border', tonePresets[item.tone].icon)}>
+                    <item.icon className="w-[18px] h-[18px]" strokeWidth={2} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold">{item.label}</p>
