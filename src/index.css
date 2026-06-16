@@ -264,38 +264,81 @@
   100% { transform: scale(0.9); opacity: 0; }
 }
 
-/* ===== Premium Dashboard (Midnight Indigo Cyber-Glass Bento) ===== */
-/* Scoped re-theme: overrides CSS tokens inside .premium-dashboard only,
-   so all cards/badges/buttons inherit the dark indigo aesthetic. */
+/* ===== Premium Dashboard — adapts to light & dark ===== */
 .premium-dashboard {
-  --background: 240 40% 6%;
-  --foreground: 220 30% 96%;
-  --card: 240 45% 12%;
-  --card-foreground: 220 30% 96%;
-  --popover: 240 45% 12%;
-  --popover-foreground: 220 30% 96%;
-  --primary: 244 79% 59%;
-  --primary-foreground: 220 30% 98%;
-  --secondary: 240 40% 18%;
-  --secondary-foreground: 220 30% 96%;
-  --muted: 240 35% 16%;
-  --muted-foreground: 230 25% 70%;
-  --accent: 244 79% 59%;
-  --accent-foreground: 220 30% 98%;
-  --border: 244 60% 28%;
-  --input: 244 60% 22%;
-  --ring: 244 79% 59%;
-  --success: 152 70% 48%;
-  --success-foreground: 220 30% 98%;
-  --warning: 38 95% 58%;
-  --warning-foreground: 240 40% 6%;
-  --info: 244 79% 59%;
-  --info-foreground: 220 30% 98%;
-  --destructive: 0 75% 60%;
-  --destructive-foreground: 220 30% 98%;
-
   color: hsl(var(--foreground));
-  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.premium-dashboard h1,
+.premium-dashboard h2,
+.premium-dashboard h3,
+.premium-dashboard h4 {
+  font-family: 'Sora', 'Manrope', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  color: hsl(var(--foreground));
+}
+
+.premium-dashboard .gradient-mesh { background: transparent !important; }
+
+/* ---- Light mode (default) ---- */
+.premium-dashboard {
+  background:
+    radial-gradient(900px 500px at 8% -10%, hsl(221 83% 53% / 0.08), transparent 60%),
+    radial-gradient(700px 420px at 100% 0%, hsl(186 78% 60% / 0.10), transparent 60%),
+    radial-gradient(600px 380px at 50% 110%, hsl(221 83% 53% / 0.06), transparent 65%),
+    hsl(var(--background));
+}
+
+.premium-dashboard .glass-card {
+  background: linear-gradient(180deg, hsl(0 0% 100% / 0.85), hsl(220 33% 99% / 0.7));
+  border: 1px solid hsl(220 13% 88% / 0.8);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    0 6px 24px hsl(222 47% 11% / 0.06),
+    inset 0 1px 0 hsl(0 0% 100% / 0.6);
+  transition: border-color 240ms ease, transform 240ms ease, box-shadow 240ms ease;
+}
+.premium-dashboard .glass-card:hover {
+  border-color: hsl(221 83% 53% / 0.35);
+  box-shadow:
+    0 12px 32px hsl(221 83% 33% / 0.10),
+    0 0 0 1px hsl(221 83% 53% / 0.12),
+    inset 0 1px 0 hsl(0 0% 100% / 0.7);
+}
+
+.premium-dashboard .hero-tile {
+  background:
+    radial-gradient(420px 220px at 100% 0%, hsl(221 83% 60% / 0.18), transparent 60%),
+    linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(221 83% 98%) 100%);
+  border: 1px solid hsl(221 83% 53% / 0.18);
+  box-shadow:
+    0 18px 60px hsl(221 83% 33% / 0.10),
+    inset 0 1px 0 hsl(0 0% 100% / 0.9);
+}
+.premium-dashboard .hero-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, hsl(221 83% 60% / 0.30), transparent 50%, hsl(186 78% 60% / 0.25));
+  filter: blur(28px);
+  opacity: 0.6;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.premium-dashboard .shimmer {
+  background: linear-gradient(90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--card)) 50%,
+    hsl(var(--muted)) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+}
+
+/* ---- Dark mode override ---- */
+.dark .premium-dashboard {
   background:
     radial-gradient(900px 500px at 8% -10%, hsl(244 79% 28% / 0.45), transparent 60%),
     radial-gradient(700px 420px at 100% 0%, hsl(270 70% 32% / 0.30), transparent 60%),
@@ -303,29 +346,14 @@
     #0a0a1a;
 }
 
-.premium-dashboard .gradient-mesh { background: transparent !important; }
-
-.premium-dashboard h1,
-.premium-dashboard h2,
-.premium-dashboard h3,
-.premium-dashboard h4 {
-  font-family: 'Sora', 'Manrope', system-ui, sans-serif;
-  letter-spacing: -0.02em;
-  color: hsl(var(--foreground));
-}
-
-.premium-dashboard .glass-card {
+.dark .premium-dashboard .glass-card {
   background: linear-gradient(180deg, hsl(240 45% 13% / 0.72), hsl(240 45% 9% / 0.55));
   border: 1px solid hsl(244 60% 32% / 0.40);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
   box-shadow:
     0 8px 32px hsl(240 80% 3% / 0.45),
     inset 0 1px 0 hsl(244 80% 70% / 0.08);
-  transition: border-color 240ms ease, transform 240ms ease, box-shadow 240ms ease;
 }
-
-.premium-dashboard .glass-card:hover {
+.dark .premium-dashboard .glass-card:hover {
   border-color: hsl(244 79% 55% / 0.55);
   box-shadow:
     0 12px 40px hsl(244 80% 12% / 0.55),
@@ -333,17 +361,7 @@
     inset 0 1px 0 hsl(244 80% 70% / 0.12);
 }
 
-.premium-dashboard .shimmer {
-  background: linear-gradient(90deg,
-    hsl(240 45% 12%) 0%,
-    hsl(244 60% 22%) 50%,
-    hsl(240 45% 12%) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s infinite;
-}
-
-/* Hero headline tile: gradient indigo bloom */
-.premium-dashboard .hero-tile {
+.dark .premium-dashboard .hero-tile {
   background:
     radial-gradient(420px 220px at 100% 0%, hsl(244 90% 60% / 0.35), transparent 60%),
     linear-gradient(135deg, hsl(244 70% 22%) 0%, hsl(240 45% 12%) 100%);
@@ -352,21 +370,31 @@
     0 18px 60px hsl(244 80% 18% / 0.45),
     inset 0 1px 0 hsl(244 90% 70% / 0.18);
 }
-
-.premium-dashboard .hero-glow {
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
+.dark .premium-dashboard .hero-glow {
   background: linear-gradient(135deg, hsl(244 79% 60% / 0.6), transparent 50%, hsl(270 70% 60% / 0.4));
-  filter: blur(24px);
   opacity: 0.45;
-  z-index: -1;
-  pointer-events: none;
 }
 
-/* Subtle separator hairlines */
 .premium-dashboard .divide-border\/50 > * + *,
 .premium-dashboard .divide-border\/30 > * + * {
-  border-color: hsl(244 60% 28% / 0.4) !important;
+  border-color: hsl(var(--border) / 0.6) !important;
 }
+
+/* Refined icon tile — replaces busy multi-color gradients */
+.premium-icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.875rem;
+  background: hsl(var(--primary) / 0.10);
+  color: hsl(var(--primary));
+  border: 1px solid hsl(var(--primary) / 0.18);
+  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.4);
+}
+.dark .premium-icon-tile {
+  background: hsl(var(--primary) / 0.18);
+  border-color: hsl(var(--primary) / 0.35);
+  box-shadow: inset 0 1px 0 hsl(244 80% 70% / 0.10);
+}
+
 
