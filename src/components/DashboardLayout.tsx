@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Search, ChevronRight } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLocation } from "react-router-dom";
@@ -53,6 +54,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             )}
 
             <div className="ml-auto flex items-center gap-1.5">
+              <ThemeToggle />
               <NotificationBell />
               {!isMobile && (
                 <div className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold shadow-sm shadow-primary/20">
