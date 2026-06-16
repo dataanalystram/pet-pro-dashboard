@@ -359,7 +359,7 @@ export default function DashboardPage() {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
                     </span>
-                    <span className="text-[11px] font-bold text-primary-foreground/80 uppercase tracking-[0.18em]">Executive Console · Live</span>
+                    <span className="text-[11px] font-bold text-primary uppercase tracking-[0.18em]">Executive Console · Live</span>
                   </div>
                   <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">{getGreeting()}, Operator</h1>
                   <p className="text-sm text-muted-foreground mt-1.5">
@@ -368,23 +368,23 @@ export default function DashboardPage() {
                 </div>
 
                 <div>
-                  <p className="text-[11px] font-bold text-primary-foreground/70 uppercase tracking-[0.18em] mb-2">Revenue · Last 30 days</p>
+                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.18em] mb-2">Revenue · Last 30 days</p>
                   <div className="flex items-end gap-4 flex-wrap">
-                    <span className="text-5xl sm:text-6xl font-extrabold tracking-tight tabular-nums text-foreground" style={{ textShadow: '0 0 32px hsl(244 79% 60% / 0.45)' }}>
-                      {fmtCurrency(metrics.totalRev30)}
+                    <span className="text-5xl sm:text-6xl font-extrabold tracking-tight tabular-nums text-foreground">
+{fmtCurrency(metrics.totalRev30)}
                     </span>
                     <span className={cn(
                       'flex items-center gap-1 text-sm font-bold px-3 py-1.5 rounded-full mb-2 border',
                       metrics.revChange >= 0
-                        ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30'
-                        : 'text-red-300 bg-red-500/10 border-red-500/30'
+                        ? 'text-emerald-600 dark:text-emerald-300 bg-emerald-500/10 border-emerald-500/30'
+                        : 'text-red-600 dark:text-red-300 bg-red-500/10 border-red-500/30'
                     )}>
                       {metrics.revChange >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
                       {metrics.revChange >= 0 ? '+' : ''}{metrics.revChange.toFixed(1)}% vs prior 30d
                     </span>
                   </div>
                   <div className="mt-3 -mx-1">
-                    <Sparkline data={metrics.revSpark} color="hsl(244 90% 70%)" height={56} />
+                    <Sparkline data={metrics.revSpark} color="hsl(var(--primary))" height={56} />
                   </div>
                 </div>
               </div>
@@ -399,7 +399,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="rounded-2xl border border-primary/30 bg-background/30 backdrop-blur-md p-4">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Action Queue</p>
-                    <p className="text-2xl font-extrabold tabular-nums mt-1.5 text-amber-300">{metrics.pendingRequests + metrics.lowStockItems + metrics.negativeReviews + metrics.unreadMessages}</p>
+                    <p className="text-2xl font-extrabold tabular-nums mt-1.5 text-amber-600 dark:text-amber-300">{metrics.pendingRequests + metrics.lowStockItems + metrics.negativeReviews + metrics.unreadMessages}</p>
                     <p className="text-[11px] text-muted-foreground mt-1">items need attention</p>
                   </div>
                 </div>
