@@ -35,6 +35,7 @@ const pageTitles: Record<string, string> = {
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const location = useLocation();
+  const navigate = useNavigate();
   const pageTitle = pageTitles[location.pathname] || "Dashboard";
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
