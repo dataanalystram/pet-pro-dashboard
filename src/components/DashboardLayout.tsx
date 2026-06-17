@@ -66,9 +66,30 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <ThemeToggle />
               <NotificationBell />
               {!isMobile && (
-                <div className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold shadow-sm shadow-primary/20">
-                  A
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold shadow-sm shadow-primary/20 cursor-pointer hover:opacity-90 transition-opacity">
+                      A
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => navigate("/settings")}>
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        toast.success("Logged out successfully");
+                        navigate("/");
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </header>
