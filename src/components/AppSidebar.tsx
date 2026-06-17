@@ -47,15 +47,16 @@ export function AppSidebar() {
       <SidebarContent className="gap-0 bg-sidebar/95 backdrop-blur-2xl">
         {/* Logo */}
         <div className="h-16 flex items-center gap-3 px-4 border-b border-sidebar-border/70">
-          <div className="w-9 h-9 rounded-2xl bg-sidebar-primary flex items-center justify-center flex-shrink-0 shadow-sm shadow-sidebar-primary/20">
-            <span className="text-sidebar-primary-foreground font-bold text-xs">PD</span>
+          <div className="w-9 h-9 rounded-2xl bg-foreground flex items-center justify-center flex-shrink-0 relative">
+            <span className="text-[hsl(75_95%_62%)] font-extrabold text-[11px] tracking-tight">PD</span>
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[hsl(75_95%_62%)] ring-2 ring-sidebar" />
           </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="font-semibold text-sm text-sidebar-accent-foreground tracking-normal leading-tight">
+              <span className="font-extrabold text-sm text-sidebar-accent-foreground tracking-tight leading-tight">
                 PetDash Pro
               </span>
-              <span className="text-[10px] text-sidebar-foreground/50 leading-tight">Business Suite</span>
+              <span className="text-[10px] text-sidebar-foreground/60 leading-tight font-medium">Business Suite</span>
             </div>
           )}
         </div>
