@@ -2,12 +2,21 @@ import { useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
-import { Search, ChevronRight } from "lucide-react";
+import { Search, ChevronRight, User, LogOut } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const pageTitles: Record<string, string> = {
   "/": "Dashboard",
@@ -26,6 +35,7 @@ const pageTitles: Record<string, string> = {
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const location = useLocation();
+  const navigate = useNavigate();
   const pageTitle = pageTitles[location.pathname] || "Dashboard";
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -57,9 +67,30 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <ThemeToggle />
               <NotificationBell />
               {!isMobile && (
-                <div className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold shadow-sm shadow-primary/20">
-                  A
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold shadow-sm shadow-primary/20 cursor-pointer hover:opacity-90 transition-opacity">
+                      A
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => navigate("/settings")}>
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        toast.success("Logged out successfully");
+                        navigate("/");
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </header>
