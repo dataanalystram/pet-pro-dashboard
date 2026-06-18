@@ -400,17 +400,16 @@
   letter-spacing: -0.04em;
 }
 
-/* Replace KPI tone tiles with mono-ink chips + lime accent */
-.premium-dashboard .glass-card .border.rounded-xl,
-.premium-dashboard .glass-card [class*="bg-emerald-500/10"],
-.premium-dashboard .glass-card [class*="bg-blue-500/10"],
-.premium-dashboard .glass-card [class*="bg-violet-500/10"],
-.premium-dashboard .glass-card [class*="bg-orange-500/10"],
-.premium-dashboard .glass-card [class*="bg-amber-500/10"],
-.premium-dashboard .glass-card [class*="bg-indigo-500/10"] {
-  background: hsl(var(--ink)) !important;
-  color: hsl(var(--lime)) !important;
-  border-color: hsl(var(--ink)) !important;
+/* KPI icon tiles — lime chip with ink icon (editorial reference style) */
+.premium-dashboard .glass-card .w-10.h-10.rounded-xl {
+  background: hsl(var(--lime)) !important;
+  color: hsl(var(--ink)) !important;
+  border-color: hsl(var(--ink) / 0.15) !important;
+  box-shadow: 0 1px 0 hsl(0 0% 100% / 0.25) inset, 0 6px 14px -8px hsl(var(--lime) / 0.5);
+}
+.premium-dashboard .glass-card .w-10.h-10.rounded-xl svg {
+  color: hsl(var(--ink)) !important;
+  stroke: hsl(var(--ink)) !important;
 }
 
 /* Subtle orb removal — keep cards clean like the reference */
@@ -455,6 +454,21 @@
   background: hsl(var(--canvas));
   color: hsl(var(--ink));
 }
+.dark .premium-dashboard .glass-card .w-10.h-10.rounded-xl {
+  background: hsl(var(--lime)) !important;
+  color: hsl(0 0% 8%) !important;
+  border-color: hsl(var(--lime) / 0.6) !important;
+  box-shadow: 0 0 0 1px hsl(var(--lime) / 0.25), 0 8px 20px -10px hsl(var(--lime) / 0.55);
+}
+.dark .premium-dashboard .glass-card .w-10.h-10.rounded-xl svg {
+  color: hsl(0 0% 8%) !important;
+  stroke: hsl(0 0% 8%) !important;
+}
+/* Ensure muted text & headings remain readable in dark mode */
+.dark .premium-dashboard .text-muted-foreground { color: hsl(var(--ink-soft)) !important; }
+.dark .premium-dashboard .hero-tile h1,
+.dark .premium-dashboard .hero-tile p,
+.dark .premium-dashboard .hero-tile span { color: hsl(var(--ink)); }
 
 .premium-dashboard .divide-border\/50 > * + *,
 .premium-dashboard .divide-border\/30 > * + * {
