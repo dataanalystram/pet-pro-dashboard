@@ -454,6 +454,21 @@
   background: hsl(var(--canvas));
   color: hsl(var(--ink));
 }
+.dark .premium-dashboard .glass-card .w-10.h-10.rounded-xl {
+  background: hsl(var(--lime)) !important;
+  color: hsl(0 0% 8%) !important;
+  border-color: hsl(var(--lime) / 0.6) !important;
+  box-shadow: 0 0 0 1px hsl(var(--lime) / 0.25), 0 8px 20px -10px hsl(var(--lime) / 0.55);
+}
+.dark .premium-dashboard .glass-card .w-10.h-10.rounded-xl svg {
+  color: hsl(0 0% 8%) !important;
+  stroke: hsl(0 0% 8%) !important;
+}
+/* Ensure muted text & headings remain readable in dark mode */
+.dark .premium-dashboard .text-muted-foreground { color: hsl(var(--ink-soft)) !important; }
+.dark .premium-dashboard .hero-tile h1,
+.dark .premium-dashboard .hero-tile p,
+.dark .premium-dashboard .hero-tile span { color: hsl(var(--ink)); }
 
 .premium-dashboard .divide-border\/50 > * + *,
 .premium-dashboard .divide-border\/30 > * + * {
