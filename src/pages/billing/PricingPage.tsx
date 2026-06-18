@@ -312,20 +312,22 @@ function Faq() {
 function FinalCta() {
   return (
     <section className="max-w-5xl mx-auto px-4">
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-[hsl(var(--brand-glow))] to-[hsl(var(--brand-mist))] p-10 md:p-14 text-center shadow-[0_40px_120px_-40px_hsl(var(--primary)/0.6)]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,white/30,transparent_50%)] opacity-40" />
+      <div className="relative overflow-hidden rounded-3xl bg-[hsl(0_0%_8%)] p-10 md:p-14 text-center border border-[hsl(0_0%_18%)] shadow-[0_40px_120px_-40px_hsl(75_95%_62%/0.22)]">
+        {/* Lime ambient glow */}
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-[340px] w-[560px] rounded-full bg-[hsl(75_95%_62%/0.14)] blur-[110px] pointer-events-none" />
+        <div className="absolute -bottom-16 -right-16 h-[220px] w-[220px] rounded-full bg-[hsl(75_95%_62%/0.08)] blur-[90px] pointer-events-none" />
         <div className="relative">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground">
+          <h2 className="text-3xl md:text-4xl font-bold text-white">
             Stop juggling 5 tools. Start growing.
           </h2>
-          <p className="text-primary-foreground/85 mt-3 max-w-xl mx-auto">
+          <p className="text-white/65 mt-3 max-w-xl mx-auto">
             Join the operators replacing MoeGo, Mailchimp, Excel, and Calendly with one platform.
           </p>
           <div className="mt-7 flex flex-wrap gap-3 justify-center">
-            <Button asChild size="lg" className="rounded-2xl bg-card text-foreground hover:bg-card/90 h-12 px-6">
+            <Button asChild size="lg" className="rounded-2xl bg-[hsl(75_95%_62%)] text-[hsl(0_0%_8%)] hover:bg-[hsl(75_95%_55%)] h-12 px-6 font-semibold shadow-lg shadow-[hsl(75_95%_62%/0.25)]">
               <Link to="/billing">Manage billing</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="rounded-2xl h-12 px-6 bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
+            <Button asChild size="lg" variant="outline" className="rounded-2xl h-12 px-6 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white hover:border-white/30">
               <Link to="/">Back to dashboard</Link>
             </Button>
           </div>
