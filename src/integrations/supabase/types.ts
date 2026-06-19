@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      billing_settings: {
+        Row: {
+          account_email: string | null
+          account_label: string | null
+          auto_pause_after_failed: boolean
+          connected: boolean
+          created_at: string
+          currency: string
+          dunning_retry_count: number
+          dunning_retry_days: number
+          grace_period_days: number
+          id: string
+          proration_enabled: boolean
+          provider: string
+          refund_window_days: number
+          renewal_reminder_days: number
+          send_payment_receipts: boolean
+          send_renewal_reminders: boolean
+          updated_at: string
+          webhook_url: string | null
+        }
+        Insert: {
+          account_email?: string | null
+          account_label?: string | null
+          auto_pause_after_failed?: boolean
+          connected?: boolean
+          created_at?: string
+          currency?: string
+          dunning_retry_count?: number
+          dunning_retry_days?: number
+          grace_period_days?: number
+          id?: string
+          proration_enabled?: boolean
+          provider?: string
+          refund_window_days?: number
+          renewal_reminder_days?: number
+          send_payment_receipts?: boolean
+          send_renewal_reminders?: boolean
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Update: {
+          account_email?: string | null
+          account_label?: string | null
+          auto_pause_after_failed?: boolean
+          connected?: boolean
+          created_at?: string
+          currency?: string
+          dunning_retry_count?: number
+          dunning_retry_days?: number
+          grace_period_days?: number
+          id?: string
+          proration_enabled?: boolean
+          provider?: string
+          refund_window_days?: number
+          renewal_reminder_days?: number
+          send_payment_receipts?: boolean
+          send_renewal_reminders?: boolean
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
       booking_notifications: {
         Row: {
           booking_id: string
@@ -466,6 +529,196 @@ export type Database = {
         }
         Relationships: []
       }
+      membership_events: {
+        Row: {
+          amount: number
+          created_at: string
+          event_type: string
+          id: string
+          note: string | null
+          subscription_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          event_type: string
+          id?: string
+          note?: string | null
+          subscription_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          event_type?: string
+          id?: string
+          note?: string | null
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membership_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "membership_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      membership_plans: {
+        Row: {
+          active_members: number
+          billing_interval: string
+          color: string
+          created_at: string
+          currency: string
+          description: string | null
+          family_discount_pct: number
+          featured: boolean
+          id: string
+          includes: Json
+          max_pause_days: number
+          mrr: number
+          name: string
+          perks: Json
+          price: number
+          seasonal_tag: string | null
+          setup_fee: number
+          status: string
+          tier: string
+          trial_days: number
+          updated_at: string
+        }
+        Insert: {
+          active_members?: number
+          billing_interval?: string
+          color?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          family_discount_pct?: number
+          featured?: boolean
+          id?: string
+          includes?: Json
+          max_pause_days?: number
+          mrr?: number
+          name: string
+          perks?: Json
+          price?: number
+          seasonal_tag?: string | null
+          setup_fee?: number
+          status?: string
+          tier?: string
+          trial_days?: number
+          updated_at?: string
+        }
+        Update: {
+          active_members?: number
+          billing_interval?: string
+          color?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          family_discount_pct?: number
+          featured?: boolean
+          id?: string
+          includes?: Json
+          max_pause_days?: number
+          mrr?: number
+          name?: string
+          perks?: Json
+          price?: number
+          seasonal_tag?: string | null
+          setup_fee?: number
+          status?: string
+          tier?: string
+          trial_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      membership_subscriptions: {
+        Row: {
+          canceled_at: string | null
+          churn_risk: string
+          created_at: string
+          current_period_end: string | null
+          id: string
+          lifetime_value: number
+          mrr: number
+          notes: string | null
+          owner_email: string | null
+          owner_name: string
+          owner_phone: string | null
+          paused_until: string | null
+          payment_method_last4: string | null
+          pet_count: number
+          pet_name: string | null
+          plan_id: string | null
+          plan_name: string
+          started_at: string
+          status: string
+          total_charged: number
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          canceled_at?: string | null
+          churn_risk?: string
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          lifetime_value?: number
+          mrr?: number
+          notes?: string | null
+          owner_email?: string | null
+          owner_name: string
+          owner_phone?: string | null
+          paused_until?: string | null
+          payment_method_last4?: string | null
+          pet_count?: number
+          pet_name?: string | null
+          plan_id?: string | null
+          plan_name: string
+          started_at?: string
+          status?: string
+          total_charged?: number
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          canceled_at?: string | null
+          churn_risk?: string
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          lifetime_value?: number
+          mrr?: number
+          notes?: string | null
+          owner_email?: string | null
+          owner_name?: string
+          owner_phone?: string | null
+          paused_until?: string | null
+          payment_method_last4?: string | null
+          pet_count?: number
+          pet_name?: string | null
+          plan_id?: string | null
+          plan_name?: string
+          started_at?: string
+          status?: string
+          total_charged?: number
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membership_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "membership_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -586,6 +839,57 @@ export type Database = {
         }
         Relationships: []
       }
+      prepaid_packages: {
+        Row: {
+          active: boolean
+          created_at: string
+          expires_in_days: number
+          id: string
+          name: string
+          per_session_price: number | null
+          price: number
+          revenue: number
+          savings_pct: number
+          service_name: string
+          sessions: number
+          transferable: boolean
+          units_sold: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          expires_in_days?: number
+          id?: string
+          name: string
+          per_session_price?: number | null
+          price?: number
+          revenue?: number
+          savings_pct?: number
+          service_name: string
+          sessions?: number
+          transferable?: boolean
+          units_sold?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          expires_in_days?: number
+          id?: string
+          name?: string
+          per_session_price?: number | null
+          price?: number
+          revenue?: number
+          savings_pct?: number
+          service_name?: string
+          sessions?: number
+          transferable?: boolean
+          units_sold?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           admin_response: string | null
@@ -638,6 +942,80 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seasonal_offers: {
+        Row: {
+          banner_color: string
+          bonus_perks: Json
+          capacity_cap: number | null
+          created_at: string
+          description: string | null
+          discount_pct: number
+          end_date: string
+          id: string
+          max_redemptions: number | null
+          name: string
+          plan_id: string | null
+          plan_name: string | null
+          redemptions: number
+          revenue: number
+          season: string
+          start_date: string
+          status: string
+          target_audience: string
+          updated_at: string
+        }
+        Insert: {
+          banner_color?: string
+          bonus_perks?: Json
+          capacity_cap?: number | null
+          created_at?: string
+          description?: string | null
+          discount_pct?: number
+          end_date: string
+          id?: string
+          max_redemptions?: number | null
+          name: string
+          plan_id?: string | null
+          plan_name?: string | null
+          redemptions?: number
+          revenue?: number
+          season?: string
+          start_date: string
+          status?: string
+          target_audience?: string
+          updated_at?: string
+        }
+        Update: {
+          banner_color?: string
+          bonus_perks?: Json
+          capacity_cap?: number | null
+          created_at?: string
+          description?: string | null
+          discount_pct?: number
+          end_date?: string
+          id?: string
+          max_redemptions?: number | null
+          name?: string
+          plan_id?: string | null
+          plan_name?: string | null
+          redemptions?: number
+          revenue?: number
+          season?: string
+          start_date?: string
+          status?: string
+          target_audience?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasonal_offers_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "membership_plans"
             referencedColumns: ["id"]
           },
         ]
