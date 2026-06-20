@@ -2,10 +2,12 @@ import { useState, useMemo, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Smartphone, Monitor, Tablet, Clock, Sparkles, ChevronUp, ChevronDown, MapPin, Star, ChevronLeft, ChevronRight, X, Shield, Heart, Award } from 'lucide-react';
+import { Smartphone, Monitor, Tablet, Clock, Sparkles, ChevronUp, ChevronDown, MapPin, Star, ChevronLeft, ChevronRight, X, Shield, Heart, Award, Crown, Package as PackageIcon, Tag, Flame, CheckCircle2, Gift } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useReviews } from '@/hooks/use-supabase-data';
+import { useReviews, useCampaigns } from '@/hooks/use-supabase-data';
+import { usePlans, usePrepaidPackages, useSeasonalOffers } from '@/pages/memberships/hooks/useMembershipData';
 import { format } from 'date-fns';
+
 
 const currencySymbol = (c: string) => c === 'EUR' ? '€' : c === 'GBP' ? '£' : c === 'USD' ? '$' : c + ' ';
 
