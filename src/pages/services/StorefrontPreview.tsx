@@ -151,6 +151,92 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
               </div>
             </div>
 
+            {/* 🔥 Live Festival Ribbon */}
+            {liveOffers.length > 0 && (
+              <div className="relative overflow-hidden border-b">
+                <div className="flex animate-[scroll_30s_linear_infinite] whitespace-nowrap py-2.5 px-4 gap-8 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-amber-500/10">
+                  {[...liveOffers, ...liveOffers].map((o: any, i) => (
+                    <div key={i} className="flex items-center gap-2 text-[12px] font-bold">
+                      <Flame className="w-3.5 h-3.5 text-rose-500" />
+                      <span style={{ color: o.banner_color }}>{o.name}</span>
+                      <span className="text-foreground">— {o.discount_pct}% OFF</span>
+                      <span className="text-muted-foreground font-medium">ends {o.end_date}</span>
+                      <span className="text-muted-foreground">•</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 🎉 Festival Offer Hero Cards */}
+            {liveOffers.length > 0 && (
+              <div className="px-4 pt-6">
+                <div className={cn('grid gap-3', device === 'mobile' ? 'grid-cols-1' : liveOffers.length === 1 ? 'grid-cols-1' : 'grid-cols-2')}>
+                  {liveOffers.slice(0, 2).map((o: any) => (
+                    <div
+                      key={o.id}
+                      className="relative overflow-hidden rounded-2xl p-5 text-white shadow-lg"
+                      style={{ background: `linear-gradient(135deg, ${o.banner_color}, ${o.banner_color}cc 60%, ${o.banner_color}88)` }}
+                    >
+                      <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10 blur-2xl" />
+                      <div className="absolute -right-4 -bottom-8 w-24 h-24 rounded-full bg-white/10 blur-xl" />
+                      <Badge className="bg-white/25 text-white border-0 backdrop-blur text-[10px] font-bold tracking-wider mb-3">
+                        <Sparkles className="w-3 h-3 mr-1" /> {o.season.toUpperCase()}
+                      </Badge>
+                      <h3 className="text-xl font-extrabold leading-tight">{o.name}</h3>
+                      {o.description && <p className="text-white/85 text-[12px] mt-1 line-clamp-2">{o.description}</p>}
+                      <div className="flex items-end justify-between mt-4">
+                        <div>
+                          <div className="text-3xl font-black leading-none">{o.discount_pct}%<span className="text-base font-bold ml-1">OFF</span></div>
+                          <div className="text-[11px] text-white/80 mt-1">Valid through {o.end_date}</div>
+                        </div>
+                        <Button size="sm" className="bg-white text-foreground hover:bg-white/90 rounded-xl font-bold">
+                          Claim offer
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 🏷️ Active Promotions Strip */}
+            {activePromos.length > 0 && (
+              <div className="px-4 pt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className={cn('font-bold flex items-center gap-1.5', device === 'mobile' ? 'text-base' : 'text-lg')}>
+                    <Tag className="w-5 h-5 text-emerald-500" /> Active Promotions
+                  </h2>
+                  <span className="text-[11px] text-muted-foreground">{activePromos.length} live</span>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                  {activePromos.map((c: any) => (
+                    <div key={c.id} className="flex-shrink-0 w-64 rounded-xl border-2 border-dashed border-emerald-500/40 bg-emerald-500/5 p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="text-[10px] uppercase font-bold tracking-wider text-emerald-600">
+                          {c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `$${c.discount_value} OFF`}
+                        </div>
+                        <Gift className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <h4 className="font-bold text-sm mt-1">{c.name}</h4>
+                      {c.description && <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{c.description}</p>}
+                      {c.promo_code && (
+                        <div className="mt-3 flex items-center gap-2">
+                          <code className="flex-1 text-center text-[12px] font-mono font-bold bg-background border-2 border-dashed border-emerald-500/50 rounded-lg py-1.5 tracking-widest">
+                            {c.promo_code}
+                          </code>
+                        </div>
+                      )}
+                      {c.end_date && (
+                        <p className="text-[10px] text-muted-foreground mt-2">Ends {format(new Date(c.end_date), 'MMM d')}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+
             {/* Category Navigation */}
             {categoryList.length > 0 && (
               <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
