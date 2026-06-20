@@ -323,47 +323,88 @@ export default function MembershipsPage() {
         </TabsContent>
 
         {/* ---- SEASONAL ---- */}
-        <TabsContent value="seasonal" className="mt-5 space-y-4">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <h3 className="font-bold text-base flex items-center gap-2"><Sparkles className="w-4 h-4" /> Festival & Seasonal Offers</h3>
-              <p className="text-xs text-muted-foreground">Christmas, Diwali, Summer, Black Friday — spike MRR around demand peaks with auto-launch and capacity caps.</p>
+        <TabsContent value="seasonal" className="mt-5 space-y-5">
+          {/* Header strip */}
+          <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card via-card to-muted/30 p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-[hsl(75_95%_62%)]/15 text-[hsl(75_95%_35%)] flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg leading-tight">Festival & Seasonal Campaigns</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5 max-w-xl">
+                  Plan, launch and track time-boxed promotions tied to demand peaks. Live offers auto-sync to your public storefront.
+                </p>
+              </div>
             </div>
-            <Button className="rounded-xl gap-2 bg-[hsl(0_0%_8%)] text-[hsl(75_95%_62%)] hover:bg-[hsl(0_0%_15%)]" onClick={() => setOfferDialog({ open: true, offer: null })}>
-              <Plus className="w-4 h-4" /> Plan a festival offer
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-4 px-4 py-2 rounded-xl bg-background border border-border/60">
+                <Stat label="Live" value={offers.filter(o => o.status === "live").length} tone="emerald" />
+                <div className="w-px h-8 bg-border" />
+                <Stat label="Scheduled" value={offers.filter(o => o.status === "scheduled").length} tone="blue" />
+                <div className="w-px h-8 bg-border" />
+                <Stat label="Revenue" value={fmt(offers.reduce((s, o) => s + Number(o.revenue || 0), 0))} tone="lime" />
+              </div>
+              <Button className="rounded-xl gap-2 bg-[hsl(0_0%_8%)] text-[hsl(75_95%_62%)] hover:bg-[hsl(0_0%_15%)]" onClick={() => setOfferDialog({ open: true, offer: null })}>
+                <Plus className="w-4 h-4" /> New campaign
+              </Button>
+            </div>
           </div>
 
-          {/* Calendar peek */}
-          <Card className="glass-card rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Calendar className="w-4 h-4 text-muted-foreground" />
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">Upcoming festival calendar</span>
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {[
-                { d: "Now", n: "Holiday Glow-Up", c: "hsl(0 80% 55%)" },
-                { d: "+3w", n: "Diwali Sparkle", c: "hsl(35 95% 55%)" },
-                { d: "+6w", n: "Summer Splash", c: "hsl(195 85% 55%)" },
-                { d: "+10w", n: "Back-to-School", c: "hsl(220 70% 55%)" },
-                { d: "+18w", n: "Halloween", c: "hsl(25 90% 55%)" },
-                { d: "+22w", n: "Black Friday", c: "hsl(0 0% 12%)" },
-              ].map((s, i) => (
-                <div key={i} className="flex-shrink-0 px-3 py-2 rounded-xl border border-border/60 min-w-[140px]" style={{ background: `${s.c}10` }}>
-                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{s.d}</div>
-                  <div className="text-[13px] font-semibold mt-0.5" style={{ color: s.c }}>{s.n}</div>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          {offers.length === 0 ? (
-            <EmptyState icon={Sparkles} title="No festival offers planned" desc="Schedule your first festival offer to drive a revenue spike." cta="Plan offer" onClick={() => setOfferDialog({ open: true, offer: null })} />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {offers.map((o) => <OfferCard key={o.id} offer={o} onEdit={() => setOfferDialog({ open: true, offer: o })} />)}
+          {/* Live now banner */}
+          {liveOffers.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
+                </span>
+                Live on storefront · {liveOffers.length}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                {liveOffers.map(o => (
+                  <button
+                    key={o.id}
+                    onClick={() => setOfferDialog({ open: true, offer: o })}
+                    className="text-left rounded-xl p-4 border border-border/60 hover:border-[hsl(75_95%_62%)] hover:shadow-md transition-all relative overflow-hidden group"
+                    style={{ background: `linear-gradient(135deg, ${o.banner_color}18, transparent 60%)` }}
+                  >
+                    <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl opacity-20" style={{ background: o.banner_color }} />
+                    <div className="flex items-start justify-between relative">
+                      <div>
+                        <div className="font-bold text-[14px]">{o.name}</div>
+                        <div className="text-[11px] text-muted-foreground capitalize">{o.season.replace("-", " ")} · ends {o.end_date}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-extrabold" style={{ color: o.banner_color }}>{o.discount_pct}%</div>
+                        <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">off</div>
+                      </div>
+                    </div>
+                    {o.max_redemptions && (
+                      <div className="mt-3 h-1 rounded-full bg-muted overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${Math.min(100, (o.redemptions / o.max_redemptions) * 100)}%`, background: o.banner_color }} />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
+
+          {/* All offers */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground">All campaigns</h4>
+              <span className="text-[11px] text-muted-foreground">{offers.length} total</span>
+            </div>
+            {offers.length === 0 ? (
+              <EmptyState icon={Sparkles} title="No festival campaigns yet" desc="Launch a Diwali, Christmas, Summer or Black Friday campaign in under a minute." cta="Plan campaign" onClick={() => setOfferDialog({ open: true, offer: null })} />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {offers.map((o) => <OfferCard key={o.id} offer={o} onEdit={() => setOfferDialog({ open: true, offer: o })} />)}
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         {/* ---- CHURN WATCH ---- */}
