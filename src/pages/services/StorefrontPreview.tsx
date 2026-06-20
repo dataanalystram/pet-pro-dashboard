@@ -40,6 +40,19 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const catScrollRef = useRef<HTMLDivElement>(null);
 
+  const { data: plans = [] } = usePlans();
+  const { data: packages = [] } = usePrepaidPackages();
+  const { data: offers = [] } = useSeasonalOffers();
+  const { data: campaigns = [] } = useCampaigns();
+
+  const activePlans = useMemo(() => plans.filter((p: any) => p.status === 'active'), [plans]);
+  const activePackages = useMemo(() => packages.filter((p: any) => p.active), [packages]);
+  const liveOffers = useMemo(() => offers.filter((o: any) => o.status === 'live'), [offers]);
+  const activePromos = useMemo(
+    () => campaigns.filter((c: any) => c.is_enabled && c.status === 'active'),
+    [campaigns]
+  );
+
   const activeServices = useMemo(() => {
     return services
       .filter((s: any) => s.is_active)
