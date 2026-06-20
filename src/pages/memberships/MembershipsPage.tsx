@@ -851,3 +851,13 @@ function EmptyState({ icon: Icon, title, desc, cta, onClick }: { icon: any; titl
     </Card>
   );
 }
+
+function Stat({ label, value, tone }: { label: string; value: string | number; tone: "emerald" | "blue" | "lime" }) {
+  const tones = { emerald: "text-emerald-600", blue: "text-blue-600", lime: "text-[hsl(75_95%_35%)]" };
+  return (
+    <div className="text-center min-w-[60px]">
+      <div className={`text-base font-extrabold ${tones[tone]}`}>{value}</div>
+      <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</div>
+    </div>
+  );
+}
