@@ -295,6 +295,100 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
               </div>
             </div>
 
+            {/* 👑 Membership Plans */}
+            {activePlans.length > 0 && activeCategory === 'all' && (
+              <div className="px-4 pb-6 pt-2">
+                <div className="rounded-2xl bg-gradient-to-br from-[hsl(0_0%_8%)] via-[hsl(0_0%_12%)] to-[hsl(0_0%_8%)] p-5 sm:p-6 text-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl bg-[hsl(75_95%_62%)]/20" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                      <div>
+                        <Badge className="bg-[hsl(75_95%_62%)] text-[hsl(0_0%_8%)] hover:bg-[hsl(75_95%_62%)] text-[10px] font-bold tracking-wider mb-2">
+                          <Crown className="w-3 h-3 mr-1" /> MEMBERSHIPS
+                        </Badge>
+                        <h2 className="text-xl sm:text-2xl font-extrabold">Save more. Stress less.</h2>
+                        <p className="text-white/70 text-[12px] mt-1">Join a plan, get priority booking, exclusive perks and recurring savings.</p>
+                      </div>
+                    </div>
+                    <div className={cn('grid gap-3', device === 'mobile' ? 'grid-cols-1' : activePlans.length === 1 ? 'grid-cols-1' : activePlans.length === 2 ? 'grid-cols-2' : 'grid-cols-3')}>
+                      {activePlans.slice(0, 3).map((p: any) => (
+                        <div key={p.id} className={cn(
+                          'rounded-xl p-4 backdrop-blur transition-all hover:scale-[1.02] cursor-pointer',
+                          p.featured ? 'bg-[hsl(75_95%_62%)] text-[hsl(0_0%_8%)] ring-2 ring-[hsl(75_95%_62%)]' : 'bg-white/5 text-white border border-white/10'
+                        )}>
+                          {p.featured && (
+                            <Badge className="bg-[hsl(0_0%_8%)] text-[hsl(75_95%_62%)] hover:bg-[hsl(0_0%_8%)] text-[9px] font-bold tracking-wider mb-2">
+                              ⭐ MOST POPULAR
+                            </Badge>
+                          )}
+                          <div className="text-[10px] uppercase tracking-wider font-bold opacity-70">{p.tier}</div>
+                          <div className="font-bold text-base">{p.name}</div>
+                          <div className="flex items-baseline gap-1 mt-2">
+                            <span className="text-2xl font-extrabold">${p.price}</span>
+                            <span className="text-[11px] opacity-70">/{p.billing_interval}</span>
+                          </div>
+                          {p.trial_days > 0 && <div className="text-[10px] font-semibold mt-1 opacity-80">✦ {p.trial_days}-day free trial</div>}
+                          <ul className="mt-3 space-y-1.5">
+                            {(p.includes || []).slice(0, 3).map((i: string) => (
+                              <li key={i} className="flex items-start gap-1.5 text-[11px]">
+                                <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 opacity-80" />
+                                <span>{i}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <Button
+                            size="sm"
+                            className={cn('w-full mt-4 rounded-lg font-bold text-[12px]', p.featured ? 'bg-[hsl(0_0%_8%)] text-[hsl(75_95%_62%)] hover:bg-[hsl(0_0%_15%)]' : 'bg-white text-[hsl(0_0%_8%)] hover:bg-white/90')}
+                          >
+                            Join now
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 📦 Prepaid Packages */}
+            {activePackages.length > 0 && activeCategory === 'all' && (
+              <div className="px-4 pb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className={cn('font-bold flex items-center gap-1.5', device === 'mobile' ? 'text-base' : 'text-lg')}>
+                    <PackageIcon className="w-5 h-5 text-violet-500" /> Bundle & Save
+                  </h2>
+                  <span className="text-[11px] text-muted-foreground">Prepaid session packs</span>
+                </div>
+                <div className={cn('grid gap-3', device === 'mobile' ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-3')}>
+                  {activePackages.slice(0, 6).map((p: any) => {
+                    const per = p.per_session_price ?? (p.sessions ? (Number(p.price) / p.sessions) : 0);
+                    return (
+                      <div key={p.id} className="rounded-xl border bg-card hover:shadow-md transition-all hover:-translate-y-0.5 p-4 cursor-pointer">
+                        <div className="flex items-start justify-between">
+                          <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">{p.service_name}</div>
+                          {Number(p.savings_pct) > 0 && (
+                            <Badge className="bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15 text-[10px] font-bold border-0">SAVE {p.savings_pct}%</Badge>
+                          )}
+                        </div>
+                        <h4 className="font-bold text-sm mt-1">{p.name}</h4>
+                        <div className="flex items-baseline gap-2 mt-2">
+                          <span className="text-2xl font-extrabold">${p.price}</span>
+                          <span className="text-[11px] text-muted-foreground">${per.toFixed(2)}/session</span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-2">
+                          <span className="flex items-center gap-1"><PackageIcon className="w-3 h-3" /> {p.sessions} sessions</span>
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {p.expires_in_days}d</span>
+                        </div>
+                        <Button size="sm" className="w-full mt-3 rounded-lg font-semibold text-[12px]">Buy bundle</Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+
+
             {activeServices.length === 0 && (
               <div className="text-center py-20 text-muted-foreground">
                 <p className="text-lg font-medium">No active services</p>
