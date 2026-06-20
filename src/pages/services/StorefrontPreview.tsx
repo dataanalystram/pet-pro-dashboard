@@ -2,10 +2,12 @@ import { useState, useMemo, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Smartphone, Monitor, Tablet, Clock, Sparkles, ChevronUp, ChevronDown, MapPin, Star, ChevronLeft, ChevronRight, X, Shield, Heart, Award } from 'lucide-react';
+import { Smartphone, Monitor, Tablet, Clock, Sparkles, ChevronUp, ChevronDown, MapPin, Star, ChevronLeft, ChevronRight, X, Shield, Heart, Award, Crown, Package as PackageIcon, Tag, Flame, CheckCircle2, Gift } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useReviews } from '@/hooks/use-supabase-data';
+import { useReviews, useCampaigns } from '@/hooks/use-supabase-data';
+import { usePlans, usePrepaidPackages, useSeasonalOffers } from '@/pages/memberships/hooks/useMembershipData';
 import { format } from 'date-fns';
+
 
 const currencySymbol = (c: string) => c === 'EUR' ? '€' : c === 'GBP' ? '£' : c === 'USD' ? '$' : c + ' ';
 
@@ -37,6 +39,19 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
   const [selectedService, setSelectedService] = useState<any>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const catScrollRef = useRef<HTMLDivElement>(null);
+
+  const { data: plans = [] } = usePlans();
+  const { data: packages = [] } = usePrepaidPackages();
+  const { data: offers = [] } = useSeasonalOffers();
+  const { data: campaigns = [] } = useCampaigns();
+
+  const activePlans = useMemo(() => plans.filter((p: any) => p.status === 'active'), [plans]);
+  const activePackages = useMemo(() => packages.filter((p: any) => p.active), [packages]);
+  const liveOffers = useMemo(() => offers.filter((o: any) => o.status === 'live'), [offers]);
+  const activePromos = useMemo(
+    () => campaigns.filter((c: any) => c.is_enabled && c.status === 'active'),
+    [campaigns]
+  );
 
   const activeServices = useMemo(() => {
     return services
@@ -136,6 +151,92 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
               </div>
             </div>
 
+            {/* 🔥 Live Festival Ribbon */}
+            {liveOffers.length > 0 && (
+              <div className="relative overflow-hidden border-b">
+                <div className="flex animate-[scroll_30s_linear_infinite] whitespace-nowrap py-2.5 px-4 gap-8 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-amber-500/10">
+                  {[...liveOffers, ...liveOffers].map((o: any, i) => (
+                    <div key={i} className="flex items-center gap-2 text-[12px] font-bold">
+                      <Flame className="w-3.5 h-3.5 text-rose-500" />
+                      <span style={{ color: o.banner_color }}>{o.name}</span>
+                      <span className="text-foreground">— {o.discount_pct}% OFF</span>
+                      <span className="text-muted-foreground font-medium">ends {o.end_date}</span>
+                      <span className="text-muted-foreground">•</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 🎉 Festival Offer Hero Cards */}
+            {liveOffers.length > 0 && (
+              <div className="px-4 pt-6">
+                <div className={cn('grid gap-3', device === 'mobile' ? 'grid-cols-1' : liveOffers.length === 1 ? 'grid-cols-1' : 'grid-cols-2')}>
+                  {liveOffers.slice(0, 2).map((o: any) => (
+                    <div
+                      key={o.id}
+                      className="relative overflow-hidden rounded-2xl p-5 text-white shadow-lg"
+                      style={{ background: `linear-gradient(135deg, ${o.banner_color}, ${o.banner_color}cc 60%, ${o.banner_color}88)` }}
+                    >
+                      <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10 blur-2xl" />
+                      <div className="absolute -right-4 -bottom-8 w-24 h-24 rounded-full bg-white/10 blur-xl" />
+                      <Badge className="bg-white/25 text-white border-0 backdrop-blur text-[10px] font-bold tracking-wider mb-3">
+                        <Sparkles className="w-3 h-3 mr-1" /> {o.season.toUpperCase()}
+                      </Badge>
+                      <h3 className="text-xl font-extrabold leading-tight">{o.name}</h3>
+                      {o.description && <p className="text-white/85 text-[12px] mt-1 line-clamp-2">{o.description}</p>}
+                      <div className="flex items-end justify-between mt-4">
+                        <div>
+                          <div className="text-3xl font-black leading-none">{o.discount_pct}%<span className="text-base font-bold ml-1">OFF</span></div>
+                          <div className="text-[11px] text-white/80 mt-1">Valid through {o.end_date}</div>
+                        </div>
+                        <Button size="sm" className="bg-white text-foreground hover:bg-white/90 rounded-xl font-bold">
+                          Claim offer
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 🏷️ Active Promotions Strip */}
+            {activePromos.length > 0 && (
+              <div className="px-4 pt-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className={cn('font-bold flex items-center gap-1.5', device === 'mobile' ? 'text-base' : 'text-lg')}>
+                    <Tag className="w-5 h-5 text-emerald-500" /> Active Promotions
+                  </h2>
+                  <span className="text-[11px] text-muted-foreground">{activePromos.length} live</span>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                  {activePromos.map((c: any) => (
+                    <div key={c.id} className="flex-shrink-0 w-64 rounded-xl border-2 border-dashed border-emerald-500/40 bg-emerald-500/5 p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="text-[10px] uppercase font-bold tracking-wider text-emerald-600">
+                          {c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `$${c.discount_value} OFF`}
+                        </div>
+                        <Gift className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <h4 className="font-bold text-sm mt-1">{c.name}</h4>
+                      {c.description && <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{c.description}</p>}
+                      {c.promo_code && (
+                        <div className="mt-3 flex items-center gap-2">
+                          <code className="flex-1 text-center text-[12px] font-mono font-bold bg-background border-2 border-dashed border-emerald-500/50 rounded-lg py-1.5 tracking-widest">
+                            {c.promo_code}
+                          </code>
+                        </div>
+                      )}
+                      {c.end_date && (
+                        <p className="text-[10px] text-muted-foreground mt-2">Ends {format(new Date(c.end_date), 'MMM d')}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+
             {/* Category Navigation */}
             {categoryList.length > 0 && (
               <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
@@ -193,6 +294,100 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
                 ))}
               </div>
             </div>
+
+            {/* 👑 Membership Plans */}
+            {activePlans.length > 0 && activeCategory === 'all' && (
+              <div className="px-4 pb-6 pt-2">
+                <div className="rounded-2xl bg-gradient-to-br from-[hsl(0_0%_8%)] via-[hsl(0_0%_12%)] to-[hsl(0_0%_8%)] p-5 sm:p-6 text-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl bg-[hsl(75_95%_62%)]/20" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                      <div>
+                        <Badge className="bg-[hsl(75_95%_62%)] text-[hsl(0_0%_8%)] hover:bg-[hsl(75_95%_62%)] text-[10px] font-bold tracking-wider mb-2">
+                          <Crown className="w-3 h-3 mr-1" /> MEMBERSHIPS
+                        </Badge>
+                        <h2 className="text-xl sm:text-2xl font-extrabold">Save more. Stress less.</h2>
+                        <p className="text-white/70 text-[12px] mt-1">Join a plan, get priority booking, exclusive perks and recurring savings.</p>
+                      </div>
+                    </div>
+                    <div className={cn('grid gap-3', device === 'mobile' ? 'grid-cols-1' : activePlans.length === 1 ? 'grid-cols-1' : activePlans.length === 2 ? 'grid-cols-2' : 'grid-cols-3')}>
+                      {activePlans.slice(0, 3).map((p: any) => (
+                        <div key={p.id} className={cn(
+                          'rounded-xl p-4 backdrop-blur transition-all hover:scale-[1.02] cursor-pointer',
+                          p.featured ? 'bg-[hsl(75_95%_62%)] text-[hsl(0_0%_8%)] ring-2 ring-[hsl(75_95%_62%)]' : 'bg-white/5 text-white border border-white/10'
+                        )}>
+                          {p.featured && (
+                            <Badge className="bg-[hsl(0_0%_8%)] text-[hsl(75_95%_62%)] hover:bg-[hsl(0_0%_8%)] text-[9px] font-bold tracking-wider mb-2">
+                              ⭐ MOST POPULAR
+                            </Badge>
+                          )}
+                          <div className="text-[10px] uppercase tracking-wider font-bold opacity-70">{p.tier}</div>
+                          <div className="font-bold text-base">{p.name}</div>
+                          <div className="flex items-baseline gap-1 mt-2">
+                            <span className="text-2xl font-extrabold">${p.price}</span>
+                            <span className="text-[11px] opacity-70">/{p.billing_interval}</span>
+                          </div>
+                          {p.trial_days > 0 && <div className="text-[10px] font-semibold mt-1 opacity-80">✦ {p.trial_days}-day free trial</div>}
+                          <ul className="mt-3 space-y-1.5">
+                            {(p.includes || []).slice(0, 3).map((i: string) => (
+                              <li key={i} className="flex items-start gap-1.5 text-[11px]">
+                                <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 opacity-80" />
+                                <span>{i}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <Button
+                            size="sm"
+                            className={cn('w-full mt-4 rounded-lg font-bold text-[12px]', p.featured ? 'bg-[hsl(0_0%_8%)] text-[hsl(75_95%_62%)] hover:bg-[hsl(0_0%_15%)]' : 'bg-white text-[hsl(0_0%_8%)] hover:bg-white/90')}
+                          >
+                            Join now
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 📦 Prepaid Packages */}
+            {activePackages.length > 0 && activeCategory === 'all' && (
+              <div className="px-4 pb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className={cn('font-bold flex items-center gap-1.5', device === 'mobile' ? 'text-base' : 'text-lg')}>
+                    <PackageIcon className="w-5 h-5 text-violet-500" /> Bundle & Save
+                  </h2>
+                  <span className="text-[11px] text-muted-foreground">Prepaid session packs</span>
+                </div>
+                <div className={cn('grid gap-3', device === 'mobile' ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-3')}>
+                  {activePackages.slice(0, 6).map((p: any) => {
+                    const per = p.per_session_price ?? (p.sessions ? (Number(p.price) / p.sessions) : 0);
+                    return (
+                      <div key={p.id} className="rounded-xl border bg-card hover:shadow-md transition-all hover:-translate-y-0.5 p-4 cursor-pointer">
+                        <div className="flex items-start justify-between">
+                          <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">{p.service_name}</div>
+                          {Number(p.savings_pct) > 0 && (
+                            <Badge className="bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15 text-[10px] font-bold border-0">SAVE {p.savings_pct}%</Badge>
+                          )}
+                        </div>
+                        <h4 className="font-bold text-sm mt-1">{p.name}</h4>
+                        <div className="flex items-baseline gap-2 mt-2">
+                          <span className="text-2xl font-extrabold">${p.price}</span>
+                          <span className="text-[11px] text-muted-foreground">${per.toFixed(2)}/session</span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-2">
+                          <span className="flex items-center gap-1"><PackageIcon className="w-3 h-3" /> {p.sessions} sessions</span>
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {p.expires_in_days}d</span>
+                        </div>
+                        <Button size="sm" className="w-full mt-3 rounded-lg font-semibold text-[12px]">Buy bundle</Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+
 
             {activeServices.length === 0 && (
               <div className="text-center py-20 text-muted-foreground">
