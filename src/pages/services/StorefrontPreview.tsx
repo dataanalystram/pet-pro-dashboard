@@ -2,11 +2,16 @@ import { useState, useMemo, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Smartphone, Monitor, Tablet, Clock, Sparkles, ChevronUp, ChevronDown, MapPin, Star, ChevronLeft, ChevronRight, X, Shield, Heart, Award, Crown, Package as PackageIcon, Tag, Flame, CheckCircle2, Gift } from 'lucide-react';
+import { Smartphone, Monitor, Tablet, Clock, Sparkles, ChevronUp, ChevronDown, MapPin, Star, ChevronLeft, ChevronRight, X, Shield, Heart, Award, Crown, Package as PackageIcon, Tag, Flame, CheckCircle2, Gift, Palette, Phone, Mail, Instagram, Facebook, Youtube, MessageCircle, ChevronDown as ChevronDown2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useReviews, useCampaigns } from '@/hooks/use-supabase-data';
 import { usePlans, usePrepaidPackages, useSeasonalOffers } from '@/pages/memberships/hooks/useMembershipData';
+import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
+import StorefrontCustomizer from './StorefrontCustomizer';
 import { format } from 'date-fns';
+
+const ICON_MAP: Record<string, any> = { Star, Heart, Award, Shield, Crown, Sparkles, CheckCircle2 };
+
 
 
 const currencySymbol = (c: string) => c === 'EUR' ? '€' : c === 'GBP' ? '£' : c === 'USD' ? '$' : c + ' ';
@@ -38,12 +43,18 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [selectedService, setSelectedService] = useState<any>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [customizerOpen, setCustomizerOpen] = useState(false);
   const catScrollRef = useRef<HTMLDivElement>(null);
 
   const { data: plans = [] } = usePlans();
   const { data: packages = [] } = usePrepaidPackages();
   const { data: offers = [] } = useSeasonalOffers();
   const { data: campaigns = [] } = useCampaigns();
+  const { data: settings } = useStorefrontSettings();
+  const vis = settings?.section_visibility || {};
+  const isOn = (k: string) => vis[k] !== false;
+
+
 
   const activePlans = useMemo(() => plans.filter((p: any) => p.status === 'active'), [plans]);
   const activePackages = useMemo(() => packages.filter((p: any) => p.active), [packages]);
@@ -102,6 +113,9 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
             <p className="text-[11px] text-muted-foreground">Hover cards to reorder • Click to view detail</p>
           </div>
           <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setCustomizerOpen(true)}>
+              <Palette className="w-3.5 h-3.5" /> Customize
+            </Button>
             <div className="flex gap-0.5 bg-muted rounded-lg p-0.5">
               {([['mobile', Smartphone], ['tablet', Tablet], ['desktop', Monitor]] as const).map(([key, Icon]) => (
                 <button key={key} onClick={() => setDevice(key)} className={cn(
@@ -118,6 +132,7 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
           </div>
         </div>
 
+
         <div className="flex justify-center py-6 px-4 bg-muted/30">
           <div className={cn(
             'w-full transition-all duration-300 overflow-hidden',
@@ -128,28 +143,53 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
             {/* Hero Banner */}
             <div className="relative overflow-hidden">
               <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/70 px-6 py-10 sm:py-14 text-center relative">
+            {/* Announcement bar */}
+            {settings?.announcement_enabled && settings.announcement_text && isOn('announcement') && (
+              <div className="text-center py-2 text-[12px] font-semibold" style={{ background: settings.announcement_bg || '#111', color: settings.announcement_fg || '#fff' }}>
+                {settings.announcement_link ? <a href={settings.announcement_link}>{settings.announcement_text}</a> : settings.announcement_text}
+              </div>
+            )}
+
+            {/* Hero Banner */}
+            {isOn('hero') && (
+            <div className="relative overflow-hidden">
+              <div className="px-6 py-10 sm:py-14 text-center relative" style={{
+                background: settings?.hero_style === 'image' && settings.hero_media_url
+                  ? `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.55)), url(${settings.hero_media_url}) center/cover`
+                  : `linear-gradient(135deg, ${settings?.hero_gradient_from || '#0f172a'}, ${settings?.hero_gradient_to || '#1e293b'})`,
+              }}>
                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-                <h1 className={cn('font-extrabold text-primary-foreground relative', device === 'mobile' ? 'text-2xl' : 'text-4xl')}>
-                  Our Services
+                {settings?.logo_url && <img src={settings.logo_url} alt="" className="h-10 mx-auto mb-3 relative" />}
+                <h1 className={cn('font-extrabold text-white relative', device === 'mobile' ? 'text-2xl' : 'text-4xl')}>
+                  {settings?.hero_headline || 'Our Services'}
                 </h1>
-                <p className={cn('text-primary-foreground/80 mt-2 relative', device === 'mobile' ? 'text-xs' : 'text-sm')}>
-                  Premium pet care tailored to every furry, feathered & scaly friend
+                <p className={cn('text-white/80 mt-2 relative max-w-2xl mx-auto', device === 'mobile' ? 'text-xs' : 'text-sm')}>
+                  {settings?.hero_subheadline || settings?.tagline || 'Premium pet care tailored to every furry, feathered & scaly friend'}
                 </p>
+                {(settings?.hero_cta_label || settings?.hero_cta_secondary_label) && (
+                  <div className="flex justify-center gap-2 mt-4 relative">
+                    {settings?.hero_cta_label && <Button size="sm" className="rounded-full font-bold">{settings.hero_cta_label}</Button>}
+                    {settings?.hero_cta_secondary_label && <Button size="sm" variant="outline" className="rounded-full font-bold bg-white/10 border-white/30 text-white hover:bg-white/20">{settings.hero_cta_secondary_label}</Button>}
+                  </div>
+                )}
                 {/* Trust Badges */}
-                <div className={cn('flex items-center justify-center gap-3 mt-5 relative', device === 'mobile' ? 'gap-2' : 'gap-4')}>
-                  {[
-                    { icon: Star, text: '4.9★ Rated' },
-                    { icon: Heart, text: '500+ Happy Pets' },
-                    { icon: Award, text: 'Certified Pros' },
-                  ].map(({ icon: Icon, text }) => (
-                    <div key={text} className="flex items-center gap-1 bg-primary-foreground/15 backdrop-blur-sm rounded-full px-3 py-1.5">
-                      <Icon className="w-3 h-3 text-primary-foreground" />
-                      <span className="text-[10px] font-semibold text-primary-foreground">{text}</span>
-                    </div>
-                  ))}
-                </div>
+                {isOn('trust') && (settings?.trust_badges?.length ?? 0) > 0 && (
+                  <div className={cn('flex items-center justify-center flex-wrap gap-2 mt-5 relative', device === 'mobile' ? 'gap-2' : 'gap-3')}>
+                    {(settings?.trust_badges || []).map((b, i) => {
+                      const Ic = ICON_MAP[b.icon] || Star;
+                      return (
+                        <div key={i} className="flex items-center gap-1 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5">
+                          <Ic className="w-3 h-3 text-white" />
+                          <span className="text-[10px] font-semibold text-white">{b.text}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
+            )}
+
 
             {/* 🔥 Live Festival Ribbon */}
             {liveOffers.length > 0 && (

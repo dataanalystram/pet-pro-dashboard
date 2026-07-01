@@ -1328,6 +1328,264 @@ export type Database = {
           },
         ]
       }
+      storefront_settings: {
+        Row: {
+          about_body: string | null
+          about_image_url: string | null
+          about_title: string | null
+          about_video_url: string | null
+          accent_color: string | null
+          announcement_bg: string | null
+          announcement_enabled: boolean
+          announcement_fg: string | null
+          announcement_link: string | null
+          announcement_text: string | null
+          awards: Json
+          business_hours: Json
+          business_name: string
+          cancellation_policy: string | null
+          certifications: Json
+          contact_address: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          currency: string | null
+          custom_css: string | null
+          faqs: Json
+          favicon_url: string | null
+          font_family: string | null
+          gallery_layout: string | null
+          gallery_urls: Json
+          google_analytics_id: string | null
+          hero_cta_label: string | null
+          hero_cta_link: string | null
+          hero_cta_secondary_label: string | null
+          hero_cta_secondary_link: string | null
+          hero_gradient_from: string | null
+          hero_gradient_to: string | null
+          hero_headline: string | null
+          hero_media_url: string | null
+          hero_style: string
+          hero_subheadline: string | null
+          hero_video_url: string | null
+          id: string
+          instagram_feed_enabled: boolean
+          instagram_handle: string | null
+          languages: Json
+          logo_url: string | null
+          loyalty_teaser_enabled: boolean
+          loyalty_teaser_text: string | null
+          map_embed_url: string | null
+          meta_description: string | null
+          meta_pixel_id: string | null
+          meta_title: string | null
+          newsletter_enabled: boolean
+          newsletter_headline: string | null
+          newsletter_subheadline: string | null
+          og_image_url: string | null
+          pets_served: number | null
+          popup_body: string | null
+          popup_cta_label: string | null
+          popup_cta_link: string | null
+          popup_enabled: boolean
+          popup_headline: string | null
+          popup_image_url: string | null
+          press_logos: Json
+          primary_color: string | null
+          privacy_policy_url: string | null
+          radius_scale: string | null
+          refund_policy: string | null
+          section_order: Json
+          section_visibility: Json
+          social_facebook: string | null
+          social_google: string | null
+          social_instagram: string | null
+          social_tiktok: string | null
+          social_whatsapp: string | null
+          social_x: string | null
+          social_youtube: string | null
+          tagline: string | null
+          team_members: Json
+          terms_url: string | null
+          theme_preset: string
+          timezone: string | null
+          trust_badges: Json
+          updated_at: string
+          vaccination_policy: string | null
+          years_in_business: number | null
+        }
+        Insert: {
+          about_body?: string | null
+          about_image_url?: string | null
+          about_title?: string | null
+          about_video_url?: string | null
+          accent_color?: string | null
+          announcement_bg?: string | null
+          announcement_enabled?: boolean
+          announcement_fg?: string | null
+          announcement_link?: string | null
+          announcement_text?: string | null
+          awards?: Json
+          business_hours?: Json
+          business_name?: string
+          cancellation_policy?: string | null
+          certifications?: Json
+          contact_address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency?: string | null
+          custom_css?: string | null
+          faqs?: Json
+          favicon_url?: string | null
+          font_family?: string | null
+          gallery_layout?: string | null
+          gallery_urls?: Json
+          google_analytics_id?: string | null
+          hero_cta_label?: string | null
+          hero_cta_link?: string | null
+          hero_cta_secondary_label?: string | null
+          hero_cta_secondary_link?: string | null
+          hero_gradient_from?: string | null
+          hero_gradient_to?: string | null
+          hero_headline?: string | null
+          hero_media_url?: string | null
+          hero_style?: string
+          hero_subheadline?: string | null
+          hero_video_url?: string | null
+          id?: string
+          instagram_feed_enabled?: boolean
+          instagram_handle?: string | null
+          languages?: Json
+          logo_url?: string | null
+          loyalty_teaser_enabled?: boolean
+          loyalty_teaser_text?: string | null
+          map_embed_url?: string | null
+          meta_description?: string | null
+          meta_pixel_id?: string | null
+          meta_title?: string | null
+          newsletter_enabled?: boolean
+          newsletter_headline?: string | null
+          newsletter_subheadline?: string | null
+          og_image_url?: string | null
+          pets_served?: number | null
+          popup_body?: string | null
+          popup_cta_label?: string | null
+          popup_cta_link?: string | null
+          popup_enabled?: boolean
+          popup_headline?: string | null
+          popup_image_url?: string | null
+          press_logos?: Json
+          primary_color?: string | null
+          privacy_policy_url?: string | null
+          radius_scale?: string | null
+          refund_policy?: string | null
+          section_order?: Json
+          section_visibility?: Json
+          social_facebook?: string | null
+          social_google?: string | null
+          social_instagram?: string | null
+          social_tiktok?: string | null
+          social_whatsapp?: string | null
+          social_x?: string | null
+          social_youtube?: string | null
+          tagline?: string | null
+          team_members?: Json
+          terms_url?: string | null
+          theme_preset?: string
+          timezone?: string | null
+          trust_badges?: Json
+          updated_at?: string
+          vaccination_policy?: string | null
+          years_in_business?: number | null
+        }
+        Update: {
+          about_body?: string | null
+          about_image_url?: string | null
+          about_title?: string | null
+          about_video_url?: string | null
+          accent_color?: string | null
+          announcement_bg?: string | null
+          announcement_enabled?: boolean
+          announcement_fg?: string | null
+          announcement_link?: string | null
+          announcement_text?: string | null
+          awards?: Json
+          business_hours?: Json
+          business_name?: string
+          cancellation_policy?: string | null
+          certifications?: Json
+          contact_address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency?: string | null
+          custom_css?: string | null
+          faqs?: Json
+          favicon_url?: string | null
+          font_family?: string | null
+          gallery_layout?: string | null
+          gallery_urls?: Json
+          google_analytics_id?: string | null
+          hero_cta_label?: string | null
+          hero_cta_link?: string | null
+          hero_cta_secondary_label?: string | null
+          hero_cta_secondary_link?: string | null
+          hero_gradient_from?: string | null
+          hero_gradient_to?: string | null
+          hero_headline?: string | null
+          hero_media_url?: string | null
+          hero_style?: string
+          hero_subheadline?: string | null
+          hero_video_url?: string | null
+          id?: string
+          instagram_feed_enabled?: boolean
+          instagram_handle?: string | null
+          languages?: Json
+          logo_url?: string | null
+          loyalty_teaser_enabled?: boolean
+          loyalty_teaser_text?: string | null
+          map_embed_url?: string | null
+          meta_description?: string | null
+          meta_pixel_id?: string | null
+          meta_title?: string | null
+          newsletter_enabled?: boolean
+          newsletter_headline?: string | null
+          newsletter_subheadline?: string | null
+          og_image_url?: string | null
+          pets_served?: number | null
+          popup_body?: string | null
+          popup_cta_label?: string | null
+          popup_cta_link?: string | null
+          popup_enabled?: boolean
+          popup_headline?: string | null
+          popup_image_url?: string | null
+          press_logos?: Json
+          primary_color?: string | null
+          privacy_policy_url?: string | null
+          radius_scale?: string | null
+          refund_policy?: string | null
+          section_order?: Json
+          section_visibility?: Json
+          social_facebook?: string | null
+          social_google?: string | null
+          social_instagram?: string | null
+          social_tiktok?: string | null
+          social_whatsapp?: string | null
+          social_x?: string | null
+          social_youtube?: string | null
+          tagline?: string | null
+          team_members?: Json
+          terms_url?: string | null
+          theme_preset?: string
+          timezone?: string | null
+          trust_badges?: Json
+          updated_at?: string
+          vaccination_policy?: string | null
+          years_in_business?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
