@@ -140,9 +140,6 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
             device === 'mobile' ? 'border-[6px] border-foreground/10 rounded-[2.5rem] shadow-2xl' : 'rounded-2xl border shadow-lg',
             'bg-background'
           )}>
-            {/* Hero Banner */}
-            <div className="relative overflow-hidden">
-              <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/70 px-6 py-10 sm:py-14 text-center relative">
             {/* Announcement bar */}
             {settings?.announcement_enabled && settings.announcement_text && isOn('announcement') && (
               <div className="text-center py-2 text-[12px] font-semibold" style={{ background: settings.announcement_bg || '#111', color: settings.announcement_fg || '#fff' }}>
