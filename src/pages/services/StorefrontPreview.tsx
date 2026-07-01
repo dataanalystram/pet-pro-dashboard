@@ -2,11 +2,16 @@ import { useState, useMemo, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Smartphone, Monitor, Tablet, Clock, Sparkles, ChevronUp, ChevronDown, MapPin, Star, ChevronLeft, ChevronRight, X, Shield, Heart, Award, Crown, Package as PackageIcon, Tag, Flame, CheckCircle2, Gift } from 'lucide-react';
+import { Smartphone, Monitor, Tablet, Clock, Sparkles, ChevronUp, ChevronDown, MapPin, Star, ChevronLeft, ChevronRight, X, Shield, Heart, Award, Crown, Package as PackageIcon, Tag, Flame, CheckCircle2, Gift, Palette, Phone, Mail, Instagram, Facebook, Youtube, MessageCircle, ChevronDown as ChevronDown2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useReviews, useCampaigns } from '@/hooks/use-supabase-data';
 import { usePlans, usePrepaidPackages, useSeasonalOffers } from '@/pages/memberships/hooks/useMembershipData';
+import { useStorefrontSettings } from '@/hooks/useStorefrontSettings';
+import StorefrontCustomizer from './StorefrontCustomizer';
 import { format } from 'date-fns';
+
+const ICON_MAP: Record<string, any> = { Star, Heart, Award, Shield, Crown, Sparkles, CheckCircle2 };
+
 
 
 const currencySymbol = (c: string) => c === 'EUR' ? '€' : c === 'GBP' ? '£' : c === 'USD' ? '$' : c + ' ';
@@ -38,12 +43,18 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
   const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [selectedService, setSelectedService] = useState<any>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [customizerOpen, setCustomizerOpen] = useState(false);
   const catScrollRef = useRef<HTMLDivElement>(null);
 
   const { data: plans = [] } = usePlans();
   const { data: packages = [] } = usePrepaidPackages();
   const { data: offers = [] } = useSeasonalOffers();
   const { data: campaigns = [] } = useCampaigns();
+  const { data: settings } = useStorefrontSettings();
+  const vis = settings?.section_visibility || {};
+  const isOn = (k: string) => vis[k] !== false;
+
+
 
   const activePlans = useMemo(() => plans.filter((p: any) => p.status === 'active'), [plans]);
   const activePackages = useMemo(() => packages.filter((p: any) => p.active), [packages]);
@@ -102,6 +113,9 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
             <p className="text-[11px] text-muted-foreground">Hover cards to reorder • Click to view detail</p>
           </div>
           <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setCustomizerOpen(true)}>
+              <Palette className="w-3.5 h-3.5" /> Customize
+            </Button>
             <div className="flex gap-0.5 bg-muted rounded-lg p-0.5">
               {([['mobile', Smartphone], ['tablet', Tablet], ['desktop', Monitor]] as const).map(([key, Icon]) => (
                 <button key={key} onClick={() => setDevice(key)} className={cn(
@@ -118,6 +132,7 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
           </div>
         </div>
 
+
         <div className="flex justify-center py-6 px-4 bg-muted/30">
           <div className={cn(
             'w-full transition-all duration-300 overflow-hidden',
@@ -125,31 +140,53 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
             device === 'mobile' ? 'border-[6px] border-foreground/10 rounded-[2.5rem] shadow-2xl' : 'rounded-2xl border shadow-lg',
             'bg-background'
           )}>
+            {/* Announcement bar */}
+            {settings?.announcement_enabled && settings.announcement_text && isOn('announcement') && (
+              <div className="text-center py-2 text-[12px] font-semibold" style={{ background: settings.announcement_bg || '#111', color: settings.announcement_fg || '#fff' }}>
+                {settings.announcement_link ? <a href={settings.announcement_link}>{settings.announcement_text}</a> : settings.announcement_text}
+              </div>
+            )}
+
             {/* Hero Banner */}
+            {isOn('hero') && (
             <div className="relative overflow-hidden">
-              <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/70 px-6 py-10 sm:py-14 text-center relative">
+              <div className="px-6 py-10 sm:py-14 text-center relative" style={{
+                background: settings?.hero_style === 'image' && settings.hero_media_url
+                  ? `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.55)), url(${settings.hero_media_url}) center/cover`
+                  : `linear-gradient(135deg, ${settings?.hero_gradient_from || '#0f172a'}, ${settings?.hero_gradient_to || '#1e293b'})`,
+              }}>
                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-                <h1 className={cn('font-extrabold text-primary-foreground relative', device === 'mobile' ? 'text-2xl' : 'text-4xl')}>
-                  Our Services
+                {settings?.logo_url && <img src={settings.logo_url} alt="" className="h-10 mx-auto mb-3 relative" />}
+                <h1 className={cn('font-extrabold text-white relative', device === 'mobile' ? 'text-2xl' : 'text-4xl')}>
+                  {settings?.hero_headline || 'Our Services'}
                 </h1>
-                <p className={cn('text-primary-foreground/80 mt-2 relative', device === 'mobile' ? 'text-xs' : 'text-sm')}>
-                  Premium pet care tailored to every furry, feathered & scaly friend
+                <p className={cn('text-white/80 mt-2 relative max-w-2xl mx-auto', device === 'mobile' ? 'text-xs' : 'text-sm')}>
+                  {settings?.hero_subheadline || settings?.tagline || 'Premium pet care tailored to every furry, feathered & scaly friend'}
                 </p>
+                {(settings?.hero_cta_label || settings?.hero_cta_secondary_label) && (
+                  <div className="flex justify-center gap-2 mt-4 relative">
+                    {settings?.hero_cta_label && <Button size="sm" className="rounded-full font-bold">{settings.hero_cta_label}</Button>}
+                    {settings?.hero_cta_secondary_label && <Button size="sm" variant="outline" className="rounded-full font-bold bg-white/10 border-white/30 text-white hover:bg-white/20">{settings.hero_cta_secondary_label}</Button>}
+                  </div>
+                )}
                 {/* Trust Badges */}
-                <div className={cn('flex items-center justify-center gap-3 mt-5 relative', device === 'mobile' ? 'gap-2' : 'gap-4')}>
-                  {[
-                    { icon: Star, text: '4.9★ Rated' },
-                    { icon: Heart, text: '500+ Happy Pets' },
-                    { icon: Award, text: 'Certified Pros' },
-                  ].map(({ icon: Icon, text }) => (
-                    <div key={text} className="flex items-center gap-1 bg-primary-foreground/15 backdrop-blur-sm rounded-full px-3 py-1.5">
-                      <Icon className="w-3 h-3 text-primary-foreground" />
-                      <span className="text-[10px] font-semibold text-primary-foreground">{text}</span>
-                    </div>
-                  ))}
-                </div>
+                {isOn('trust') && (settings?.trust_badges?.length ?? 0) > 0 && (
+                  <div className={cn('flex items-center justify-center flex-wrap gap-2 mt-5 relative', device === 'mobile' ? 'gap-2' : 'gap-3')}>
+                    {(settings?.trust_badges || []).map((b, i) => {
+                      const Ic = ICON_MAP[b.icon] || Star;
+                      return (
+                        <div key={i} className="flex items-center gap-1 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5">
+                          <Ic className="w-3 h-3 text-white" />
+                          <span className="text-[10px] font-semibold text-white">{b.text}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
+            )}
+
 
             {/* 🔥 Live Festival Ribbon */}
             {liveOffers.length > 0 && (
@@ -389,6 +426,165 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
 
 
 
+            )}
+
+            {/* ═══ Photo Gallery ═══ */}
+            {isOn('gallery') && (settings?.gallery_urls?.length ?? 0) > 0 && (
+              <div className="px-4 pt-4 pb-8">
+                <h2 className={cn('font-bold mb-3', device === 'mobile' ? 'text-base' : 'text-lg')}>📸 Gallery</h2>
+                <div className={cn('grid gap-2', settings?.gallery_layout === 'grid' ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-3')}>
+                  {settings?.gallery_urls?.map((g, i) => (
+                    <img key={i} src={g.url} alt={g.caption || ''} className={cn('w-full object-cover rounded-xl', settings.gallery_layout === 'masonry' && i % 3 === 0 ? 'row-span-2 aspect-[3/4]' : 'aspect-square')} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ═══ About ═══ */}
+            {isOn('about') && (settings?.about_body || settings?.about_image_url) && (
+              <div className="px-4 pt-4 pb-8">
+                <div className="rounded-2xl border bg-card overflow-hidden">
+                  <div className={cn('grid gap-0', settings?.about_image_url ? 'md:grid-cols-2' : 'grid-cols-1')}>
+                    {settings?.about_image_url && (
+                      <img src={settings.about_image_url} alt="" className="w-full h-64 md:h-full object-cover" />
+                    )}
+                    <div className="p-6">
+                      <h2 className="text-2xl font-extrabold mb-2">{settings?.about_title || 'About us'}</h2>
+                      <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{settings?.about_body}</p>
+                      {(settings?.years_in_business || settings?.pets_served) && (
+                        <div className="flex gap-6 mt-4 pt-4 border-t">
+                          {settings?.years_in_business != null && <div><div className="text-2xl font-extrabold">{settings.years_in_business}+</div><div className="text-[11px] uppercase tracking-wider text-muted-foreground">Years</div></div>}
+                          {settings?.pets_served != null && <div><div className="text-2xl font-extrabold">{settings.pets_served.toLocaleString()}+</div><div className="text-[11px] uppercase tracking-wider text-muted-foreground">Pets served</div></div>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ═══ Team ═══ */}
+            {isOn('team') && (settings?.team_members?.length ?? 0) > 0 && (
+              <div className="px-4 pt-4 pb-8">
+                <h2 className={cn('font-bold mb-4', device === 'mobile' ? 'text-base' : 'text-lg')}>👋 Meet the team</h2>
+                <div className={cn('grid gap-4', device === 'mobile' ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-4')}>
+                  {settings?.team_members?.map((m, i) => (
+                    <div key={i} className="text-center">
+                      {m.photo_url ? <img src={m.photo_url} className="w-full aspect-square rounded-full object-cover mb-2" alt={m.name} /> : <div className="w-full aspect-square rounded-full bg-muted mb-2" />}
+                      <div className="font-bold text-sm">{m.name}</div>
+                      {m.role && <div className="text-[11px] text-muted-foreground">{m.role}</div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ═══ Reviews handled elsewhere ═══ */}
+
+            {/* ═══ FAQ ═══ */}
+            {isOn('faq') && (settings?.faqs?.length ?? 0) > 0 && (
+              <div className="px-4 pt-4 pb-8">
+                <h2 className={cn('font-bold mb-3', device === 'mobile' ? 'text-base' : 'text-lg')}>❓ Frequently asked</h2>
+                <div className="space-y-2">
+                  {settings?.faqs?.map((f, i) => (
+                    <details key={i} className="rounded-xl border p-3 group">
+                      <summary className="font-semibold text-sm cursor-pointer flex items-center justify-between">{f.q}<ChevronDown2 className="w-4 h-4 group-open:rotate-180 transition-transform" /></summary>
+                      <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{f.a}</p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ═══ Hours + Contact ═══ */}
+            {(isOn('hours') || isOn('contact')) && (
+              <div className={cn('px-4 pt-4 pb-8 grid gap-4', device === 'mobile' ? 'grid-cols-1' : 'grid-cols-2')}>
+                {isOn('hours') && settings?.business_hours && (
+                  <div className="rounded-2xl border bg-card p-5">
+                    <h3 className="font-bold text-base mb-3 flex items-center gap-2"><Clock className="w-4 h-4" /> Hours</h3>
+                    <div className="space-y-1 text-sm">
+                      {Object.entries(settings.business_hours).map(([day, h]: any) => (
+                        <div key={day} className="flex justify-between capitalize"><span className="text-muted-foreground">{day}</span><span className="font-medium">{h.closed ? 'Closed' : `${h.open} – ${h.close}`}</span></div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {isOn('contact') && (
+                  <div className="rounded-2xl border bg-card p-5">
+                    <h3 className="font-bold text-base mb-3">Get in touch</h3>
+                    <div className="space-y-2 text-sm">
+                      {settings?.contact_phone && <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-muted-foreground" /> {settings.contact_phone}</div>}
+                      {settings?.contact_email && <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-muted-foreground" /> {settings.contact_email}</div>}
+                      {settings?.contact_address && <div className="flex items-start gap-2"><MapPin className="w-4 h-4 text-muted-foreground mt-0.5" /> <span>{settings.contact_address}</span></div>}
+                    </div>
+                    {isOn('social') && (
+                      <div className="flex gap-2 mt-4 pt-4 border-t">
+                        {settings?.social_instagram && <a href={settings.social_instagram} className="p-2 rounded-full bg-muted hover:bg-accent"><Instagram className="w-4 h-4" /></a>}
+                        {settings?.social_facebook && <a href={settings.social_facebook} className="p-2 rounded-full bg-muted hover:bg-accent"><Facebook className="w-4 h-4" /></a>}
+                        {settings?.social_youtube && <a href={settings.social_youtube} className="p-2 rounded-full bg-muted hover:bg-accent"><Youtube className="w-4 h-4" /></a>}
+                        {settings?.social_whatsapp && <a href={settings.social_whatsapp} className="p-2 rounded-full bg-muted hover:bg-accent"><MessageCircle className="w-4 h-4" /></a>}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ═══ Map ═══ */}
+            {isOn('map') && settings?.map_embed_url && (
+              <div className="px-4 pb-8">
+                <div className="rounded-2xl overflow-hidden border aspect-video">
+                  <iframe src={settings.map_embed_url} className="w-full h-full" loading="lazy" title="Location" />
+                </div>
+              </div>
+            )}
+
+            {/* ═══ Newsletter ═══ */}
+            {isOn('newsletter') && settings?.newsletter_enabled && (
+              <div className="px-4 pb-8">
+                <div className="rounded-2xl bg-gradient-to-br from-primary/20 via-accent/20 to-primary/10 p-6 text-center border">
+                  <h3 className="text-xl font-extrabold">{settings.newsletter_headline}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{settings.newsletter_subheadline}</p>
+                  <div className="flex gap-2 mt-4 max-w-md mx-auto">
+                    <input type="email" placeholder="you@example.com" className="flex-1 rounded-full border px-4 py-2 text-sm bg-background" />
+                    <Button className="rounded-full font-bold">Subscribe</Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ═══ Loyalty teaser ═══ */}
+            {isOn('loyalty') && settings?.loyalty_teaser_enabled && settings?.loyalty_teaser_text && (
+              <div className="px-4 pb-8">
+                <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-4 text-center text-sm font-semibold">
+                  ✨ {settings.loyalty_teaser_text}
+                </div>
+              </div>
+            )}
+
+            {/* ═══ Press logos ═══ */}
+            {isOn('press') && (settings?.press_logos?.length ?? 0) > 0 && (
+              <div className="px-4 pb-8">
+                <p className="text-[10px] uppercase tracking-widest text-center text-muted-foreground mb-3">As seen in</p>
+                <div className="flex flex-wrap justify-center items-center gap-6 opacity-70">
+                  {settings?.press_logos?.map((p, i) => (
+                    p.logo_url ? <img key={i} src={p.logo_url} alt={p.name} className="h-8 object-contain" /> : <span key={i} className="text-sm font-bold">{p.name}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ═══ Certifications ═══ */}
+            {isOn('certifications') && (settings?.certifications?.length ?? 0) > 0 && (
+              <div className="px-4 pb-8">
+                <div className="flex flex-wrap justify-center gap-2">
+                  {settings?.certifications?.map((c, i) => (
+                    <Badge key={i} variant="secondary" className="text-xs"><Shield className="w-3 h-3 mr-1" /> {c.name}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {activeServices.length === 0 && (
               <div className="text-center py-20 text-muted-foreground">
                 <p className="text-lg font-medium">No active services</p>
@@ -398,14 +594,15 @@ export default function StorefrontPreview({ open, onOpenChange, services, onReor
           </div>
         </div>
 
-        {/* Inline Service Detail Overlay */}
         {selectedService && (
           <StorefrontDetailOverlay service={selectedService} allServices={activeServices} onClose={() => setSelectedService(null)} />
         )}
       </DialogContent>
+      <StorefrontCustomizer open={customizerOpen} onOpenChange={setCustomizerOpen} />
     </Dialog>
   );
 }
+
 
 /* ─── Featured Card (larger, hero-style) ─── */
 function FeaturedCard({ service: s, device, onClick, onMoveUp, onMoveDown }: { service: any; device: string; onClick: () => void; onMoveUp: () => void; onMoveDown: () => void }) {
